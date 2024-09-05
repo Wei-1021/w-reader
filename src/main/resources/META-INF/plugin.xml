@@ -1,0 +1,56 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.wei.wreader</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>W-Reader</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+        <p>
+        W-Reader是一款基于Intellij IDEA的轻量级小说阅读插件，为开发者提供了沉浸式阅读小说的体验。<br>
+        </p>
+        <p>
+        功能特性：
+        </p>
+        <ul>
+            <li>&nbsp;&nbsp;无缝阅读：直接在IDEA内阅读喜爱的小说，无需切换应用。</li>
+        </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    ]]></change-notes>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+
+    </extensions>
+
+    <actions>
+        <group id="WReaderGroup" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </group>
+        <group id="remote">
+            <action id="SelectReadSite" class="com.wei.wreader.action.SelectReadSiteAction" text="选择站点">
+                <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
+            </action>
+            <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索书名">
+                <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
+            </action>
+            <add-to-group group-id="WReaderGroup" />
+            <separator/>
+        </group>
+    </actions>
+</idea-plugin>
