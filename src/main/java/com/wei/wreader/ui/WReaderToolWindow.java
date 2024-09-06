@@ -101,6 +101,14 @@ public class WReaderToolWindow {
      * 当前章节索引
      */
     private int currentChapterIndex = 0;
+    /**
+     * font size
+     */
+    private int fontSize = 0;
+    /**
+     * 当前章节内容
+     */
+    private String chapterContentText = "";
 
     private static final String baseUrl = "https://www.3bqg.cc";
 
@@ -185,11 +193,19 @@ public class WReaderToolWindow {
      */
     private void fontSubButtonListener(ActionEvent event, ToolWindow toolWindow) {
         Font font = contentEditorPane1.getFont();
-        int fontSize = font.getSize();
+        if (fontSize == 0) {
+            fontSize = font.getSize();
+        }
         if (fontSize <= 1) {
             return;
         }
-        contentEditorPane1.setFont(new Font(font.getFamily(), font.getStyle(), fontSize - 1));
+
+        fontSize = fontSize - 1;
+
+
+        String style = "font-family: '" + font.getFamily() + "'; font-size: " + fontSize + "px;";
+        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        contentEditorPane1.setText(text);
         contentEditorPane1.updateUI();
     }
 
@@ -200,8 +216,13 @@ public class WReaderToolWindow {
      */
     private void fontAddButtonListener(ActionEvent event, ToolWindow toolWindow) {
         Font font = contentEditorPane1.getFont();
-        int fontSize = font.getSize();
-        contentEditorPane1.setFont(new Font(font.getFamily(), font.getStyle(), fontSize + 1));
+        if (fontSize == 0) {
+            fontSize = font.getSize();
+        }
+        fontSize = fontSize + 1;
+        String style = "font-family: '" + font.getFamily() + "'; font-size: " + fontSize + "px;";
+        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        contentEditorPane1.setText(text);
         contentEditorPane1.updateUI();
     }
 
@@ -451,6 +472,7 @@ public class WReaderToolWindow {
         }
 
         String chapterContent = chapterContentElement.html();
+        chapterContentText = chapterContent;
         contentEditorPane1.setText(chapterContent);
         contentEditorPane1.setCaretPosition(0);
     }
