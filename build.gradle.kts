@@ -12,6 +12,10 @@ repositories {
         url = uri("https://mirrors.huaweicloud.com/repository/maven/")
     }
 
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public")
+    }
+
     mavenCentral()
 
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
