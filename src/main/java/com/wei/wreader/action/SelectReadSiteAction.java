@@ -22,6 +22,9 @@ public class SelectReadSiteAction extends AnAction {
             return;
         }
 
+        SelectReadSiteDialog dialog = new SelectReadSiteDialog();
+        dialog.pack();
+        dialog.setVisible(true);
 
     }
 }
