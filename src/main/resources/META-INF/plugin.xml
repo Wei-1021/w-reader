@@ -53,4 +53,8 @@
             <separator/>
         </group>
     </actions>
+
+    <application-components>
+
+    </application-components>
 </idea-plugin>

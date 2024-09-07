@@ -24,5 +24,7 @@ public class ConstUtil {
     public static final String DEFAULT_FONT_FAMILY = "微软雅黑";
     public static final int DEFAULT_FONT_SIZE = 14;
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
+    public static final String ELEMENT_CLASS_STR = "class";
+    public static final String ELEMENT_ID_STR = "id";
 
 }

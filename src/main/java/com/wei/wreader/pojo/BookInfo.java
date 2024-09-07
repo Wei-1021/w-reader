@@ -1,10 +1,13 @@
 package com.wei.wreader.pojo;
 
+import java.io.Serializable;
+
 /**
  * 小说基本信息实体
  * @author weizhanjie
  */
-public class BookInfo {
+public class BookInfo implements Serializable {
+    private static final long serialVersionUID = 8952225148502135L;
     private String bookName;
     private String bookUrl;
     private String bookAuthor;

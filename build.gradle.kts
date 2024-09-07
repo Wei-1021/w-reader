@@ -43,6 +43,8 @@ dependencies {
         pluginVerifier()
         zipSigner()
     }
+
+    implementation("org.yaml:snakeyaml:2.0")
 }
 
 tasks {
