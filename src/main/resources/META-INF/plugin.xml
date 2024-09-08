@@ -36,6 +36,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="WReader" factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory" anchor="right" icon="/icon/mainIcon.svg" />
+        <applicationService serviceImplementation="com.wei.wreader.service.SelectBookInfoService"/>
     </extensions>
 
     <actions>
@@ -53,8 +54,4 @@
             <separator/>
         </group>
     </actions>
-
-    <application-components>
-
-    </application-components>
 </idea-plugin>

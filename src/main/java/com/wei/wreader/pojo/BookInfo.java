@@ -53,4 +53,15 @@ public class BookInfo implements Serializable {
     public void setBookImgUrl(String bookImgUrl) {
         this.bookImgUrl = bookImgUrl;
     }
+
+    @Override
+    public String toString() {
+        return "BookInfo{" +
+                "bookName='" + bookName + '\'' +
+                ", bookUrl='" + bookUrl + '\'' +
+                ", bookAuthor='" + bookAuthor + '\'' +
+                ", bookDesc='" + bookDesc + '\'' +
+                ", bookImgUrl='" + bookImgUrl + '\'' +
+                '}';
+    }
 }

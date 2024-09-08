@@ -106,8 +106,8 @@ public class ConfigYaml {
      * 获取配置文件名称
      * @return
      */
-    public List<String> getName() {
-        return (List<String>) getObject("wreader.name");
+    public String getName() {
+        return (String) getObject("wreader.name");
     }
 
     public String getVersion() {

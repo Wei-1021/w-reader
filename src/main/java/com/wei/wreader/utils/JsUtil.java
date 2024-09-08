@@ -39,6 +39,10 @@ public class JsUtil {
      * @throws MalformedURLException 如果基础URL格式不正确
      */
     public static String buildFullURL(String baseUrl, String relativePath) throws MalformedURLException {
+        if (relativePath.contains("http://") || relativePath.contains("https://")) {
+            return relativePath;
+        }
+
         // 创建一个URL对象
         URL base = new URL(baseUrl);
 

@@ -3,14 +3,18 @@ package com.wei.wreader.ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
+import com.wei.wreader.service.SelectBookInfoService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.JsUtil;
@@ -21,6 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -42,7 +47,7 @@ import java.util.List;
  * @author weizhanjie
  */
 @Log4j2
-public class WReaderToolWindow {
+public class WReaderToolWindow implements Configurable {
     /**
      * 阅读器面板
      */
@@ -126,17 +131,26 @@ public class WReaderToolWindow {
      */
     private BookSiteInfo selectedBookSiteInfo;
     /**
+     * 当前小说信息
+     */
+    private BookInfo selectBookInfo = new BookInfo();
+    /**
      * 当前章节信息
      */
     private final ChapterInfo currentChapterInfo = new ChapterInfo();
+    private ConfigYaml configYaml;
+
+    private final SelectBookInfoService selectBookInfoService;
 
     public WReaderToolWindow(ToolWindow toolWindow) {
-        ConfigYaml configYaml = new ConfigYaml();
+        configYaml = new ConfigYaml();
         siteList = configYaml.getSiteList();
         selectedBookSiteInfo = siteList.get(0);
         baseUrl = selectedBookSiteInfo.getBaseUrl();
+        selectBookInfoService = SelectBookInfoService.getInstance();
 
-
+        BookInfo bookInfo = selectBookInfoService.getBookInfo();
+        System.out.println(bookInfo);
 
         // 添加监听器
         searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
@@ -394,10 +408,11 @@ public class WReaderToolWindow {
                     if (!e.getValueIsAdjusting()) {
                         // 获取选择的小说信息
                         int selectedIndex = searchBookList.getSelectedIndex();
-                        BookInfo bookInfo = bookInfoList.get(selectedIndex);
-                        String bookUrl = bookInfo.getBookUrl();
-                        if (!bookInfo.getBookUrl().startsWith("http://") && !bookInfo.getBookUrl().startsWith("https://")) {
-                            bookUrl = baseUrl + bookInfo.getBookUrl();
+                        selectBookInfo = bookInfoList.get(selectedIndex);
+                        selectBookInfoService.setBookInfo(selectBookInfo);
+                        String bookUrl = selectBookInfo.getBookUrl();
+                        if (!selectBookInfo.getBookUrl().startsWith("http://") && !selectBookInfo.getBookUrl().startsWith("https://")) {
+                            bookUrl = baseUrl + selectBookInfo.getBookUrl();
                         }
 
                         try {
@@ -624,8 +639,8 @@ public class WReaderToolWindow {
         }
 
         String chapterContent = chapterContentElement.html();
-        chapterContent = "<h4 style=\"text-align: center;margin-bottom: 20px;color: '" + ConstUtil.DEFAULT_FONT_COLOR_HEX +"'\">" +
-                currentChapterInfo.getChapterTitle() + "</h4>" +
+        chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color: '" + ConstUtil.DEFAULT_FONT_COLOR_HEX +"'\">" +
+                currentChapterInfo.getChapterTitle() + "</h3>" +
                 chapterContent;
         chapterContentText = chapterContent;
         contentEditorPane1.setText(chapterContent);
@@ -636,4 +651,23 @@ public class WReaderToolWindow {
         return readerPanel;
     }
 
+    @Override
+    public @NlsContexts.ConfigurableName String getDisplayName() {
+        return configYaml.getName();
+    }
+
+    @Override
+    public @Nullable JComponent createComponent() {
+        return readerPanel;
+    }
+
+    @Override
+    public boolean isModified() {
+        return selectBookInfoService.getBookInfo() != selectBookInfo;
+    }
+
+    @Override
+    public void apply() throws ConfigurationException {
+        selectBookInfoService.setBookInfo(selectBookInfo);
+    }
 }
