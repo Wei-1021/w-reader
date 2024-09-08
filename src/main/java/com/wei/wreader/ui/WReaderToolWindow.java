@@ -3,18 +3,26 @@ package com.wei.wreader.ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.colors.EditorColorsListener;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.UiUtils;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
+import com.intellij.util.messages.MessageBus;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.service.SelectBookInfoService;
+import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.JsUtil;
@@ -39,6 +47,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -75,7 +84,7 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 内容编辑器
      */
-    private final JEditorPane contentEditorPane1;
+    private JEditorPane contentEditorPane1;
     /**
      * 内容滚动面板
      */
@@ -115,12 +124,22 @@ public class WReaderToolWindow implements Configurable {
     /**
      * font size
      */
-    private int fontSize = 0;
+    private String fontFamily = ConstUtil.DEFAULT_FONT_FAMILY;
+    /**
+     * font size
+     */
+    private int fontSize = ConstUtil.DEFAULT_FONT_SIZE;
+    /**
+     * font color
+     */
+    private String fontColorHex = ConstUtil.DEFAULT_FONT_COLOR_HEX;
     /**
      * 当前章节内容
      */
     private String chapterContentText = "";
-
+    /**
+     * 基础网址
+     */
     private String baseUrl;
     /**
      * 站点信息列表
@@ -137,20 +156,20 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 当前章节信息
      */
-    private final ChapterInfo currentChapterInfo = new ChapterInfo();
-    private ConfigYaml configYaml;
+    private ChapterInfo currentChapterInfo = new ChapterInfo();
+    private final ConfigYaml configYaml;
 
-    private final SelectBookInfoService selectBookInfoService;
+    private final CacheService cacheService;
 
     public WReaderToolWindow(ToolWindow toolWindow) {
         configYaml = new ConfigYaml();
-        siteList = configYaml.getSiteList();
-        selectedBookSiteInfo = siteList.get(0);
-        baseUrl = selectedBookSiteInfo.getBaseUrl();
-        selectBookInfoService = SelectBookInfoService.getInstance();
-
-        BookInfo bookInfo = selectBookInfoService.getBookInfo();
-        System.out.println(bookInfo);
+        cacheService = CacheService.getInstance();
+        // 初始化编辑器
+        initContentEditorPane();
+        // 初始化数据
+        initData();
+        // 监听编辑器颜色修改
+        appEditorColorsListener();
 
         // 添加监听器
         searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
@@ -160,17 +179,107 @@ public class WReaderToolWindow implements Configurable {
         fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
         fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
         colorTextField1.addVetoableChangeListener(evt -> colorTextField1Listener(evt, toolWindow));
+    }
 
-        Font font = new Font(ConstUtil.DEFAULT_FONT_FAMILY, Font.PLAIN, ConstUtil.DEFAULT_FONT_SIZE);
+    /**
+     * 初始化数据
+     */
+    private void initData() {
+        try {
+            // 站点列表信息
+            siteList = configYaml.getSiteList();
 
+            // 加载持久化数据--站点信息
+            selectedBookSiteInfo = cacheService.getSelectedBookSiteInfo();
+            if (selectedBookSiteInfo == null) {
+                // 选中的站点信息
+                selectedBookSiteInfo = siteList.get(0);
+                cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
+            }
+            // 加载持久化数据--小说信息
+            selectBookInfo = cacheService.getSelectedBookInfo();
+            // 加载持久化数据--章节信息
+            currentChapterInfo = cacheService.getSelectedChapterInfo();
+            if (currentChapterInfo == null) {
+                currentChapterInfo = new ChapterInfo();
+            }
+            // 加载持久化数据--目录名称列表
+            chapterList = cacheService.getChapterList();
+            // 加载持久化数据--目录章节链接列表
+            chapterUrlList = cacheService.getChapterUrlList();
+
+            // 选择的站点基础网址
+            baseUrl = selectedBookSiteInfo.getBaseUrl();
+
+            contentEditorPane1.setText(ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT);
+            if (chapterList != null && !chapterList.isEmpty() &&
+                    chapterUrlList != null && !chapterUrlList.isEmpty()) {
+                if (currentChapterInfo.getChapterUrl() != null) {
+                    currentChapterIndex = chapterUrlList.indexOf(currentChapterInfo.getChapterUrl());
+                    searchBookContent(currentChapterInfo.getChapterUrl());
+                }
+            }
+
+            // 加载字体信息
+            fontFamily = cacheService.getFontFamily();
+            if (fontFamily == null || fontFamily.isEmpty()) {
+                fontFamily = ConstUtil.DEFAULT_FONT_FAMILY;
+                cacheService.setFontFamily(fontFamily);
+            }
+            fontSize = cacheService.getFontSize();
+            if (fontSize == 0) {
+                fontSize = ConstUtil.DEFAULT_FONT_SIZE;
+                cacheService.setFontSize(fontSize);
+            }
+            fontColorHex = cacheService.getFontColorHex();
+            if (fontColorHex == null || fontColorHex.isEmpty()) {
+                // 获取主题色
+                EditorColorsScheme schemeForCurrentUITheme = EditorColorsManager.getInstance().getSchemeForCurrentUITheme();
+                // 获取主题前景色
+                Color defaultForeground = schemeForCurrentUITheme.getDefaultForeground();
+                fontColorHex = String.format("#%02x%02x%02x", defaultForeground.getRed(), defaultForeground.getGreen(),
+                        defaultForeground.getBlue());
+                cacheService.setFontColorHex(fontColorHex);
+            }
+        } catch (Exception e) {
+            Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 初始化内容编辑器
+     */
+    private void initContentEditorPane() {
         contentEditorPane1 = new JEditorPane();
-        contentEditorPane1.setText(ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT);
-        contentEditorPane1.setFont(font);
         contentEditorPane1.setContentType("text/html");
         contentEditorPane1.setEditable(false);
-        contentEditorPane1.setBackground(JBColor.WHITE);
-
+//        contentEditorPane1.setBackground(JBColor.WHITE);
         contentScrollPane.setViewportView(contentEditorPane1);
+    }
+
+    /**
+     * 主题切换监听器
+     */
+    private void appEditorColorsListener() {
+        MessageBus bus = ApplicationManager.getApplication().getMessageBus();
+        bus.connect().subscribe(EditorColorsManager.TOPIC, (EditorColorsListener) editorColorsScheme -> {
+            if (editorColorsScheme == null) {
+                return;
+            }
+
+            // 获取前景色
+            Color defaultForeground = editorColorsScheme.getDefaultForeground();
+            fontColorHex = String.format("#%02x%02x%02x", defaultForeground.getRed(), defaultForeground.getGreen(),
+                    defaultForeground.getBlue());
+            try {
+                // 刷新章节内容
+                searchBookContent(currentChapterInfo.getChapterUrl());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
     }
 
     /**
@@ -205,6 +314,7 @@ public class WReaderToolWindow implements Configurable {
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(prevChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentText);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
             searchBookContent(prevChapterUrl);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -233,6 +343,7 @@ public class WReaderToolWindow implements Configurable {
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(nextChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentText);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
             searchBookContent(nextChapterUrl);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -254,9 +365,9 @@ public class WReaderToolWindow implements Configurable {
         }
 
         fontSize = fontSize - 1;
+        cacheService.setFontSize(fontSize);
 
-
-        String style = "font-family: '" + font.getFamily() + "'; font-size: " + fontSize + "px;";
+        String style = "font-family: '" + font.getFamily() + "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
         String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
         contentEditorPane1.setText(text);
         contentEditorPane1.updateUI();
@@ -273,7 +384,8 @@ public class WReaderToolWindow implements Configurable {
             fontSize = font.getSize();
         }
         fontSize = fontSize + 1;
-        String style = "font-family: '" + font.getFamily() + "'; font-size: " + fontSize + "px;";
+        cacheService.setFontSize(fontSize);
+        String style = "font-family: '" + fontFamily + "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
         String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
         contentEditorPane1.setText(text);
         contentEditorPane1.updateUI();
@@ -286,12 +398,13 @@ public class WReaderToolWindow implements Configurable {
      */
     private void colorTextField1Listener(java.beans.PropertyChangeEvent evt, ToolWindow toolWindow) {
         String color = colorTextField1.getText();
-        Font font = contentEditorPane1.getFont();
+        fontColorHex = color;
+        cacheService.setFontColorHex(color);
         System.out.println(color);
 
         String style =
-                "color:' " + color + "';" +
-                "font-family: '" + font.getFamily() + "';" +
+                "color:" + fontColorHex + ";" +
+                "font-family: '" + fontFamily + "';" +
                 "font-size: " + fontSize + "px;";
         String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
         contentEditorPane1.setText(text);
@@ -318,8 +431,6 @@ public class WReaderToolWindow implements Configurable {
                     String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
                             "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
 
-                    System.out.println("Searching: " + searchBookUrl);
-
                     // 获取搜索结果
                     String searchBookResult = searchBookList(searchBookUrl);
 
@@ -345,8 +456,8 @@ public class WReaderToolWindow implements Configurable {
         comboBox.addActionListener(e -> {
             int selectedIndex = comboBox.getSelectedIndex();
             selectedBookSiteInfo = siteList.get(selectedIndex);
+            cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
             baseUrl = selectedBookSiteInfo.getBaseUrl();
-            System.out.println(selectedIndex + " " + selectedBookSiteInfo);
         });
         return comboBox;
     }
@@ -409,7 +520,7 @@ public class WReaderToolWindow implements Configurable {
                         // 获取选择的小说信息
                         int selectedIndex = searchBookList.getSelectedIndex();
                         selectBookInfo = bookInfoList.get(selectedIndex);
-                        selectBookInfoService.setBookInfo(selectBookInfo);
+                        cacheService.setSelectedBookInfo(selectBookInfo);
                         String bookUrl = selectBookInfo.getBookUrl();
                         if (!selectBookInfo.getBookUrl().startsWith("http://") && !selectBookInfo.getBookUrl().startsWith("https://")) {
                             bookUrl = baseUrl + selectBookInfo.getBookUrl();
@@ -533,6 +644,8 @@ public class WReaderToolWindow implements Configurable {
                 }
                 chapterUrlList.add(href);
             });
+            cacheService.setChapterList(chapterList);
+            cacheService.setChapterUrlList(chapterUrlList);
 
             JFrame frame = new JFrame("小说目录");
             frame.setSize(350, 500);
@@ -558,6 +671,7 @@ public class WReaderToolWindow implements Configurable {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
                     currentChapterInfo.setChapterContent(chapterContentText);
+                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                     try {
                         searchBookContent(chapterUrl);
                     } catch (IOException ex) {
@@ -599,6 +713,7 @@ public class WReaderToolWindow implements Configurable {
                 currentChapterInfo.setChapterTitle(chapterTitle);
                 currentChapterInfo.setChapterUrl(chapterUrl);
                 currentChapterInfo.setChapterContent(chapterContentText);
+                cacheService.setSelectedChapterInfo(currentChapterInfo);
                 try {
                     searchBookContent(chapterUrl);
                 } catch (IOException ex) {
@@ -639,11 +754,15 @@ public class WReaderToolWindow implements Configurable {
         }
 
         String chapterContent = chapterContentElement.html();
-        chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color: '" + ConstUtil.DEFAULT_FONT_COLOR_HEX +"'\">" +
+        chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColorHex + ";\">" +
                 currentChapterInfo.getChapterTitle() + "</h3>" +
                 chapterContent;
         chapterContentText = chapterContent;
-        contentEditorPane1.setText(chapterContent);
+        String style = "color:" + fontColorHex + ";" +
+                        "font-family: '" + fontFamily + "';" +
+                        "font-size: " + fontSize + "px;";
+        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        contentEditorPane1.setText(text);
         contentEditorPane1.setCaretPosition(0);
     }
 
@@ -663,11 +782,25 @@ public class WReaderToolWindow implements Configurable {
 
     @Override
     public boolean isModified() {
-        return selectBookInfoService.getBookInfo() != selectBookInfo;
+        return cacheService.getSelectedBookInfo() != selectBookInfo ||
+                cacheService.getSelectedBookSiteInfo() != selectedBookSiteInfo ||
+                cacheService.getSelectedChapterInfo() != currentChapterInfo ||
+                cacheService.getChapterList() != chapterList ||
+                cacheService.getChapterUrlList() != chapterUrlList ||
+                !Objects.equals(cacheService.getFontColorHex(), fontColorHex) ||
+                cacheService.getFontSize() != fontSize ||
+                !Objects.equals(cacheService.getFontFamily(), fontFamily);
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        selectBookInfoService.setBookInfo(selectBookInfo);
+        cacheService.setSelectedBookInfo(selectBookInfo);
+        cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
+        cacheService.setSelectedChapterInfo(currentChapterInfo);
+        cacheService.setChapterList(chapterList);
+        cacheService.setChapterUrlList(chapterUrlList);
+        cacheService.setFontColorHex(fontColorHex);
+        cacheService.setFontFamily(fontFamily);
+        cacheService.setFontSize(fontSize);
     }
 }
