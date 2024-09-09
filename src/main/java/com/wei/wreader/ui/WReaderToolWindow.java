@@ -7,18 +7,17 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
-import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.UiUtils;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.ColorIcon;
+import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
@@ -40,8 +39,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
@@ -62,6 +63,14 @@ public class WReaderToolWindow implements Configurable {
      */
     private JPanel readerPanel;
     /**
+     * 菜单工具面板
+     */
+    private JPanel menuToolPanel;
+    /**
+     * 内容面板
+     */
+    private JPanel contentPanel;
+    /**
      * 目录列表按钮
      */
     private JButton menuListButton;
@@ -77,10 +86,6 @@ public class WReaderToolWindow implements Configurable {
      * 搜索按钮
      */
     private JButton searchBookButton;
-    /**
-     * 内容面板
-     */
-    private JPanel contentPanel;
     /**
      * 内容编辑器
      */
@@ -98,9 +103,9 @@ public class WReaderToolWindow implements Configurable {
      */
     private JButton fontAddButton1;
     /**
-     * 颜色输入框
+     * 颜色显示面板
      */
-    private JTextField colorTextField1;
+    private JPanel colorShowPanel;
     /**
      * 书本名称列表
      */
@@ -157,28 +162,36 @@ public class WReaderToolWindow implements Configurable {
      * 当前章节信息
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
-    private final ConfigYaml configYaml;
+    private ConfigYaml configYaml;
 
-    private final CacheService cacheService;
+    private CacheService cacheService;
 
     public WReaderToolWindow(ToolWindow toolWindow) {
-        configYaml = new ConfigYaml();
-        cacheService = CacheService.getInstance();
-        // 初始化编辑器
-        initContentEditorPane();
-        // 初始化数据
-        initData();
-        // 监听编辑器颜色修改
-        appEditorColorsListener();
+        SwingUtilities.invokeLater(() -> {
+            configYaml = new ConfigYaml();
+            cacheService = CacheService.getInstance();
+            // 初始化编辑器
+            initContentEditorPane();
+            // 初始化数据
+            initData();
+            // 监听编辑器颜色修改
+            appEditorColorsListener();
 
-        // 添加监听器
-        searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
-        menuListButton.addActionListener(e -> menuLisListener(e, toolWindow));
-        prevPageButton.addActionListener(e -> prevPageListener(e, toolWindow));
-        nextPageButton.addActionListener(e -> nextPageListener(e, toolWindow));
-        fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
-        fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
-        colorTextField1.addVetoableChangeListener(evt -> colorTextField1Listener(evt, toolWindow));
+            // 添加监听器
+            searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
+            menuListButton.addActionListener(e -> menuLisListener(e, toolWindow));
+            prevPageButton.addActionListener(e -> prevPageListener(e, toolWindow));
+            nextPageButton.addActionListener(e -> nextPageListener(e, toolWindow));
+            fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
+            fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
+            colorShowPanel.setBorder(JBUI.Borders.empty(2));
+            colorShowPanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    colorChooseButtonListener(e, toolWindow);
+                }
+            });
+        });
     }
 
     /**
@@ -211,13 +224,17 @@ public class WReaderToolWindow implements Configurable {
             // 选择的站点基础网址
             baseUrl = selectedBookSiteInfo.getBaseUrl();
 
-            contentEditorPane1.setText(ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT);
+            contentEditorPane1.setText("<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>");
             if (chapterList != null && !chapterList.isEmpty() &&
                     chapterUrlList != null && !chapterUrlList.isEmpty()) {
                 if (currentChapterInfo.getChapterUrl() != null) {
                     currentChapterIndex = chapterUrlList.indexOf(currentChapterInfo.getChapterUrl());
                     searchBookContent(currentChapterInfo.getChapterUrl());
                 }
+            }
+
+            if (chapterContentText == null || chapterContentText.isEmpty()) {
+                chapterContentText = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
             }
 
             // 加载字体信息
@@ -240,6 +257,7 @@ public class WReaderToolWindow implements Configurable {
                 fontColorHex = String.format("#%02x%02x%02x", defaultForeground.getRed(), defaultForeground.getGreen(),
                         defaultForeground.getBlue());
                 cacheService.setFontColorHex(fontColorHex);
+                colorShowPanel.setBackground(defaultForeground);
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
@@ -273,6 +291,7 @@ public class WReaderToolWindow implements Configurable {
             fontColorHex = String.format("#%02x%02x%02x", defaultForeground.getRed(), defaultForeground.getGreen(),
                     defaultForeground.getBlue());
             try {
+                colorShowPanel.setBackground(defaultForeground);
                 // 刷新章节内容
                 searchBookContent(currentChapterInfo.getChapterUrl());
             } catch (IOException e) {
@@ -352,6 +371,7 @@ public class WReaderToolWindow implements Configurable {
 
     /**
      * 字体大小减按钮监听器
+     *
      * @param event
      * @param toolWindow
      */
@@ -375,6 +395,7 @@ public class WReaderToolWindow implements Configurable {
 
     /**
      * 字体大小加按钮监听器
+     *
      * @param event
      * @param toolWindow
      */
@@ -392,23 +413,32 @@ public class WReaderToolWindow implements Configurable {
     }
 
     /**
-     * 颜色输入框监听器
-     * @param evt
+     * 颜色选择按钮监听器
+     *
+     * @param event
      * @param toolWindow
      */
-    private void colorTextField1Listener(java.beans.PropertyChangeEvent evt, ToolWindow toolWindow) {
-        String color = colorTextField1.getText();
-        fontColorHex = color;
-        cacheService.setFontColorHex(color);
-        System.out.println(color);
+    private void colorChooseButtonListener(MouseEvent event, ToolWindow toolWindow) {
+        // 获取当前字体颜色
+        Color currentFontColor = Color.decode(fontColorHex);
+        // 弹出颜色选择器JColorChooser
+        Color color = JColorChooser.showDialog(null, "选择颜色", currentFontColor);
+        if (color != null) {
+            // 将选择的颜色转换为16进制字符串
+            String hexColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+            // 更新颜色显示的背景色
+            colorShowPanel.setBackground(color);
+            // 更新缓存
+            fontColorHex = hexColor;
+            cacheService.setFontColorHex(hexColor);
 
-        String style =
-                "color:" + fontColorHex + ";" +
-                "font-family: '" + fontFamily + "';" +
-                "font-size: " + fontSize + "px;";
-        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
-        contentEditorPane1.setText(text);
-        contentEditorPane1.updateUI();
+            String style = "color:" + fontColorHex + ";" +
+                    "font-family: '" + fontFamily + "';" +
+                    "font-size: " + fontSize + "px;";
+            String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+            contentEditorPane1.setText(text);
+            contentEditorPane1.updateUI();
+        }
     }
 
     /**
@@ -423,26 +453,26 @@ public class WReaderToolWindow implements Configurable {
 
         JTextField searchBookTextField = new JTextField(20);
         Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TITLE, comboBox, searchBookTextField};
-        int result = JOptionPane.showConfirmDialog(null, objs, ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(null, objs,
+                ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             SwingUtilities.invokeLater(() -> {
                 String bookName = searchBookTextField.getText();
-                try {
-                    String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
-                            "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
-
-                    // 获取搜索结果
-                    String searchBookResult = searchBookList(searchBookUrl);
-
-                    if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
-                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
-                        return;
-                    }
-
-                    handleBookList(searchBookResult);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (bookName == null || bookName.trim().isEmpty()) {
+                    Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_EMPTY, "提示", Messages.getInformationIcon());
+                    return;
                 }
+
+                String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
+                        "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
+
+                // 获取搜索结果
+                String searchBookResult = searchBookList(searchBookUrl);
+                if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
+                    Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
+                    return;
+                }
+                handleBookList(searchBookResult);
             });
         }
     }
@@ -464,6 +494,7 @@ public class WReaderToolWindow implements Configurable {
 
     /**
      * 处理搜索目录结果
+     *
      * @param result
      */
     public void handleBookList(String result) {
@@ -526,14 +557,10 @@ public class WReaderToolWindow implements Configurable {
                             bookUrl = baseUrl + selectBookInfo.getBookUrl();
                         }
 
-                        try {
-                            // 搜索小说目录
-                            chapterList = new ArrayList<>();
-                            chapterUrlList = new ArrayList<>();
-                            searchBookDirectory(bookUrl);
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
+                        // 搜索小说目录
+                        chapterList = new ArrayList<>();
+                        chapterUrlList = new ArrayList<>();
+                        searchBookDirectory(bookUrl);
                     }
                 });
 
@@ -550,14 +577,20 @@ public class WReaderToolWindow implements Configurable {
      * @param url
      * @return
      */
-    public String searchBookList(String url) throws IOException {
+    public String searchBookList(String url) {
         String result = null;
         // 获取小说列表的接口返回的是否是html
         if (selectedBookSiteInfo.isHtml()) {
             // 获取html
-            Document document = Jsoup.connect(url)
-                    .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                    .get();
+            Document document = null;
+            try {
+                document = Jsoup.connect(url)
+                        .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                        .get();
+            } catch (IOException e) {
+                Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+                throw new RuntimeException(e);
+            }
             // 小说列表的HTML标签类型（class, id）
             String bookListElementType = selectedBookSiteInfo.getBookListElementType();
             Element element = null;
@@ -604,6 +637,7 @@ public class WReaderToolWindow implements Configurable {
                 }
 
             } catch (IOException e) {
+                Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
                 throw new RuntimeException(e);
             }
         }
@@ -613,14 +647,22 @@ public class WReaderToolWindow implements Configurable {
 
     /**
      * 获取小说目录
+     *
      * @param url
      * @throws IOException
      */
-    public void searchBookDirectory(String url) throws IOException {
-        Document document = Jsoup.connect(url)
-                .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                .get();
-        // 获取目录列表
+    public void searchBookDirectory(String url) {
+        Document document = null;
+        try {
+            document = Jsoup.connect(url)
+                    .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                    .get();
+        } catch (IOException e) {
+            Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+            throw new RuntimeException(e);
+        }
+
+        // 获取目录列表元素
         Element listMainElement = null;
         if (selectedBookSiteInfo.isHtml()) {
             String listMainElementType = selectedBookSiteInfo.getListMainElementType();
@@ -630,14 +672,18 @@ public class WReaderToolWindow implements Configurable {
                 listMainElement = document.getElementById(selectedBookSiteInfo.getListMainElementName());
             }
         }
+
         if (listMainElement != null) {
             // 获取页面的地址
             String location = document.location();
+            // 获取目录列表元素下所有的a标签元素
             listMainElement.getElementsByTag("a").forEach(element -> {
+                // 提取链接和章节名称
                 String href = element.attr("href");
                 String text = element.text();
                 chapterList.add(text);
                 try {
+                    // 转化url路径，将相对路径转化成绝对路径
                     href = JsUtil.buildFullURL(location, href);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
@@ -649,14 +695,16 @@ public class WReaderToolWindow implements Configurable {
 
             JFrame frame = new JFrame("小说目录");
             frame.setSize(350, 500);
-
             // 获取屏幕尺寸
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (screenSize.width) / 2 - frame.getWidth() / 2;
             int y = (screenSize.height) / 2 - frame.getHeight() / 2;
-            frame.setLocation(x + 50, y);
+            // + 50是为了与小说列表错开
+            frame.setLocation(x + 50, y + 50);
 
+            // 构建目录列表组件
             JBList<String> chapterListJBList = new JBList<>(chapterList);
+            // 设置单选模式
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             chapterListJBList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
@@ -671,6 +719,7 @@ public class WReaderToolWindow implements Configurable {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
                     currentChapterInfo.setChapterContent(chapterContentText);
+                    // 缓存当前章节信息
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
                     try {
                         searchBookContent(chapterUrl);
@@ -728,6 +777,7 @@ public class WReaderToolWindow implements Configurable {
 
     /**
      * 获取小说内容
+     *
      * @param url
      * @throws IOException
      */
@@ -759,8 +809,8 @@ public class WReaderToolWindow implements Configurable {
                 chapterContent;
         chapterContentText = chapterContent;
         String style = "color:" + fontColorHex + ";" +
-                        "font-family: '" + fontFamily + "';" +
-                        "font-size: " + fontSize + "px;";
+                "font-family: '" + fontFamily + "';" +
+                "font-size: " + fontSize + "px;";
         String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
         contentEditorPane1.setText(text);
         contentEditorPane1.setCaretPosition(0);

@@ -9,13 +9,16 @@ public class ConstUtil {
     public static final String WREADER_TOOL_WINDOW_TITLE = "WReader";
     public static final String WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT =
             "__      _____    ___    ___    ___    ___    ___   \n" +
-            "\\ \\    / | _ \\  | __|  /   \\  |   \\  | __|  | _ \\  \n" +
-            " \\ \\/\\/ /|   /  | _|   | - |  | |) | | _|   |   /  \n" +
-            "  \\_/\\_/ |_|_\\  |___|  |_|_|  |___/  |___|  |_|_\\  \n" +
+            "\\ \\    / /| _ \\  | __|  /   \\  |   \\  | __|  | _ \\  \n" +
+            " \\ \\/\\/ / |   /  | _|   | - |  | |) | | _|   |   /  \n" +
+            "  \\_/\\_/  |_|_\\  |___|  |_|_|  |___/  |___|  |_|_\\  \n" +
             "_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"| \n" +
             "\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-' ";
+
     public static final String WREADER_SEARCH_BOOK_TITLE = "搜索书名";
     public static final String WREADER_SEARCH_BOOK_TIP_TEXT = "请输入书名进行搜索";
+    public static final String WREADER_SEARCH_EMPTY = "书名不能为空";
+    public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
     public static final String WREADER_ERROR = "出现异常，请重试！";
@@ -27,5 +30,4 @@ public class ConstUtil {
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
     public static final String ELEMENT_CLASS_STR = "class";
     public static final String ELEMENT_ID_STR = "id";
-
 }

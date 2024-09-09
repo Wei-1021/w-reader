@@ -12,7 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * 已选择的信息实体数据持久化服务
+ * 缓存信息数据持久化服务
+ *
  * @author weizhanjie
  */
 @Service(Service.Level.APP)
@@ -20,7 +21,7 @@ import java.util.List;
 public final class CacheService implements PersistentStateComponent<CacheService> {
 
     /**
-     * 默认字体
+     * 字体
      */
     private String fontFamily;
     /**
