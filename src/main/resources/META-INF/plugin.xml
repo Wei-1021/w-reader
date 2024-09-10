@@ -35,8 +35,14 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="WReader" factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory" anchor="right" icon="/icon/mainIcon.svg" />
+        <toolWindow id="WReader" factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory" anchor="right"
+                    icon="/icon/mainIcon.svg"/>
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
+        <ApplicationConfigurable
+                parentId="tools"
+                instance="com.wei.wreader.configurable.SettingConfigurable"
+                id="com.wei.wreader.configurable.SettingConfigurable"
+                displayName="w-reader Settings"/>
     </extensions>
 
     <actions>
@@ -50,7 +56,7 @@
             <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索书名">
                 <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
             </action>
-            <add-to-group group-id="WReaderGroup" />
+            <add-to-group group-id="WReaderGroup"/>
             <separator/>
         </group>
     </actions>

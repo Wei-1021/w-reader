@@ -17,6 +17,18 @@ public class ConfigYaml {
     private static final String CONFIG_FILE_PATH = "config.yml";
 
     private static Map<String, Object> DATA_MAP = new LinkedHashMap<>();
+    private static ConfigYaml instance;
+
+    /**
+     * 获取单例
+     * @return
+     */
+    public static ConfigYaml getInstance() {
+        if (instance == null) {
+            instance = new ConfigYaml();
+        }
+        return instance;
+    }
 
     public ConfigYaml() {
         Yaml yaml = new Yaml();
