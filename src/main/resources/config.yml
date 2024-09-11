@@ -1,5 +1,6 @@
 wreader:
   name: 'w-reader'
+  nameHump: 'WReader'
   version: '0.0.1'
   description: 'A simple reader'
   author: 'weizhanjie'

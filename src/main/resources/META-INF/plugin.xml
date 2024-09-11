@@ -41,6 +41,7 @@
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
                                  id="com.wei.wreader.ui.WReaderSettingForm"
                                  displayName="W-Reader"/>
+        <statusBarWidgetFactory id="WReaderStatusBar" implementation="com.wei.wreader.factory.WReaderStatusBarFactory"/>
     </extensions>
 
     <actions>

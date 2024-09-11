@@ -121,6 +121,9 @@ public class ConfigYaml {
     public String getName() {
         return (String) getObject("wreader.name");
     }
+    public String getNameHump() {
+        return (String) getObject("wreader.nameHump");
+    }
 
     public String getVersion() {
         return (String) getObject("wreader.version");

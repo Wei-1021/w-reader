@@ -142,7 +142,11 @@ public class WReaderToolWindow implements Configurable {
      */
     private String fontColorHex = ConstUtil.DEFAULT_FONT_COLOR_HEX;
     /**
-     * 当前章节内容
+     * 当前章节内容--Html
+     */
+    private String chapterContentHtml = "";
+    /**
+     * 当前章节内容--纯文字
      */
     private String chapterContentText = "";
     /**
@@ -259,8 +263,8 @@ public class WReaderToolWindow implements Configurable {
                 }
             }
 
-            if (chapterContentText == null || chapterContentText.isEmpty()) {
-                chapterContentText = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
+            if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
+                chapterContentHtml = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
@@ -351,10 +355,11 @@ public class WReaderToolWindow implements Configurable {
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(prevChapterUrl);
-            currentChapterInfo.setChapterContent(chapterContentText);
+            searchBookContent(prevChapterUrl);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
-            searchBookContent(prevChapterUrl);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -381,10 +386,12 @@ public class WReaderToolWindow implements Configurable {
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(nextChapterUrl);
-            currentChapterInfo.setChapterContent(chapterContentText);
+            searchBookContent(nextChapterUrl);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
-            searchBookContent(nextChapterUrl);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -409,7 +416,7 @@ public class WReaderToolWindow implements Configurable {
         cacheService.setFontSize(fontSize);
 
         String style = "font-family: '" + fontFamily+ "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
-        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
         setContentText(text);
     }
 
@@ -427,7 +434,7 @@ public class WReaderToolWindow implements Configurable {
         fontSize = fontSize + 1;
         cacheService.setFontSize(fontSize);
         String style = "font-family: '" + fontFamily + "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
-        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
         setContentText(text);
     }
 
@@ -454,7 +461,7 @@ public class WReaderToolWindow implements Configurable {
             String style = "color:" + fontColorHex + ";" +
                     "font-family: '" + fontFamily + "';" +
                     "font-size: " + fontSize + "px;";
-            String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+            String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
             setContentText(text);
         }
     }
@@ -736,15 +743,16 @@ public class WReaderToolWindow implements Configurable {
                     }
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
-                    currentChapterInfo.setChapterContent(chapterContentText);
-                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
-                    // 缓存当前章节信息
-                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                     try {
                         searchBookContent(chapterUrl);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
+                    currentChapterInfo.setChapterContent(chapterContentHtml);
+                    currentChapterInfo.setChapterContentStr(chapterContentText);
+                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+                    // 缓存当前章节信息
+                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                 }
             });
             frame.add(new JScrollPane(chapterListJBList));
@@ -780,14 +788,15 @@ public class WReaderToolWindow implements Configurable {
                     }
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
-                    currentChapterInfo.setChapterContent(chapterContentText);
-                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
-                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                     try {
                         searchBookContent(chapterUrl);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
+                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+                    currentChapterInfo.setChapterContent(chapterContentHtml);
+                    currentChapterInfo.setChapterContentStr(chapterContentText);
+                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                 }
             });
             frame.add(new JScrollPane(chapterListJBList));
@@ -827,14 +836,15 @@ public class WReaderToolWindow implements Configurable {
         }
 
         String chapterContent = chapterContentElement.html();
+        chapterContentText = chapterContentElement.text();
         chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColorHex + ";\">" +
                 currentChapterInfo.getChapterTitle() + "</h3>" +
                 chapterContent;
-        chapterContentText = chapterContent;
+        chapterContentHtml = chapterContent;
         String style = "color:" + fontColorHex + ";" +
                 "font-family: '" + fontFamily + "';" +
                 "font-size: " + fontSize + "px;";
-        String text = "<div style=\"" + style + "\">" + chapterContentText + "</div>";
+        String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
         setContentText(text);
         // 设置光标位置
         contentTextPane.setCaretPosition(0);

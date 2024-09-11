@@ -12,6 +12,10 @@ public class ChapterInfo implements Serializable {
     private String chapterTitle;
     private String chapterContent;
     /**
+     * 章节内容字符串（剔除html标签）
+     */
+    private String chapterContentStr;
+    /**
      * 选择的章节下标
      */
     private int selectedChapterIndex;
@@ -46,5 +50,13 @@ public class ChapterInfo implements Serializable {
 
     public void setSelectedChapterIndex(int selectedChapterIndex) {
         this.selectedChapterIndex = selectedChapterIndex;
+    }
+
+    public String getChapterContentStr() {
+        return chapterContentStr;
+    }
+
+    public void setChapterContentStr(String chapterContentStr) {
+        this.chapterContentStr = chapterContentStr;
     }
 }
