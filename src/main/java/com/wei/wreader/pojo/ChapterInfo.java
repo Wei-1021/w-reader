@@ -11,6 +11,10 @@ public class ChapterInfo implements Serializable {
     private String chapterUrl;
     private String chapterTitle;
     private String chapterContent;
+    /**
+     * 选择的章节下标
+     */
+    private int selectedChapterIndex;
 
     public String getChapterUrl() {
         return chapterUrl;
@@ -34,5 +38,13 @@ public class ChapterInfo implements Serializable {
 
     public void setChapterContent(String chapterContent) {
         this.chapterContent = chapterContent;
+    }
+
+    public int getSelectedChapterIndex() {
+        return selectedChapterIndex;
+    }
+
+    public void setSelectedChapterIndex(int selectedChapterIndex) {
+        this.selectedChapterIndex = selectedChapterIndex;
     }
 }

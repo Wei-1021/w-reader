@@ -25,7 +25,7 @@ public class ConstUtil {
     public static final String WREADER_INIT_ERROR = "W-Reader加载失败！";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";
-    public static final String DEFAULT_FONT_FAMILY = "微软雅黑";
+    public static final String DEFAULT_FONT_FAMILY = "JetBrains Mono";
     public static final int DEFAULT_FONT_SIZE = 14;
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
     public static final String ELEMENT_CLASS_STR = "class";

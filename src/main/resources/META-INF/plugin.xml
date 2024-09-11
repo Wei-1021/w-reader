@@ -2,11 +2,10 @@
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.wei.wreader</id>
-
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>W-Reader</name>
-
+    <version>0.0.1</version>
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
 
@@ -38,11 +37,10 @@
         <toolWindow id="WReader" factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory" anchor="right"
                     icon="/icon/mainIcon.svg"/>
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
-        <ApplicationConfigurable
-                parentId="tools"
-                instance="com.wei.wreader.configurable.SettingConfigurable"
-                id="com.wei.wreader.configurable.SettingConfigurable"
-                displayName="w-reader Settings"/>
+        <applicationConfigurable parentId="tools"
+                                 instance="com.wei.wreader.ui.WReaderSettingForm"
+                                 id="com.wei.wreader.ui.WReaderSettingForm"
+                                 displayName="W-Reader"/>
     </extensions>
 
     <actions>
