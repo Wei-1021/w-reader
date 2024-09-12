@@ -1,6 +1,7 @@
 package com.wei.wreader.utils;
 
 import com.wei.wreader.pojo.BookSiteInfo;
+import com.wei.wreader.pojo.ToolWindowInfo;
 import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -135,6 +136,18 @@ public class ConfigYaml {
 
     public String getAuthor() {
         return (String) getObject("wreader.author");
+    }
+
+    public ToolWindowInfo getToolWindow() {
+        LinkedHashMap<String, Object> toolWindowMap = (LinkedHashMap<String, Object>) getObject("wreader.toolWindow");
+        ToolWindowInfo toolWindowInfo = new ToolWindowInfo();
+        toolWindowInfo.setSearchTitle(toolWindowMap.get("search-title").toString());
+        toolWindowInfo.setFontSizeSubTitle(toolWindowMap.get("font-size-sub-title").toString());
+        toolWindowInfo.setFontSizeAddTitle(toolWindowMap.get("font-size-add-title").toString());
+        toolWindowInfo.setChapterListTitle(toolWindowMap.get("chapter-list-title").toString());
+        toolWindowInfo.setPrevChapterTitle(toolWindowMap.get("prev-chapter-title").toString());
+        toolWindowInfo.setNextChapterTitle(toolWindowMap.get("next-chapter-title").toString());
+        return toolWindowInfo;
     }
 
     public List<BookSiteInfo> getSiteList() {

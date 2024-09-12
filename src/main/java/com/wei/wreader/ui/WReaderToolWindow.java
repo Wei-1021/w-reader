@@ -19,6 +19,7 @@ import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
+import com.wei.wreader.pojo.ToolWindowInfo;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
@@ -178,6 +179,8 @@ public class WReaderToolWindow implements Configurable {
         SwingUtilities.invokeLater(() -> {
             configYaml = new ConfigYaml();
             cacheService = CacheService.getInstance();
+            // 初始化组件
+            initComponent();
             // 初始化编辑器
             initContentTextArea();
             // 初始化数据
@@ -200,6 +203,19 @@ public class WReaderToolWindow implements Configurable {
                 }
             });
         });
+    }
+
+    /**
+     * 初始化组件
+     */
+    private void initComponent() {
+        ToolWindowInfo toolWindow = configYaml.getToolWindow();
+        searchBookButton.setText(toolWindow.getSearchTitle());
+        menuListButton.setText(toolWindow.getChapterListTitle());
+        prevPageButton.setText(toolWindow.getPrevChapterTitle());
+        nextPageButton.setText(toolWindow.getNextChapterTitle());
+        fontSubButton.setText(toolWindow.getFontSizeSubTitle());
+        fontAddButton1.setText(toolWindow.getFontSizeAddTitle());
     }
 
     /**

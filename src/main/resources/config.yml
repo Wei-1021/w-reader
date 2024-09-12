@@ -4,6 +4,13 @@ wreader:
   version: '0.0.1'
   description: 'A simple reader'
   author: 'weizhanjie'
+  toolWindow:
+    search-title: '搜索'
+    font-size-sub-title: '字体-'
+    font-size-add-title: '字体+'
+    chapter-list-title: '目录'
+    prev-chapter-title: '上一章'
+    next-chapter-title: '下一章'
   site_list:
     - id: 'xbiqugu.net'
       name: '笔趣阁-书香小说'
