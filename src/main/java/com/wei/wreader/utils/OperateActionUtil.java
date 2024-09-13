@@ -96,6 +96,7 @@ public class OperateActionUtil {
      * 当前章节信息
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
+
     public void initCache() {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
@@ -153,7 +154,7 @@ public class OperateActionUtil {
                     chapterUrlList != null && !chapterUrlList.isEmpty()) {
                 if (currentChapterInfo.getChapterUrl() != null) {
                     currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
-//                    searchBookContent(currentChapterInfo.getChapterUrl());
+                    searchBookContent(currentChapterInfo.getChapterUrl());
                 }
             }
 
@@ -425,7 +426,7 @@ public class OperateActionUtil {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
                     try {
-//                        searchBookContent(chapterUrl);
+                        searchBookContent(chapterUrl);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -444,5 +445,102 @@ public class OperateActionUtil {
         }
     }
 
+    /**
+     * 获取小说内容
+     *
+     * @param url
+     * @return Element 小说内容Element
+     * @throws IOException
+     */
+    public Element searchBookContent(String url) throws IOException {
+        Document document = Jsoup.connect(url)
+                .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                .get();
+        Element bodyElement = document.body();
+
+        // 获取小说内容
+        Element chapterContentElement = null;
+        if (selectedBookSiteInfo.isHtml()) {
+            // 小说内容的HTML标签类型（class, id）
+            String chapterContentElementType = selectedBookSiteInfo.getChapterContentElementType();
+            if (chapterContentElementType.equals(ConstUtil.ELEMENT_CLASS_STR)) {
+                chapterContentElement = bodyElement.getElementsByClass(selectedBookSiteInfo.getChapterContentElementName()).first();
+            } else if (chapterContentElementType.equals(ConstUtil.ELEMENT_ID_STR)) {
+                chapterContentElement = bodyElement.getElementById(selectedBookSiteInfo.getChapterContentElementName());
+            }
+        }
+        if (chapterContentElement == null) {
+            Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示", Messages.getInformationIcon());
+            return null;
+        }
+
+        String chapterContent = chapterContentElement.html();
+        chapterContentText = chapterContentElement.text();
+        chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColorHex + ";\">" +
+                currentChapterInfo.getChapterTitle() + "</h3>" +
+                chapterContent;
+        chapterContentHtml = chapterContent;
+
+        return chapterContentElement;
+    }
+
+    /**
+     * 上一页按钮监听器
+     */
+    private Element prevPageChapter() {
+        try {
+            if (currentChapterIndex <= 0) {
+                return null;
+            }
+
+            currentChapterIndex = currentChapterIndex - 1;
+            String chapterTitle = chapterList.get(currentChapterIndex);
+            String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
+            String prevChapterUrl = prevChapterSuffixUrl;
+            if (!prevChapterSuffixUrl.startsWith("http://") && !prevChapterSuffixUrl.startsWith("https://")) {
+                prevChapterUrl = baseUrl + prevChapterSuffixUrl;
+            }
+            currentChapterInfo.setChapterTitle(chapterTitle);
+            currentChapterInfo.setChapterUrl(prevChapterUrl);
+            Element element = searchBookContent(prevChapterUrl);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
+            currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
+            return element;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 下一页按钮监听器
+     */
+    private Element nextPageChapter() {
+        try {
+            if (currentChapterIndex >= chapterUrlList.size() - 1) {
+                return null;
+            }
+
+            currentChapterIndex = currentChapterIndex + 1;
+            String chapterTitle = chapterList.get(currentChapterIndex);
+            String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
+            String nextChapterUrl = nextChapterSuffixUrl;
+            if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
+                nextChapterUrl = baseUrl + nextChapterSuffixUrl;
+            }
+            currentChapterInfo.setChapterTitle(chapterTitle);
+            currentChapterInfo.setChapterUrl(nextChapterUrl);
+            Element element = searchBookContent(nextChapterUrl);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
+            currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
+
+            return element;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

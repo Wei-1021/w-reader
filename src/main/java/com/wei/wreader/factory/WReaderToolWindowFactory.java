@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.ui.WReaderToolWindow;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +19,7 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
         WReaderToolWindow wReaderToolWindow = new WReaderToolWindow(toolWindow);
         ContentFactory contentFactory = ContentFactory.getInstance();
         Content wReader = contentFactory.createContent(wReaderToolWindow.getContent(), "WReader", false);
-        toolWindow.getContentManager().addContent(wReader);
+        ContentManager contentManager = toolWindow.getContentManager();
+        contentManager.addContent(wReader);
     }
 }

@@ -16,7 +16,7 @@ public class ConstUtil {
             "_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"_|\"\"\"\"\"| \n" +
             "\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-\"`-0-0-' ";
 
-    public static final String WREADER_SEARCH_BOOK_TITLE = "搜索书名";
+    public static final String WREADER_SEARCH_BOOK_TITLE = "搜索小说";
     public static final String WREADER_SEARCH_BOOK_TIP_TEXT = "请输入书名进行搜索";
     public static final String WREADER_SEARCH_EMPTY = "书名不能为空";
     public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
