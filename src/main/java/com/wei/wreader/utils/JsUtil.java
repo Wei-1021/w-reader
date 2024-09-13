@@ -65,26 +65,4 @@ public class JsUtil {
         return fullUrl.toString();
     }
 
-    public static void main(String[] args) {
-        try {
-            String baseUrl = "http://www.xbiquzw.com/10_10229/sss/";
-            String relativePath = "/5007972.html";
-
-            String fullUrl = buildFullURL(baseUrl, relativePath);
-            System.out.println(fullUrl); // 输出: https://www.example.com/images/logo.png
-
-            // 测试其他情况
-            relativePath = "./subfolder/page.html";
-            fullUrl = buildFullURL(baseUrl, relativePath);
-            System.out.println(fullUrl); // 输出: https://www.example.com/folder/subfolder/page.html
-
-            relativePath = "/root-level-page.html";
-            fullUrl = buildFullURL(baseUrl, relativePath);
-            System.out.println(fullUrl); // 输出: https://www.example.com/root-level-page.html
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

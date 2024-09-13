@@ -6,6 +6,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
+import com.wei.wreader.pojo.Settings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +21,10 @@ import java.util.List;
 @State(name = "SelectInfoService", storages = {@Storage("w-reader-cache.xml")})
 public final class CacheService implements PersistentStateComponent<CacheService> {
 
+    /**
+     * 选中的章节信息
+     */
+    private Settings settings;
     /**
      * 字体
      */
@@ -71,6 +76,14 @@ public final class CacheService implements PersistentStateComponent<CacheService
     @Override
     public void loadState(@NotNull CacheService state) {
         XmlSerializerUtil.copyBean(state, this);
+    }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
 
     public BookInfo getSelectedBookInfo() {

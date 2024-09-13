@@ -5,6 +5,7 @@ package com.wei.wreader.utils;
  * @author weizhanjie
  */
 public class ConstUtil {
+    public static final String WREADER_ID = "WReader";
     public static final String WREADER_TOOL_WINDOW_ID = "WReader";
     public static final String WREADER_TOOL_WINDOW_TITLE = "WReader";
     public static final String WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT =

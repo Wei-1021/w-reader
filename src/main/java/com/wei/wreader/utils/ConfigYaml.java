@@ -1,6 +1,7 @@
 package com.wei.wreader.utils;
 
 import com.wei.wreader.pojo.BookSiteInfo;
+import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.ToolWindowInfo;
 import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
@@ -136,6 +137,15 @@ public class ConfigYaml {
 
     public String getAuthor() {
         return (String) getObject("wreader.author");
+    }
+
+    public Settings getSettings() {
+        LinkedHashMap<String, Object> settingsMap = (LinkedHashMap<String, Object>) getObject("wreader.settings");
+        Settings settings = new Settings();
+        settings.setSingleLineChars(Integer.parseInt(settingsMap.get("singleLineChars").toString()));
+        settings.setShowLineNum(Boolean.parseBoolean(settingsMap.get("isShowLineNum").toString()));
+        settings.setDisplayType(Integer.parseInt(settingsMap.get("displayType").toString()));
+        return settings;
     }
 
     public ToolWindowInfo getToolWindow() {

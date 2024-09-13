@@ -306,8 +306,23 @@ public class WReaderToolWindow implements Configurable {
         contentTextPane = new JTextPane();
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
-//        contentTextPane.setBackground(JBColor.WHITE);
+        contentTextPane.addMouseListener(new MouseAdapter() {
+            /**
+             * {@inheritDoc}
+             *
+             * @param e
+             */
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if (e.getClickCount() == 2) {
+                    // 双击事件，显示/隐藏工具菜单
+                    menuToolPanel.setVisible(!menuToolPanel.isVisible());
+                }
+            }
+        });
         contentScrollPane.setViewportView(contentTextPane);
+
     }
 
     private void setContentText(String content) {
@@ -491,7 +506,6 @@ public class WReaderToolWindow implements Configurable {
     private void searchBookListener(ActionEvent event, ToolWindow toolWindow) {
         // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
         ComboBox<String> comboBox = getStringComboBox();
-
         JTextField searchBookTextField = new JTextField(20);
         Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TITLE, comboBox, searchBookTextField};
         int result = JOptionPane.showConfirmDialog(null, objs,

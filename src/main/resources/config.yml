@@ -4,6 +4,10 @@ wreader:
   version: '0.0.1'
   description: 'A simple reader'
   author: 'weizhanjie'
+  settings:
+    singleLineChars: 30 #最大单行字数
+    isShowLineNum: false #是否显示行号
+    displayType: 1 #显示类型。1-侧边栏（默认），2-底部状态栏，3-左下角控制台
   toolWindow:
     search-title: '搜索'
     font-size-sub-title: '字体-'
