@@ -22,7 +22,7 @@ import java.util.List;
 public final class CacheService implements PersistentStateComponent<CacheService> {
 
     /**
-     * 选中的章节信息
+     * 设置信息
      */
     private Settings settings;
     /**

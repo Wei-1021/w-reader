@@ -1,6 +1,7 @@
 package com.wei.wreader.utils;
 
 import com.wei.wreader.pojo.BookSiteInfo;
+import com.wei.wreader.pojo.ComponentIdKey;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.ToolWindowInfo;
 import org.apache.log4j.Logger;
@@ -137,6 +138,17 @@ public class ConfigYaml {
 
     public String getAuthor() {
         return (String) getObject("wreader.author");
+    }
+
+    public ComponentIdKey getComponentIdKey() {
+        LinkedHashMap<String, Object> componentIdKeyMap = (LinkedHashMap<String, Object>) getObject("wreader.componentIdKey");
+        ComponentIdKey componentIdKey = new ComponentIdKey();
+        componentIdKey.setBookDirectory(componentIdKeyMap.get("bookDirectory").toString());
+        componentIdKey.setNextChapter(componentIdKeyMap.get("nextChapter").toString());
+        componentIdKey.setPrevChapter(componentIdKeyMap.get("prevChapter").toString());
+        componentIdKey.setSearchBook(componentIdKeyMap.get("searchBook").toString());
+        componentIdKey.setSetting(componentIdKeyMap.get("setting").toString());
+        return componentIdKey;
     }
 
     public Settings getSettings() {

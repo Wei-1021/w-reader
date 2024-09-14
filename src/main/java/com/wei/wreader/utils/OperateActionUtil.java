@@ -36,6 +36,7 @@ import java.util.List;
 public class OperateActionUtil {
     private ConfigYaml configYaml;
     private CacheService cacheService;
+    private static OperateActionUtil instance;
     /**
      * 书本名称列表
      */
@@ -97,9 +98,18 @@ public class OperateActionUtil {
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
 
-    public void initCache() {
+
+    public static OperateActionUtil getInstance() {
+        if (instance == null) {
+            instance = new OperateActionUtil();
+        }
+        return instance;
+    }
+
+    public OperateActionUtil() {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
+        initData();
     }
 
     private void initData() {
@@ -172,32 +182,34 @@ public class OperateActionUtil {
      * 构建搜索弹出窗口
      */
     public void buildSearchBookDialog() {
-        // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
-        ComboBox<String> comboBox = getStringComboBox();
-        JTextField searchBookTextField = new JTextField(20);
-        Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TITLE, comboBox, searchBookTextField};
-        int result = JOptionPane.showConfirmDialog(null, objs,
-                ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            SwingUtilities.invokeLater(() -> {
-                String bookName = searchBookTextField.getText();
-                if (bookName == null || bookName.trim().isEmpty()) {
-                    Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_EMPTY, "提示", Messages.getInformationIcon());
-                    return;
-                }
+        SwingUtilities.invokeLater(() -> {
+            // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
+            ComboBox<String> comboBox = getStringComboBox();
+            JTextField searchBookTextField = new JTextField(20);
+            Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TITLE, comboBox, searchBookTextField};
+            int result = JOptionPane.showConfirmDialog(null, objs,
+                    ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                SwingUtilities.invokeLater(() -> {
+                    String bookName = searchBookTextField.getText();
+                    if (bookName == null || bookName.trim().isEmpty()) {
+                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_EMPTY, "提示", Messages.getInformationIcon());
+                        return;
+                    }
 
-                String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
-                        "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
+                    String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
+                            "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
 
-                // 获取搜索结果
-                String searchBookResult = searchBookList(searchBookUrl);
-                if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
-                    Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
-                    return;
-                }
-                handleBookList(searchBookResult);
-            });
-        }
+                    // 获取搜索结果
+                    String searchBookResult = searchBookList(searchBookUrl);
+                    if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
+                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
+                        return;
+                    }
+                    handleBookList(searchBookResult);
+                });
+            }
+        });
     }
 
     private @NotNull ComboBox<String> getStringComboBox() {
@@ -355,8 +367,13 @@ public class OperateActionUtil {
                 // 使用滚动面板来添加滚动条
                 JBScrollPane jScrollPane = new JBScrollPane(searchBookList);
 
-                Object[] objs = {jScrollPane};
-                JOptionPane.showMessageDialog(null, objs, "搜索结果", JOptionPane.INFORMATION_MESSAGE);
+                JFrame frame = new JFrame();
+                frame.setSize(350, 500);
+                frame.setVisible(true);
+                frame.add(jScrollPane);
+                frame.setTitle("搜索结果");
+                // 居中显示
+                frame.setLocationRelativeTo(null);
             }
         }
     }
@@ -440,9 +457,59 @@ public class OperateActionUtil {
 
             JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
 
-            Object[] objs = {jScrollPane};
-            JOptionPane.showMessageDialog(null, objs, "目录", JOptionPane.INFORMATION_MESSAGE);
+            JFrame frame = new JFrame();
+            frame.setSize(350, 500);
+            frame.setVisible(true);
+            frame.add(jScrollPane);
+            frame.setTitle("目录");
+            // 居中显示
+            frame.setLocationRelativeTo(null);
         }
+    }
+
+    /**
+     * 显示当前小说目录
+     */
+    public void showBookDirectory() {
+        SwingUtilities.invokeLater(() -> {
+            JBList<String> chapterListJBList = new JBList<>(chapterList);
+            chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            chapterListJBList.addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedIndex = chapterListJBList.getSelectedIndex();
+                    currentChapterIndex = selectedIndex;
+                    String chapterTitle = chapterList.get(currentChapterIndex);
+                    String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
+                    String chapterUrl = chapterSuffixUrl;
+                    if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+                        chapterUrl = baseUrl + chapterSuffixUrl;
+                    }
+                    currentChapterInfo.setChapterTitle(chapterTitle);
+                    currentChapterInfo.setChapterUrl(chapterUrl);
+                    try {
+                        searchBookContent(chapterUrl);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+                    currentChapterInfo.setChapterContent(chapterContentHtml);
+                    currentChapterInfo.setChapterContentStr(chapterContentText);
+                    cacheService.setSelectedChapterInfo(currentChapterInfo);
+                }
+            });
+
+            JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
+            JFrame frame = new JFrame();
+            frame.setSize(350, 500);
+            frame.setVisible(true);
+            frame.add(jScrollPane);
+            frame.setTitle("目录");
+            // 居中显示
+            frame.setLocationRelativeTo(null);
+
+            chapterListJBList.setSelectedIndex(currentChapterIndex);
+            chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
+        });
     }
 
     /**
@@ -485,9 +552,9 @@ public class OperateActionUtil {
     }
 
     /**
-     * 上一页按钮监听器
+     * 上一页
      */
-    private Element prevPageChapter() {
+    public Element prevPageChapter() {
         try {
             if (currentChapterIndex <= 0) {
                 return null;
@@ -514,9 +581,9 @@ public class OperateActionUtil {
     }
 
     /**
-     * 下一页按钮监听器
+     * 下一页
      */
-    private Element nextPageChapter() {
+    public Element nextPageChapter() {
         try {
             if (currentChapterIndex >= chapterUrlList.size() - 1) {
                 return null;

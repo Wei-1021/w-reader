@@ -50,12 +50,14 @@
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </group>
         <group id="remote">
-            <action id="SelectReadSite" class="com.wei.wreader.action.SelectReadSiteAction" text="选择站点">
-                <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
+            <action id="WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置">
             </action>
             <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索书名">
                 <keyboard-shortcut keymap="$default" first-keystroke="shift alt R"/>
             </action>
+            <action id="ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录"/>
+            <action id="PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"/>
+            <action id="NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章"/>
             <add-to-group group-id="WReaderGroup"/>
             <separator/>
         </group>

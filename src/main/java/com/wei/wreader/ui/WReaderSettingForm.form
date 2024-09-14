@@ -1,55 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.wei.wreader.ui.WReaderSettingForm">
-  <grid id="27dc6" binding="settingPanel" layout-manager="GridLayoutManager" row-count="2" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="settingPanel" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="516" height="400"/>
+      <xy x="20" y="20" width="618" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <component id="c6309" class="javax.swing.JLabel">
+      <component id="c6309" class="javax.swing.JLabel" binding="lineMaxNumsLabel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <text value="单行最大字数"/>
         </properties>
       </component>
-      <component id="9873c" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+      <component id="9873c" class="javax.swing.JTextField" binding="lineMaxNumsTextField">
         <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties/>
-      </component>
-      <vspacer id="7b255">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
-      <vspacer id="83c75">
-        <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
-      <component id="3c99" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <editable value="true"/>
+          <enabled value="true"/>
+          <text value="40"/>
         </properties>
       </component>
-      <component id="6b915" class="javax.swing.JTextField" binding="textField2" default-binding="true">
+      <component id="ff046" class="javax.swing.JCheckBox" binding="isShowLineNumCheckBox">
         <constraints>
-          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <hideActionText value="true"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="2"/>
+          <selected value="true"/>
+          <text value="是否显示行号"/>
+        </properties>
+      </component>
+      <component id="3cf1f" class="javax.swing.JLabel" binding="displayTypeLabel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="类型"/>
+        </properties>
+      </component>
+      <grid id="398f8" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-      </component>
+        <border type="none"/>
+        <children>
+          <component id="c7a39" class="javax.swing.JRadioButton" binding="sideBarRadioButton">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="侧边栏"/>
+            </properties>
+          </component>
+          <component id="7e8f3" class="javax.swing.JRadioButton" binding="statusBarRadioButton">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="false"/>
+              <text value="底部状态栏"/>
+            </properties>
+          </component>
+          <component id="d67db" class="javax.swing.JRadioButton" binding="terminalRadioButton">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="false"/>
+              <text value="控制台终端"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <hspacer id="2043d">
+        <constraints>
+          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <vspacer id="4e3d4">
+        <constraints>
+          <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
     </children>
   </grid>
+  <buttonGroups>
+    <group name="displayTypeRadioGroup">
+      <member id="c7a39"/>
+      <member id="7e8f3"/>
+      <member id="d67db"/>
+    </group>
+  </buttonGroups>
 </form>

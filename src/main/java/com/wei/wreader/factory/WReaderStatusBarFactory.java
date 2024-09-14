@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
+import com.intellij.ui.content.ContentFactory;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NonNls;
@@ -39,4 +40,8 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         StatusBarWidgetFactory.super.disposeWidget(widget);
     }
 
+    @Override
+    public boolean isAvailable(@NotNull Project project) {
+        return StatusBarWidgetFactory.super.isAvailable(project);
+    }
 }
