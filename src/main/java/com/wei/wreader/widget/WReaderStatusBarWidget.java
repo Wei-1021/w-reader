@@ -13,6 +13,8 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup;
+import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
@@ -40,11 +42,16 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private BookInfo selectedBookInfo;
     private ChapterInfo selectedChapterInfo;
     private Settings settings;
-    private String[] contentArr;
+    private List<String> contentArr;
+    public String currentContentStr;
 
     public WReaderStatusBarWidget(@NotNull Project project) {
         super(project, false);
         this.project = project;
+        initData();
+    }
+
+    private void initData() {
         SwingUtilities.invokeLater(() -> {
             configYaml = ConfigYaml.getInstance();
             cacheService = CacheService.getInstance();
@@ -87,28 +94,28 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     @NotNull
     @Override
     protected WidgetState getWidgetState(@Nullable VirtualFile virtualFile) {
+        initData();
+
         String chapterContentStr = selectedChapterInfo.getChapterContentStr();
         int singleLineChars = settings.getSingleLineChars();
         // 按照单行最大字数将字符串分割成数组
-        long st = System.currentTimeMillis();
-        contentArr = StringUtil.splitStringByMaxChars(chapterContentStr, singleLineChars);
-        long et = System.currentTimeMillis();
-        System.out.println("split time:" + (et - st));
+        contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
+        selectedChapterInfo.setChapterContentList(contentArr);
+
         int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
-        String thisContentLineStr = "";
-        if (contentArr != null && contentArr.length > 0 && lastReadLineNum < contentArr.length) {
+        if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum < contentArr.size()) {
             lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
-            thisContentLineStr = contentArr[lastReadLineNum - 1];
+            currentContentStr = contentArr.get(lastReadLineNum - 1);
 
             if (settings.isShowLineNum()) {
-                thisContentLineStr = lastReadLineNum + "|" + thisContentLineStr;
+                currentContentStr = lastReadLineNum + "|" + currentContentStr;
             }
         }
 
         String tooltipText = getTooltipText();
 
         EditorBasedStatusBarPopup.WidgetState widgetState = new EditorBasedStatusBarPopup
-                .WidgetState(tooltipText, thisContentLineStr, true);
+                .WidgetState(tooltipText, currentContentStr, true);
         Icon icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderStatusBarWidget.class);
         widgetState.setIcon(icon);
         return widgetState;
@@ -147,17 +154,48 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     }
 
     @Nullable
-    private static StatusBarWidget findWidget(@NotNull Project project) {
+    private static WReaderStatusBarWidget findWidget(@NotNull Project project) {
         StatusBar bar = WindowManager.getInstance().getStatusBar(project);
         if (bar != null) {
-            return bar.getWidget(WIDGET_ID);
+            bar.setInfo("123123");
+            return (WReaderStatusBarWidget) bar.getWidget(ConstUtil.WREADER_ID + "StatusBarWidget");
         }
         return null;
     }
 
-    @Override
-    public void update(@Nullable Runnable finishUpdate) {
-        super.update(finishUpdate);
+    public static void update(@NotNull Project project, String chapterContent) {
+        WReaderStatusBarWidget widget = findWidget(project);
+        if (widget != null) {
+            widget.currentContentStr = chapterContent;
+            widget.update(() -> {
+                widget.myStatusBar.updateWidget(ConstUtil.WREADER_ID + "StatusBarWidget");
+            });
+        }
     }
 
+    public static String getWidgetId() {
+        return ConstUtil.WREADER_ID + "StatusBarWidget";
+    }
+
+    /**
+     * 下一行
+     */
+    public static void nextLine(@NotNull Project project) {
+        CacheService cacheTemp = CacheService.getInstance();
+        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        if (selectedChapterInfoTemp == null) {
+            return;
+        }
+
+        List<String> chapterContentList = selectedChapterInfoTemp.getChapterContentList();
+        int lastReadLineNum = selectedChapterInfoTemp.getLastReadLineNum();
+        if (chapterContentList != null &&
+                !chapterContentList.isEmpty() &&
+                lastReadLineNum < chapterContentList.size()) {
+            lastReadLineNum++;
+            selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
+            String chapterContent = chapterContentList.get(lastReadLineNum);
+            update(project, chapterContent);
+        }
+    }
 }

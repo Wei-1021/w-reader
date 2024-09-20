@@ -1,6 +1,19 @@
 package com.wei.wreader.utils;
 
+import java.util.List;
+
 public class StringUtil {
+    /**
+     * 将字符串按照指定的最大字符数分割成多个子字符串
+     *
+     * @param str     原始字符串
+     * @param maxChars 单行最大字符数
+     * @return 分割后的字符串数组
+     */
+    public static List<String> splitStringByMaxCharList(String str, int maxChars) {
+        return List.of(splitStringByMaxChars(str, maxChars));
+    }
+
     /**
      * 将字符串按照指定的最大字符数分割成多个子字符串
      *

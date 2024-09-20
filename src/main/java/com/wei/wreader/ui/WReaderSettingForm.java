@@ -1,9 +1,17 @@
 package com.wei.wreader.ui;
 
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.NlsContexts;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.NumberDocument;
+import com.wei.wreader.factory.WReaderStatusBarFactory;
+import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
@@ -14,6 +22,7 @@ import javax.swing.*;
 
 /**
  * 设置窗口
+ *
  * @author weizhanjie
  */
 public class WReaderSettingForm implements Configurable, Configurable.Composite {
@@ -31,6 +40,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private final CacheService cacheService;
     private Settings settings;
     private int selectedDisplayType;
+
     public WReaderSettingForm() {
         configYaml = ConfigYaml.getInstance();
         cacheService = CacheService.getInstance();
@@ -42,6 +52,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
     /**
      * 配置页面名称
+     *
      * @return
      */
     @Override
@@ -51,6 +62,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
     /**
      * 获取所有配置页面
+     *
      * @return
      */
     @Override
@@ -60,6 +72,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
     /**
      * 创建配置页面
+     *
      * @return
      */
     @Override
@@ -94,11 +107,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         displayTypeRadioGroup.add(sideBarRadioButton);
         displayTypeRadioGroup.add(statusBarRadioButton);
         displayTypeRadioGroup.add(terminalRadioButton);
+
         return settingPanel;
     }
 
     /**
      * 判断是否修改
+     *
      * @return
      */
     @Override
@@ -120,7 +135,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
 
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
-         if (statusBarRadioButton.isSelected()) {
+        if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
         } else if (terminalRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_TERMINAL;
@@ -131,6 +146,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
     /**
      * 设置页面点击apply按钮事件
+     *
      * @throws ConfigurationException
      */
     @Override
@@ -139,5 +155,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
         cacheService.setSettings(settings);
+
+        ProjectManager projectManager = ProjectManager.getInstance();
+        Project[] openProjects = projectManager.getOpenProjects();
+        Project project = openProjects[0];
+
+        WReaderToolWindowFactory wReaderToolWindowFactory = new WReaderToolWindowFactory();
+        wReaderToolWindowFactory.setEnabled(project);
+        WReaderStatusBarFactory wReaderStatusBarFactory = new WReaderStatusBarFactory();
+        wReaderStatusBarFactory.setEnabled(project, false);
     }
 }

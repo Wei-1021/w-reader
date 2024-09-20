@@ -2,7 +2,9 @@ package com.wei.wreader.configurable;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsContexts;
+import com.wei.wreader.ui.WReaderSettingForm;
 import com.wei.wreader.utils.ConfigYaml;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +18,7 @@ import javax.swing.*;
 public class SettingConfigurable implements Configurable, Configurable.Composite {
 
     public final String PROJECT_NAME;
+    public WReaderSettingForm wReaderSettingForm;
 
     public SettingConfigurable() {
         PROJECT_NAME = ConfigYaml.getInstance().getName();
@@ -28,7 +31,8 @@ public class SettingConfigurable implements Configurable, Configurable.Composite
 
     @Override
     public @Nullable JComponent createComponent() {
-        return null;
+        wReaderSettingForm = new WReaderSettingForm();
+        return wReaderSettingForm.createComponent();
     }
 
     @Override

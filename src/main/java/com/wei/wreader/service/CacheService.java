@@ -2,6 +2,7 @@ package com.wei.wreader.service;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
@@ -20,7 +21,6 @@ import java.util.List;
 @Service(Service.Level.APP)
 @State(name = "SelectInfoService", storages = {@Storage("w-reader-cache.xml")})
 public final class CacheService implements PersistentStateComponent<CacheService> {
-
     /**
      * 设置信息
      */

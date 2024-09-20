@@ -1,6 +1,7 @@
 package com.wei.wreader.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 小说章节信息
@@ -23,6 +24,7 @@ public class ChapterInfo implements Serializable {
      * 最后阅读的行数
      */
     private int lastReadLineNum;
+    private List<String> chapterContentList;
 
     public String getChapterUrl() {
         return chapterUrl;
@@ -70,5 +72,13 @@ public class ChapterInfo implements Serializable {
 
     public void setLastReadLineNum(int lastReadLineNum) {
         this.lastReadLineNum = lastReadLineNum;
+    }
+
+    public List<String> getChapterContentList() {
+        return chapterContentList;
+    }
+
+    public void setChapterContentList(List<String> chapterContentList) {
+        this.chapterContentList = chapterContentList;
     }
 }
