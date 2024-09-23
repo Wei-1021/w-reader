@@ -9,6 +9,7 @@ import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.ui.WReaderToolWindow;
+import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
@@ -25,6 +26,7 @@ import static com.jogamp.common.os.AndroidVersion.isAvailable;
  */
 public class WReaderToolWindowFactory implements ToolWindowFactory {
     private CacheService cacheService;
+    private ConfigYaml configYaml;
     private Settings settings;
 
     public WReaderToolWindowFactory() {
@@ -35,6 +37,10 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         cacheService = CacheService.getInstance();
         settings = cacheService.getSettings();
+        configYaml = ConfigYaml.getInstance();
+        if (settings == null) {
+            settings = configYaml.getSettings();
+        }
 
         WReaderToolWindow wReaderToolWindow = new WReaderToolWindow(toolWindow);
         ContentFactory contentFactory = ContentFactory.getInstance();
@@ -66,6 +72,10 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
     public void setEnabled(@NotNull Project project) {
         cacheService = CacheService.getInstance();
         settings = cacheService.getSettings();
+        configYaml = ConfigYaml.getInstance();
+        if (settings == null) {
+            settings = configYaml.getSettings();
+        }
 
         boolean isShow = settings.getDisplayType() == Settings.DISPLAY_TYPE_SIDEBAR;
         if (isShow) {

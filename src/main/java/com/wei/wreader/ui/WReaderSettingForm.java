@@ -12,13 +12,16 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.NumberDocument;
 import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
+import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.List;
 
 /**
  * 设置窗口

@@ -8,16 +8,19 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.intellij.ui.content.ContentFactory;
+import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
+import com.wei.wreader.utils.StringUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.List;
 
 /**
  * 状态栏工厂
@@ -26,6 +29,7 @@ import javax.swing.*;
 public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
     private CacheService cacheService;
     private Settings settings;
+    private ConfigYaml configYaml;
 
     private static final String WIDGET_ID = ConfigYaml.getInstance().getNameHump() + "StatusBar";
     private static final String DISPLAY_NAME = ConfigYaml.getInstance().getNameHump() + "StatusBar";
@@ -76,6 +80,10 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
     public void setEnabled(@NotNull Project project, boolean isStartupApp) {
         cacheService = CacheService.getInstance();
         settings = cacheService.getSettings();
+        configYaml = ConfigYaml.getInstance();
+        if (settings == null) {
+            settings = configYaml.getSettings();
+        }
 
         WindowManager windowManager = WindowManager.getInstance();
         StatusBar statusBar = windowManager.getStatusBar(project);
@@ -86,10 +94,19 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
                 if (wReaderStatusBarWidget == null && !isStartupApp) {
                     statusBar.addWidget(new WReaderStatusBarWidget(project));
                 }
+
+                ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+                if (selectedChapterInfo != null) {
+                    String chapterContentStr = selectedChapterInfo.getChapterContentStr();
+                    int singleLineChars = settings.getSingleLineChars();
+                    List<String> contentList = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
+                    selectedChapterInfo.setChapterContentList(contentList);
+                }
             } else {
                 statusBar.removeWidget(WReaderStatusBarWidget.getWidgetId());
             }
         }
+        WReaderStatusBarWidget.update(project, "");
     }
 
 }
