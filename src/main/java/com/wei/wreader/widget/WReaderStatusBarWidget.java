@@ -19,17 +19,21 @@ import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
+import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.utils.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 状态栏视图
+ *
  * @author weizhanjie
  */
 public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
@@ -77,6 +81,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
     /**
      * 创建实例
+     *
      * @param project
      * @return
      */
@@ -88,6 +93,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
     /**
      * 获取状态栏显示文本
+     *
      * @param virtualFile
      * @return
      */
@@ -97,18 +103,21 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         initData();
 
         String chapterContentStr = selectedChapterInfo.getChapterContentStr();
+        contentArr = selectedChapterInfo.getChapterContentList();
         int singleLineChars = settings.getSingleLineChars();
-        // 按照单行最大字数将字符串分割成数组
-        contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
-        selectedChapterInfo.setChapterContentList(contentArr);
-
         int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
+
+        // 当contentArr为空时, 按照单行最大字数将字符串分割成数组
+        if (contentArr == null || contentArr.isEmpty()) {
+            contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
+        }
+        selectedChapterInfo.setChapterContentList(contentArr);
         if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum < contentArr.size()) {
             lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
             currentContentStr = contentArr.get(lastReadLineNum - 1);
 
             if (settings.isShowLineNum()) {
-                currentContentStr = lastReadLineNum + "|" + currentContentStr;
+                currentContentStr = lastReadLineNum + "/" + contentArr.size() + "|" + currentContentStr;
             }
         }
 
@@ -123,6 +132,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
     /**
      * 创建弹出菜单
+     *
      * @param dataContext
      * @return
      */
@@ -137,8 +147,10 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         AnAction chapterListAction = instance.getAction(componentIdKey.getBookDirectory());
         AnAction prevChapterAction = instance.getAction(componentIdKey.getPrevChapter());
         AnAction nextChapterAction = instance.getAction(componentIdKey.getNextChapter());
+        AnAction prevLineAction = instance.getAction(componentIdKey.getPrevLine());
+        AnAction nextLineAction = instance.getAction(componentIdKey.getNextLine());
         List<AnAction> actionList = List.of(settingAction, searchBookNameAction, chapterListAction,
-                prevChapterAction, nextChapterAction);
+                prevChapterAction, nextChapterAction, prevLineAction, nextLineAction);
         DefaultActionGroup actionGroup = new DefaultActionGroup(actionList);
         return JBPopupFactory
                 .getInstance()
@@ -157,7 +169,6 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private static WReaderStatusBarWidget findWidget(@NotNull Project project) {
         StatusBar bar = WindowManager.getInstance().getStatusBar(project);
         if (bar != null) {
-            bar.setInfo("123123");
             return (WReaderStatusBarWidget) bar.getWidget(ConstUtil.WREADER_ID + "StatusBarWidget");
         }
         return null;
@@ -178,7 +189,36 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     }
 
     /**
+     * 上一行
+     *
+     * @param project
+     */
+    public static void prevLine(@NotNull Project project) {
+        CacheService cacheTemp = CacheService.getInstance();
+        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        if (selectedChapterInfoTemp == null) {
+            return;
+        }
+
+        List<String> chapterContentList = selectedChapterInfoTemp.getChapterContentList();
+        int lastReadLineNum = selectedChapterInfoTemp.getLastReadLineNum();
+        if (chapterContentList != null &&
+                !chapterContentList.isEmpty() &&
+                lastReadLineNum > 1) {
+            lastReadLineNum--;
+            selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
+            selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
+            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
+                    chapterContentList.size() : lastReadLineNum + 1);
+            String chapterContent = chapterContentList.get(lastReadLineNum);
+            update(project, chapterContent);
+        }
+    }
+
+    /**
      * 下一行
+     *
+     * @param project
      */
     public static void nextLine(@NotNull Project project) {
         CacheService cacheTemp = CacheService.getInstance();
@@ -194,8 +234,77 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
                 lastReadLineNum < chapterContentList.size()) {
             lastReadLineNum++;
             selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
+            selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
+            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
+                    chapterContentList.size() : lastReadLineNum + 1);
             String chapterContent = chapterContentList.get(lastReadLineNum);
             update(project, chapterContent);
         }
     }
+
+    /**
+     * 上一章
+     */
+    public static void prevChapter(@NotNull Project project) {
+        CacheService cacheTemp = CacheService.getInstance();
+        // 获取章节列表
+        List<String> chapterListTemp  = cacheTemp.getChapterList();
+        if (chapterListTemp == null || chapterListTemp.isEmpty()) {
+            return;
+        }
+
+        // 获取当前章节
+        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        if (selectedChapterInfoTemp == null) {
+            return;
+        }
+
+        // 获取当前章节索引
+        int selectedChapterIndex = selectedChapterInfoTemp.getSelectedChapterIndex();
+        if (selectedChapterIndex == 0) {
+            return;
+        }
+
+        // 获取上一章
+        OperateActionUtil operateAction = OperateActionUtil.getInstance();
+        operateAction.prevPageChapter();
+        selectedChapterInfoTemp.setLastReadLineNum(1);
+        selectedChapterInfoTemp.setPrevReadLineNum(1);
+        selectedChapterInfoTemp.setNextReadLineNum(1);
+        selectedChapterInfoTemp.setChapterContentList(null);
+        update(project, "");
+    }
+
+    /**
+     * 下一章
+     */
+    public static void nextChapter(@NotNull Project project) {
+        CacheService cacheTemp = CacheService.getInstance();
+        // 获取章节列表
+        List<String> chapterListTemp  = cacheTemp.getChapterList();
+        if (chapterListTemp == null || chapterListTemp.isEmpty()) {
+            return;
+        }
+
+        // 获取当前章节
+        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        if (selectedChapterInfoTemp == null) {
+            return;
+        }
+
+        // 获取当前章节索引
+        int selectedChapterIndex = selectedChapterInfoTemp.getSelectedChapterIndex();
+        if (selectedChapterIndex == chapterListTemp.size() - 1) {
+            return;
+        }
+        OperateActionUtil operateAction = OperateActionUtil.getInstance();
+        operateAction.nextPageChapter();
+        selectedChapterInfoTemp.setLastReadLineNum(1);
+        selectedChapterInfoTemp.setPrevReadLineNum(1);
+        selectedChapterInfoTemp.setNextReadLineNum(1);
+        selectedChapterInfoTemp.setChapterContentList(null);
+        update(project, "");
+
+    }
+
 }

@@ -22,6 +22,14 @@ public class ComponentIdKey {
      */
     private String nextChapter;
     /**
+     * 上一行
+     */
+    private String prevLine;
+    /**
+     * 下一行
+     */
+    private String nextLine;
+    /**
      * 设置
      */
     private String setting;
@@ -56,6 +64,22 @@ public class ComponentIdKey {
 
     public void setNextChapter(String nextChapter) {
         this.nextChapter = nextChapter;
+    }
+
+    public String getPrevLine() {
+        return prevLine;
+    }
+
+    public void setPrevLine(String prevLine) {
+        this.prevLine = prevLine;
+    }
+
+    public String getNextLine() {
+        return nextLine;
+    }
+
+    public void setNextLine(String nextLine) {
+        this.nextLine = nextLine;
     }
 
     public String getSetting() {

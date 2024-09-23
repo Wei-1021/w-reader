@@ -3,6 +3,8 @@ package com.wei.wreader.ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.icons.AllIcons;
+import com.intellij.icons.ExpUiIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -11,6 +13,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBList;
@@ -196,6 +199,7 @@ public class WReaderToolWindow implements Configurable {
             fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
             fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
             colorShowPanel.setBorder(JBUI.Borders.empty(2));
+            colorShowPanel.setBackground(Color.decode(fontColorHex));
             colorShowPanel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -205,23 +209,42 @@ public class WReaderToolWindow implements Configurable {
         });
     }
 
+
+
     /**
      * 初始化组件
      */
-    private void initComponent() {
+    public void initComponent() {
         ToolWindowInfo toolWindow = configYaml.getToolWindow();
-        searchBookButton.setText(toolWindow.getSearchTitle());
-        menuListButton.setText(toolWindow.getChapterListTitle());
-        prevPageButton.setText(toolWindow.getPrevChapterTitle());
-        nextPageButton.setText(toolWindow.getNextChapterTitle());
-        fontSubButton.setText(toolWindow.getFontSizeSubTitle());
-        fontAddButton1.setText(toolWindow.getFontSizeAddTitle());
+//        searchBookButton.setText(toolWindow.getSearchTitle());
+//        menuListButton.setText(toolWindow.getChapterListTitle());
+//        prevPageButton.setText(toolWindow.getPrevChapterTitle());
+//        nextPageButton.setText(toolWindow.getNextChapterTitle());
+//        fontSubButton.setText(toolWindow.getFontSizeSubTitle());
+//        fontAddButton1.setText(toolWindow.getFontSizeAddTitle());
+
+
+        Dimension preferredSize = new Dimension(30, 30);
+
+        searchBookButton.setIcon(AllIcons.Actions.Search);
+        searchBookButton.setPreferredSize(preferredSize);
+        searchBookButton.setSize(preferredSize);
+        menuListButton.setIcon(AllIcons.Actions.ListFiles);
+        menuListButton.setPreferredSize(preferredSize);
+        prevPageButton.setIcon(ExpUiIcons.Actions.PlayFirst);
+        prevPageButton.setPreferredSize(preferredSize);
+        nextPageButton.setIcon(ExpUiIcons.Actions.PlayLast);
+        nextPageButton.setPreferredSize(preferredSize);
+        fontSubButton.setIcon(IconLoader.getIcon("/icon/font_sub.svg", WReaderToolWindow.class));
+        fontSubButton.setPreferredSize(preferredSize);
+        fontAddButton1.setIcon(IconLoader.getIcon("/icon/font_add.svg", WReaderToolWindow.class));
+        fontAddButton1.setPreferredSize(preferredSize);
     }
 
     /**
      * 初始化数据
      */
-    private void initData() {
+    public void initData() {
         try {
             // 加载字体信息
             fontFamily = cacheService.getFontFamily();
@@ -291,7 +314,7 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 初始化内容编辑器JEditorPane
      */
-    private void initContentEditorPane() {
+    public void initContentEditorPane() {
         contentEditorPane1 = new JEditorPane();
         contentEditorPane1.setContentType("text/html");
         contentEditorPane1.setEditable(false);
@@ -302,7 +325,7 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 初始化内容编辑器JTextArea
      */
-    private void initContentTextArea() {
+    public void initContentTextArea() {
         contentTextPane = new JTextPane();
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
@@ -327,13 +350,12 @@ public class WReaderToolWindow implements Configurable {
 
     private void setContentText(String content) {
         contentTextPane.setText(content);
-        contentTextPane.updateUI();
     }
 
     /**
      * 主题切换监听器
      */
-    private void appEditorColorsListener() {
+    public void appEditorColorsListener() {
         MessageBus bus = ApplicationManager.getApplication().getMessageBus();
         bus.connect().subscribe(EditorColorsManager.TOPIC, (EditorColorsListener) editorColorsScheme -> {
             if (editorColorsScheme == null) {
@@ -371,7 +393,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void prevPageListener(ActionEvent event, ToolWindow toolWindow) {
+    public void prevPageListener(ActionEvent event, ToolWindow toolWindow) {
         try {
             if (currentChapterIndex <= 0) {
                 return;
@@ -402,7 +424,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void nextPageListener(ActionEvent event, ToolWindow toolWindow) {
+    public void nextPageListener(ActionEvent event, ToolWindow toolWindow) {
         try {
             if (currentChapterIndex >= chapterUrlList.size() - 1) {
                 return;
@@ -434,7 +456,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void fontSubButtonListener(ActionEvent event, ToolWindow toolWindow) {
+    public void fontSubButtonListener(ActionEvent event, ToolWindow toolWindow) {
         fontFamily = cacheService.getFontFamily();
         if (fontSize == 0) {
             fontSize = cacheService.getFontSize();
@@ -457,7 +479,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void fontAddButtonListener(ActionEvent event, ToolWindow toolWindow) {
+    public void fontAddButtonListener(ActionEvent event, ToolWindow toolWindow) {
         fontFamily = cacheService.getFontFamily();
         if (fontSize == 0) {
             fontSize = cacheService.getFontSize();
@@ -475,7 +497,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void colorChooseButtonListener(MouseEvent event, ToolWindow toolWindow) {
+    public void colorChooseButtonListener(MouseEvent event, ToolWindow toolWindow) {
         // 获取当前字体颜色
         Color currentFontColor = Color.decode(fontColorHex);
         // 弹出颜色选择器JColorChooser
@@ -503,7 +525,7 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    private void searchBookListener(ActionEvent event, ToolWindow toolWindow) {
+    public void searchBookListener(ActionEvent event, ToolWindow toolWindow) {
         // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
         ComboBox<String> comboBox = getStringComboBox();
         JTextField searchBookTextField = new JTextField(20);
@@ -883,8 +905,6 @@ public class WReaderToolWindow implements Configurable {
     public JPanel getContent() {
         return readerPanel;
     }
-
-
 
     @Override
     public @NlsContexts.ConfigurableName String getDisplayName() {

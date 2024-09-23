@@ -2,9 +2,6 @@ package com.wei.wreader.factory;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
-import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.service.CacheService;
-import com.wei.wreader.ui.WReaderToolWindow;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;

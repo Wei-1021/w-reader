@@ -10,6 +10,9 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
+import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
@@ -470,7 +473,7 @@ public class OperateActionUtil {
     /**
      * 显示当前小说目录
      */
-    public void showBookDirectory() {
+    public void showBookDirectory(BookDirectoryListener listener) {
         SwingUtilities.invokeLater(() -> {
             JBList<String> chapterListJBList = new JBList<>(chapterList);
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -487,14 +490,17 @@ public class OperateActionUtil {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
                     try {
-                        searchBookContent(chapterUrl);
+                        Element chapterElement = searchBookContent(chapterUrl);
+                        currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+                        currentChapterInfo.setChapterContent(chapterContentHtml);
+                        currentChapterInfo.setChapterContentStr(chapterContentText);
+                        cacheService.setSelectedChapterInfo(currentChapterInfo);
+                        if (listener != null) {
+                            listener.onClickItem(selectedIndex, chapterList, chapterElement);
+                        }
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
-                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
-                    currentChapterInfo.setChapterContent(chapterContentHtml);
-                    currentChapterInfo.setChapterContentStr(chapterContentText);
-                    cacheService.setSelectedChapterInfo(currentChapterInfo);
                 }
             });
 
@@ -546,7 +552,15 @@ public class OperateActionUtil {
         chapterContent = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColorHex + ";\">" +
                 currentChapterInfo.getChapterTitle() + "</h3>" +
                 chapterContent;
+
         chapterContentHtml = chapterContent;
+
+        String style = "color:" + fontColorHex + ";" +
+                "font-family: '" + fontFamily + "';" +
+                "font-size: " + fontSize + "px;";
+        String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
+
+        chapterContentElement.html(text);
 
         return chapterContentElement;
     }
@@ -609,5 +623,74 @@ public class OperateActionUtil {
             throw new RuntimeException(e);
         }
     }
+
+
+    /**
+     * ToolWindow工具类
+     */
+    public static class ToolWindow {
+
+        /**
+         * 获取ToolWindow的根内容面板
+         * @param contentManager
+         * @return
+         */
+        public static Component getReaderPanel(ContentManager contentManager) {
+            Content rootContent = contentManager.getContent(0);
+            if (rootContent != null) {
+                return rootContent.getComponent();
+            }
+            return null;
+        }
+
+        /**
+         * 获取ToolWindow的根内容面板
+         * @param rootContent
+         * @return
+         */
+        public static JPanel getReaderPanel(Content rootContent) {
+            return (JPanel) rootContent.getComponent();
+        }
+
+        /**
+         * 获取ToolWindow的内容面板
+         * @param rootContent
+         * @return
+         */
+        public static JPanel getContentPanel(Content rootContent) {
+            JPanel readerPanel = getReaderPanel(rootContent);
+            return (JPanel) readerPanel.getComponent(0);
+        }
+
+        /**
+         * 获取ToolWindow的内容滚动面板
+         * @param rootContent
+         * @return
+         */
+        public static JScrollPane getContentScrollPane(Content rootContent) {
+            JPanel contentPanel = getContentPanel(rootContent);
+            if (contentPanel.getComponentCount() > 0) {
+                Component contentScrollComponent = contentPanel.getComponent(0);
+                if (contentScrollComponent instanceof JScrollPane contentScrollPane) {
+                    return contentScrollPane;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * 获取ToolWindow的内容文本面板
+         * @param rootContent
+         * @return
+         */
+        public static JTextPane getContentTextPanel(Content rootContent) {
+            JScrollPane contentScrollPane = getContentScrollPane(rootContent);
+            if (contentScrollPane != null) {
+                return (JTextPane) contentScrollPane.getViewport().getView();
+            }
+            return null;
+        }
+    }
+
 
 }

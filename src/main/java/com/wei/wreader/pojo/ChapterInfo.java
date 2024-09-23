@@ -24,6 +24,14 @@ public class ChapterInfo implements Serializable {
      * 最后阅读的行数
      */
     private int lastReadLineNum;
+    /**
+     * 上一行阅读的行数
+     */
+    private int prevReadLineNum;
+    /**
+     * 下一行阅读的行数
+     */
+    private int nextReadLineNum;
     private List<String> chapterContentList;
 
     public String getChapterUrl() {
@@ -74,6 +82,22 @@ public class ChapterInfo implements Serializable {
         this.lastReadLineNum = lastReadLineNum;
     }
 
+    public int getPrevReadLineNum() {
+        return prevReadLineNum;
+    }
+
+    public void setPrevReadLineNum(int prevReadLineNum) {
+        this.prevReadLineNum = prevReadLineNum;
+    }
+
+    public int getNextReadLineNum() {
+        return nextReadLineNum;
+    }
+
+    public void setNextReadLineNum(int nextReadLineNum) {
+        this.nextReadLineNum = nextReadLineNum;
+    }
+
     public List<String> getChapterContentList() {
         return chapterContentList;
     }
@@ -81,4 +105,5 @@ public class ChapterInfo implements Serializable {
     public void setChapterContentList(List<String> chapterContentList) {
         this.chapterContentList = chapterContentList;
     }
+
 }

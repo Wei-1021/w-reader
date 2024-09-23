@@ -13,6 +13,8 @@ wreader:
     bookDirectory: 'ChapterListAction'
     prevChapter: 'PrevChapterAction'
     nextChapter: 'NextChapterAction'
+    prevLine: 'PrevLineAction'
+    nextLine: 'NextLineAction'
     setting: 'WReaderSetting'
   toolWindow:
     search-title: '搜索'

@@ -146,6 +146,8 @@ public class ConfigYaml {
         componentIdKey.setBookDirectory(componentIdKeyMap.get("bookDirectory").toString());
         componentIdKey.setNextChapter(componentIdKeyMap.get("nextChapter").toString());
         componentIdKey.setPrevChapter(componentIdKeyMap.get("prevChapter").toString());
+        componentIdKey.setPrevLine(componentIdKeyMap.get("prevLine").toString());
+        componentIdKey.setNextLine(componentIdKeyMap.get("nextLine").toString());
         componentIdKey.setSearchBook(componentIdKeyMap.get("searchBook").toString());
         componentIdKey.setSetting(componentIdKeyMap.get("setting").toString());
         return componentIdKey;
