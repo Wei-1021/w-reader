@@ -85,16 +85,20 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
             settings = configYaml.getSettings();
         }
 
+        // 获取状态栏实例
         WindowManager windowManager = WindowManager.getInstance();
         StatusBar statusBar = windowManager.getStatusBar(project);
         if (statusBar != null) {
             boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
+            // 获取状态栏组件
             StatusBarWidget wReaderStatusBarWidget = statusBar.getWidget(WReaderStatusBarWidget.getWidgetId());
+            // 当显示类型为底部状态栏时，添加状态栏组件，反之移除组件
             if (isVisible) {
                 if (wReaderStatusBarWidget == null && !isStartupApp) {
                     statusBar.addWidget(new WReaderStatusBarWidget(project));
                 }
 
+                // 初始化章节内容缓存信息，避免修改设置时无法第一时间生效
                 ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
                 if (selectedChapterInfo != null) {
                     String chapterContentStr = selectedChapterInfo.getChapterContentStr();

@@ -1,5 +1,10 @@
 package com.wei.wreader.pojo;
 
+/**
+ * 工具窗口实体
+ *
+ * @author weizhanjie
+ */
 public class ToolWindowInfo {
     private String searchTitle;
     private String fontSizeSubTitle;

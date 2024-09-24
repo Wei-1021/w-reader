@@ -9,6 +9,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
+/**
+ * 启动工厂
+ * @author weizhanjie
+ */
 public class StartupFactory implements ProjectActivity {
     @Nullable
     @Override

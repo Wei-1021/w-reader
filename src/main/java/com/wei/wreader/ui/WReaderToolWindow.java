@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.icons.ExpUiIcons;
+import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -13,10 +14,18 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.popup.IconButton;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.components.IconLabelButton;
 import com.intellij.ui.components.JBList;
+import com.intellij.ui.tabs.JBTabs;
+import com.intellij.ui.tabs.TabInfo;
+import com.intellij.ui.tabs.impl.JBTabsImpl;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.BookInfo;
@@ -28,6 +37,8 @@ import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.JsUtil;
 import groovy.util.logging.Log4j2;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -61,6 +72,7 @@ import java.util.Objects;
 public class WReaderToolWindow implements Configurable {
 
     //region 参数属性
+    //region 组件
     /**
      * 阅读器面板
      */
@@ -113,6 +125,13 @@ public class WReaderToolWindow implements Configurable {
      * 颜色显示面板
      */
     private JPanel colorShowPanel;
+    private JPanel menuToolBarPanel;
+
+    private JBTabsImpl menuToolTabs;
+
+    private JToolBar menuToolBar;
+    //endregion
+    //region 自定义参数
     /**
      * 书本名称列表
      */
@@ -177,51 +196,36 @@ public class WReaderToolWindow implements Configurable {
 
     private CacheService cacheService;
     //endregion
+    //endregion
 
     public WReaderToolWindow(ToolWindow toolWindow) {
         SwingUtilities.invokeLater(() -> {
             configYaml = new ConfigYaml();
             cacheService = CacheService.getInstance();
             // 初始化组件
-            initComponent();
+//            initComponent(toolWindow);
+//            initMenuTool(toolWindow);
+            initMenuToolTabs(toolWindow);
             // 初始化编辑器
             initContentTextArea();
             // 初始化数据
             initData();
             // 监听编辑器颜色修改
             appEditorColorsListener();
-
-            // 添加监听器
-            searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
-            menuListButton.addActionListener(e -> menuLisListener(e, toolWindow));
-            prevPageButton.addActionListener(e -> prevPageListener(e, toolWindow));
-            nextPageButton.addActionListener(e -> nextPageListener(e, toolWindow));
-            fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
-            fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
-            colorShowPanel.setBorder(JBUI.Borders.empty(2));
-            colorShowPanel.setBackground(Color.decode(fontColorHex));
-            colorShowPanel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    colorChooseButtonListener(e, toolWindow);
-                }
-            });
         });
     }
-
-
 
     /**
      * 初始化组件
      */
-    public void initComponent() {
-        ToolWindowInfo toolWindow = configYaml.getToolWindow();
-//        searchBookButton.setText(toolWindow.getSearchTitle());
-//        menuListButton.setText(toolWindow.getChapterListTitle());
-//        prevPageButton.setText(toolWindow.getPrevChapterTitle());
-//        nextPageButton.setText(toolWindow.getNextChapterTitle());
-//        fontSubButton.setText(toolWindow.getFontSizeSubTitle());
-//        fontAddButton1.setText(toolWindow.getFontSizeAddTitle());
+    public void initComponent(ToolWindow toolWindow) {
+//        ToolWindowInfo toolWindowInfoTemp = configYaml.getToolWindow();
+//        searchBookButton.setText(toolWindowInfoTemp.getSearchTitle());
+//        menuListButton.setText(toolWindowInfoTemp.getChapterListTitle());
+//        prevPageButton.setText(toolWindowInfoTemp.getPrevChapterTitle());
+//        nextPageButton.setText(toolWindowInfoTemp.getNextChapterTitle());
+//        fontSubButton.setText(toolWindowInfoTemp.getFontSizeSubTitle());
+//        fontAddButton1.setText(toolWindowInfoTemp.getFontSizeAddTitle());
 
 
         Dimension preferredSize = new Dimension(30, 30);
@@ -239,6 +243,119 @@ public class WReaderToolWindow implements Configurable {
         fontSubButton.setPreferredSize(preferredSize);
         fontAddButton1.setIcon(IconLoader.getIcon("/icon/font_add.svg", WReaderToolWindow.class));
         fontAddButton1.setPreferredSize(preferredSize);
+
+        // 添加监听器
+        searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
+        menuListButton.addActionListener(e -> menuLisListener(e, toolWindow));
+        prevPageButton.addActionListener(e -> prevPageListener(e, toolWindow));
+        nextPageButton.addActionListener(e -> nextPageListener(e, toolWindow));
+        fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
+        fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
+        colorShowPanel.setBorder(JBUI.Borders.empty(2));
+        colorShowPanel.setBackground(Color.decode(fontColorHex));
+        colorShowPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                colorChooseButtonListener(e, colorShowPanel, toolWindow);
+            }
+        });
+    }
+
+    public void initMenuTool(ToolWindow toolWindow) {
+        menuToolPanel.removeAll();
+        GridLayoutManager layout = new GridLayoutManager(2, 4);
+        menuToolPanel.setLayout(layout);
+
+//        layout.
+
+        Dimension preferredSize = new Dimension(30, 30);
+
+        searchBookButton = new JButton(AllIcons.Actions.Search);
+        searchBookButton.setPreferredSize(preferredSize);
+        searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
+        GridConstraints searchBookGridConstraints = new GridConstraints();
+        searchBookGridConstraints.setRow(0);
+        searchBookGridConstraints.setColumn(0);
+        menuToolPanel.add(searchBookButton, searchBookGridConstraints);
+
+        fontSubButton = new JButton(IconLoader.getIcon("/icon/font_sub.svg", WReaderToolWindow.class));
+        fontSubButton.setPreferredSize(preferredSize);
+        fontSubButton.addActionListener(e -> fontSubButtonListener(e, toolWindow));
+        GridConstraints fontSubGridConstraints = new GridConstraints();
+        fontSubGridConstraints.setRow(0);
+        fontSubGridConstraints.setColumn(1);
+        menuToolPanel.add(fontSubButton, fontSubGridConstraints);
+
+        fontAddButton1 = new JButton(IconLoader.getIcon("/icon/font_add.svg", WReaderToolWindow.class));
+        fontAddButton1.setPreferredSize(preferredSize);
+        fontAddButton1.addActionListener(e -> fontAddButtonListener(e, toolWindow));
+        GridConstraints fontAddGridConstraints = new GridConstraints();
+        fontAddGridConstraints.setRow(0);
+        fontAddGridConstraints.setColumn(2);
+        menuToolPanel.add(fontAddButton1, fontAddGridConstraints);
+
+        menuListButton = new JButton(AllIcons.Actions.ListFiles);
+        menuListButton.setPreferredSize(preferredSize);
+        menuListButton.addActionListener(e -> menuLisListener(e, toolWindow));
+        GridConstraints menuListGridConstraints = new GridConstraints();
+        menuListGridConstraints.setRow(1);
+        menuListGridConstraints.setColumn(0);
+        menuToolPanel.add(menuListButton, menuListGridConstraints);
+
+        prevPageButton = new JButton(ExpUiIcons.Actions.PlayFirst);
+        prevPageButton.setPreferredSize(preferredSize);
+        prevPageButton.addActionListener(e -> prevPageListener(e, toolWindow));
+        GridConstraints prevPageGridConstraints = new GridConstraints();
+        prevPageGridConstraints.setRow(1);
+        prevPageGridConstraints.setColumn(1);
+        menuToolPanel.add(prevPageButton, prevPageGridConstraints);
+
+        nextPageButton = new JButton(ExpUiIcons.Actions.PlayLast);
+        nextPageButton.setPreferredSize(preferredSize);
+        nextPageButton.addActionListener(e -> nextPageListener(e, toolWindow));
+        GridConstraints nextPageGridConstraints = new GridConstraints();
+        nextPageGridConstraints.setRow(1);
+        nextPageGridConstraints.setColumn(2);
+        menuToolPanel.add(nextPageButton, nextPageGridConstraints);
+
+        colorShowPanel = new JPanel();
+        colorShowPanel.setBorder(JBUI.Borders.empty(2));
+        colorShowPanel.setBackground(Color.decode(fontColorHex));
+        colorShowPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                colorChooseButtonListener(e, colorShowPanel, toolWindow);
+            }
+        });
+        GridConstraints colorShowGridConstraints = new GridConstraints();
+        colorShowGridConstraints.setRow(1);
+        colorShowGridConstraints.setColumn(3);
+        menuToolPanel.add(colorShowPanel, colorShowGridConstraints);
+    }
+
+    public void initMenuToolTabs(ToolWindow toolWindow) {
+        menuToolPanel.removeAll();
+        GridLayoutManager layout = new GridLayoutManager(1, 1);
+        menuToolPanel.setLayout(layout);
+
+        ToolWindowInfo toolWindowInfoTemp = configYaml.getToolWindow();
+
+        menuToolBar = new JToolBar(ConstUtil.WREADER_ID, JToolBar.HORIZONTAL);
+        menuToolBar.setBackground(JBColor.background());
+        menuToolBar.setForeground(JBColor.foreground());
+        menuToolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // 创建一个图标按钮
+        IconLabelButton searchBookButton = new IconLabelButton(ExpUiIcons.General.Search, jComponent -> {
+            searchBookListener(null, toolWindow);
+            return Unit.INSTANCE;
+        });
+        searchBookButton.setToolTipText(toolWindowInfoTemp.getSearchTitle());
+        menuToolBar.add(searchBookButton);
+
+        GridConstraints menuToolBaGridConstraints = new GridConstraints();
+        menuToolBaGridConstraints.setRow(0);
+        menuToolBaGridConstraints.setColumn(0);
+        menuToolPanel.add(menuToolBar, menuToolBaGridConstraints);
     }
 
     /**
@@ -497,7 +614,9 @@ public class WReaderToolWindow implements Configurable {
      * @param event
      * @param toolWindow
      */
-    public void colorChooseButtonListener(MouseEvent event, ToolWindow toolWindow) {
+    public void colorChooseButtonListener(MouseEvent event,
+                                          JPanel colorShowPanel,
+                                          ToolWindow toolWindow) {
         // 获取当前字体颜色
         Color currentFontColor = Color.decode(fontColorHex);
         // 弹出颜色选择器JColorChooser

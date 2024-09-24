@@ -59,7 +59,7 @@
         <group id="remote">
             <action id="WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置">
             </action>
-            <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索书名">
+            <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD7"/>
             </action>
             <action id="ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录">
