@@ -180,7 +180,6 @@ public class OperateActionUtil {
         }
     }
 
-
     /**
      * 构建搜索弹出窗口
      */
@@ -624,6 +623,49 @@ public class OperateActionUtil {
         }
     }
 
+    /**
+     * 字体缩小
+     */
+    public void fontSizeSub() {
+        fontFamily = cacheService.getFontFamily();
+        if (fontSize == 0) {
+            fontSize = cacheService.getFontSize();
+        }
+        if (fontSize <= 1) {
+            return;
+        }
+
+        fontSize = fontSize - 1;
+        cacheService.setFontSize(fontSize);
+    }
+
+    /**
+     * 字体放大
+     */
+    public void fontSizeAdd() {
+        fontFamily = cacheService.getFontFamily();
+        if (fontSize == 0) {
+            fontSize = cacheService.getFontSize();
+        }
+        fontSize = fontSize + 1;
+        cacheService.setFontSize(fontSize);
+    }
+
+    /**
+     * 改变字体颜色
+     */
+    public void changeFontColor() {
+        fontColorHex = cacheService.getFontColorHex();
+        // 获取当前字体颜色
+        Color currentFontColor = Color.decode(fontColorHex);
+        Color color = JColorChooser.showDialog(null, "选择颜色", currentFontColor);
+        if (color != null) {
+            // 将选择的颜色转换为16进制字符串
+            fontColorHex = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+            cacheService.setFontColorHex(fontColorHex);
+        }
+    }
+
 
     /**
      * ToolWindow工具类
@@ -632,6 +674,7 @@ public class OperateActionUtil {
 
         /**
          * 获取ToolWindow的根内容面板
+         *
          * @param contentManager
          * @return
          */
@@ -645,6 +688,7 @@ public class OperateActionUtil {
 
         /**
          * 获取ToolWindow的根内容面板
+         *
          * @param rootContent
          * @return
          */
@@ -654,6 +698,7 @@ public class OperateActionUtil {
 
         /**
          * 获取ToolWindow的内容面板
+         *
          * @param rootContent
          * @return
          */
@@ -664,6 +709,7 @@ public class OperateActionUtil {
 
         /**
          * 获取ToolWindow的内容滚动面板
+         *
          * @param rootContent
          * @return
          */
@@ -680,6 +726,7 @@ public class OperateActionUtil {
 
         /**
          * 获取ToolWindow的内容文本面板
+         *
          * @param rootContent
          * @return
          */

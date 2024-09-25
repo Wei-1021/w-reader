@@ -5,7 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.icons.ExpUiIcons;
-import com.intellij.openapi.actionSystem.impl.ActionButton;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -14,15 +15,14 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.popup.IconButton;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.IconLabelButton;
 import com.intellij.ui.components.JBList;
-import com.intellij.ui.tabs.JBTabs;
-import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -38,7 +38,6 @@ import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.JsUtil;
 import groovy.util.logging.Log4j2;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -199,6 +198,8 @@ public class WReaderToolWindow implements Configurable {
     //endregion
 
     public WReaderToolWindow(ToolWindow toolWindow) {
+        menuToolPanel.setVisible(false);
+        menuToolBarPanel.setVisible(false);
         SwingUtilities.invokeLater(() -> {
             configYaml = new ConfigYaml();
             cacheService = CacheService.getInstance();
@@ -219,30 +220,14 @@ public class WReaderToolWindow implements Configurable {
      * 初始化组件
      */
     public void initComponent(ToolWindow toolWindow) {
-//        ToolWindowInfo toolWindowInfoTemp = configYaml.getToolWindow();
-//        searchBookButton.setText(toolWindowInfoTemp.getSearchTitle());
-//        menuListButton.setText(toolWindowInfoTemp.getChapterListTitle());
-//        prevPageButton.setText(toolWindowInfoTemp.getPrevChapterTitle());
-//        nextPageButton.setText(toolWindowInfoTemp.getNextChapterTitle());
-//        fontSubButton.setText(toolWindowInfoTemp.getFontSizeSubTitle());
-//        fontAddButton1.setText(toolWindowInfoTemp.getFontSizeAddTitle());
-
-
-        Dimension preferredSize = new Dimension(30, 30);
-
-        searchBookButton.setIcon(AllIcons.Actions.Search);
-        searchBookButton.setPreferredSize(preferredSize);
-        searchBookButton.setSize(preferredSize);
-        menuListButton.setIcon(AllIcons.Actions.ListFiles);
-        menuListButton.setPreferredSize(preferredSize);
-        prevPageButton.setIcon(ExpUiIcons.Actions.PlayFirst);
-        prevPageButton.setPreferredSize(preferredSize);
-        nextPageButton.setIcon(ExpUiIcons.Actions.PlayLast);
-        nextPageButton.setPreferredSize(preferredSize);
-        fontSubButton.setIcon(IconLoader.getIcon("/icon/font_sub.svg", WReaderToolWindow.class));
-        fontSubButton.setPreferredSize(preferredSize);
-        fontAddButton1.setIcon(IconLoader.getIcon("/icon/font_add.svg", WReaderToolWindow.class));
-        fontAddButton1.setPreferredSize(preferredSize);
+        menuToolPanel.setVisible(true);
+        ToolWindowInfo toolWindowInfoTemp = configYaml.getToolWindow();
+        searchBookButton.setText(toolWindowInfoTemp.getSearchTitle());
+        menuListButton.setText(toolWindowInfoTemp.getChapterListTitle());
+        prevPageButton.setText(toolWindowInfoTemp.getPrevChapterTitle());
+        nextPageButton.setText(toolWindowInfoTemp.getNextChapterTitle());
+        fontSubButton.setText(toolWindowInfoTemp.getFontSizeSubTitle());
+        fontAddButton1.setText(toolWindowInfoTemp.getFontSizeAddTitle());
 
         // 添加监听器
         searchBookButton.addActionListener(e -> searchBookListener(e, toolWindow));
@@ -262,6 +247,7 @@ public class WReaderToolWindow implements Configurable {
     }
 
     public void initMenuTool(ToolWindow toolWindow) {
+        menuToolPanel.setVisible(true);
         menuToolPanel.removeAll();
         GridLayoutManager layout = new GridLayoutManager(2, 4);
         menuToolPanel.setLayout(layout);
@@ -334,28 +320,22 @@ public class WReaderToolWindow implements Configurable {
     }
 
     public void initMenuToolTabs(ToolWindow toolWindow) {
-        menuToolPanel.removeAll();
-        GridLayoutManager layout = new GridLayoutManager(1, 1);
-        menuToolPanel.setLayout(layout);
+        menuToolBarPanel.setVisible(true);
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionGroup toolWindowBarGroup = (ActionGroup) actionManager.getAction("toolWindowBar");
+        ActionToolbar actionToolbar = actionManager.createActionToolbar("toolWindowToolBar", toolWindowBarGroup, true);
+        actionToolbar.setTargetComponent(menuToolBarPanel);
+        JComponent actionToolbarComponent = actionToolbar.getComponent();
+        actionToolbarComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        ToolWindowInfo toolWindowInfoTemp = configYaml.getToolWindow();
-
-        menuToolBar = new JToolBar(ConstUtil.WREADER_ID, JToolBar.HORIZONTAL);
-        menuToolBar.setBackground(JBColor.background());
-        menuToolBar.setForeground(JBColor.foreground());
-        menuToolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-        // 创建一个图标按钮
-        IconLabelButton searchBookButton = new IconLabelButton(ExpUiIcons.General.Search, jComponent -> {
-            searchBookListener(null, toolWindow);
-            return Unit.INSTANCE;
-        });
-        searchBookButton.setToolTipText(toolWindowInfoTemp.getSearchTitle());
-        menuToolBar.add(searchBookButton);
-
-        GridConstraints menuToolBaGridConstraints = new GridConstraints();
-        menuToolBaGridConstraints.setRow(0);
-        menuToolBaGridConstraints.setColumn(0);
-        menuToolPanel.add(menuToolBar, menuToolBaGridConstraints);
+//        GridLayoutManager layout = new GridLayoutManager(1, 1);
+        FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
+        menuToolBarPanel.setLayout(layout);
+        GridConstraints menuToolBarGridConstraints = new GridConstraints();
+        menuToolBarGridConstraints.setRow(0);
+        menuToolBarGridConstraints.setColumn(0);
+        menuToolBarPanel.add(actionToolbarComponent, menuToolBarGridConstraints);
+        menuToolBarPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
     }
 
     /**
@@ -1058,4 +1038,5 @@ public class WReaderToolWindow implements Configurable {
         cacheService.setFontFamily(fontFamily);
         cacheService.setFontSize(fontSize);
     }
+
 }

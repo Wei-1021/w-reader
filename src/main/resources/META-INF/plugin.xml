@@ -36,12 +36,12 @@
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity id="com.wei.wreader.factory.StartupFactory"
                              implementation="com.wei.wreader.factory.StartupFactory"
-                             order="first" />
-<!--        <toolWindow id="WReader"-->
-<!--                    factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory"-->
-<!--                    anchor="right"-->
-<!--                    canCloseContents="true"-->
-<!--                    icon="/icon/mainIcon.svg"/>-->
+                             order="first"/>
+        <!--        <toolWindow id="WReader"-->
+        <!--                    factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory"-->
+        <!--                    anchor="right"-->
+        <!--                    canCloseContents="true"-->
+        <!--                    icon="/icon/mainIcon.svg"/>-->
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
@@ -53,35 +53,65 @@
     </extensions>
 
     <actions>
+        <!-- Action -->
+        <action id="WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置"
+                icon="AllIcons.General.Settings">
+        </action>
+        <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索"
+                icon="AllIcons.Actions.Search">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD7"/>
+        </action>
+        <action id="ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录"
+                icon="com.intellij.icons.ExpUiIcons.FileTypes.ChangedFile">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD9"/>
+        </action>
+        <action id="PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"
+                icon="AllIcons.Actions.Play_first">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
+        </action>
+        <action id="NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章"
+                icon="AllIcons.Actions.Play_last">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
+        </action>
+        <action id="PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
+                description="状态栏模式下切换至上一行文字"
+                icon="com.intellij.icons.ExpUiIcons.General.MoveUp">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD4"/>
+        </action>
+        <action id="NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
+                icon="com.intellij.icons.ExpUiIcons.General.MoveDown"
+                description="状态栏模式下切换至下一行文字">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD6"/>
+        </action>
+        <action id="FontSizeSubAction" class="com.wei.wreader.action.FontSizeSubAction" text="字体缩小"
+                icon="/icon/font_sub.svg"/>
+        <action id="FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
+                icon="/icon/font_add.svg"/>
+        <action id="ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
+                icon="com.intellij.icons.ExpUiIcons.Gutter.Colors"/>
+
+        <!-- Group -->
         <group id="WReaderGroup" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </group>
         <group id="remote">
-            <action id="WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置">
-            </action>
-            <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD7"/>
-            </action>
-            <action id="ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD9"/>
-            </action>
-            <action id="PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
-            </action>
-            <action id="NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
-            </action>
+            <reference id="WReaderSetting"/>
+            <separator/>
+            <reference id="SearchBookName"/>
+            <reference id="ChapterListAction"/>
+            <reference id="PrevChapterAction"/>
+            <reference id="NextChapterAction"/>
             <add-to-group group-id="WReaderGroup"/>
             <separator/>
         </group>
-
-        <action id="PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
-                description="状态栏模式下切换至上一行文字">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD4"/>
-        </action>
-        <action id="NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
-                description="状态栏模式下切换至下一行文字">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD6"/>
-        </action>
+        <group id="toolWindowBar">
+            <reference id="SearchBookName"/>
+            <reference id="FontSizeSubAction"/>
+            <reference id="FontSizeAddAction"/>
+            <reference id="ChapterListAction"/>
+            <reference id="PrevChapterAction"/>
+            <reference id="NextChapterAction"/>
+            <reference id="ChangeFontColorAction"/>
+        </group>
     </actions>
 </idea-plugin>
