@@ -327,15 +327,15 @@ public class WReaderToolWindow implements Configurable {
         actionToolbar.setTargetComponent(menuToolBarPanel);
         JComponent actionToolbarComponent = actionToolbar.getComponent();
         actionToolbarComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
+        actionToolbarComponent.setAlignmentY(Component.TOP_ALIGNMENT);
 
-//        GridLayoutManager layout = new GridLayoutManager(1, 1);
         FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
         menuToolBarPanel.setLayout(layout);
         GridConstraints menuToolBarGridConstraints = new GridConstraints();
         menuToolBarGridConstraints.setRow(0);
         menuToolBarGridConstraints.setColumn(0);
         menuToolBarPanel.add(actionToolbarComponent, menuToolBarGridConstraints);
-        menuToolBarPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menuToolBarPanel.setAlignmentY(Component.TOP_ALIGNMENT);
     }
 
     /**
@@ -442,6 +442,7 @@ public class WReaderToolWindow implements Configurable {
             }
         });
         contentScrollPane.setViewportView(contentTextPane);
+        contentScrollPane.setBorder(JBUI.Borders.empty(2, 5));
 
     }
 

@@ -13,6 +13,7 @@ import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
@@ -56,16 +57,11 @@ public class FontSizeSubAction extends AnAction {
                             // 获取内容面板JTextPane
                             JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
                             if (contentTextPanel != null) {
-                                String fontFamily = cacheService.getFontFamily();
-                                int fontSize = cacheService.getFontSize();
-                                String fontColorHex = cacheService.getFontColorHex();
-                                String content = selectedChapterInfo.getChapterContent();
-                                // 设置内容
-                                String style = "font-family: '" + fontFamily + "'; " +
-                                        "font-size: " + fontSize + "px;" +
-                                        "color:" + fontColorHex + ";";
-                                String text = "<div style=\"" + style + "\">" + content + "</div>";
+                                int caretPosition = contentTextPanel.getCaretPosition();
+                                System.out.println("caretPosition: " + caretPosition);
+                                String text = getContent(cacheService, selectedChapterInfo);
                                 contentTextPanel.setText(text);
+                                contentTextPanel.setCaretPosition(caretPosition);
                             }
                         }
                     }
@@ -78,5 +74,24 @@ public class FontSizeSubAction extends AnAction {
                     break;
             }
         });
+    }
+
+    /**
+     * 获取内容
+     * @param cacheService
+     * @param selectedChapterInfo
+     * @return
+     */
+    private static @NotNull String getContent(CacheService cacheService, ChapterInfo selectedChapterInfo) {
+        String fontFamily = cacheService.getFontFamily();
+        int fontSize = cacheService.getFontSize();
+        String fontColorHex = cacheService.getFontColorHex();
+        String content = selectedChapterInfo.getChapterContent();
+        // 设置内容
+        String style = "font-family: '" + fontFamily + "'; " +
+                "font-size: " + fontSize + "px;" +
+                "color:" + fontColorHex + ";";
+        String text = "<div style=\"" + style + "\">" + content + "</div>";
+        return text;
     }
 }

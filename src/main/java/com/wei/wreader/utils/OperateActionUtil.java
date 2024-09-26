@@ -5,9 +5,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
@@ -16,6 +18,7 @@ import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
+import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,32 +33,40 @@ import org.jsoup.select.Elements;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OperateActionUtil {
     private ConfigYaml configYaml;
     private CacheService cacheService;
+    private Settings settings;
     private static OperateActionUtil instance;
     /**
      * 书本名称列表
      */
-    private final java.util.List<String> bookNameList = new ArrayList<>();
+    private final List<String> bookNameList = new ArrayList<>();
     /**
      * 书本信息列表
      */
-    private final java.util.List<BookInfo> bookInfoList = new ArrayList<>();
+    private final List<BookInfo> bookInfoList = new ArrayList<>();
     /**
      * 章节名称列表
      */
-    private java.util.List<String> chapterList = new ArrayList<>();
+    private List<String> chapterList = new ArrayList<>();
     /**
      * 章节链接列表
      */
-    private java.util.List<String> chapterUrlList = new ArrayList<>();
+    private List<String> chapterUrlList = new ArrayList<>();
+    /**
+     * 章节链接列表
+     */
+    private List<String> chapterContentList = new ArrayList<>();
     /**
      * 当前章节索引
      */
@@ -100,7 +111,6 @@ public class OperateActionUtil {
      * 当前章节信息
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
-
 
     public static OperateActionUtil getInstance() {
         if (instance == null) {
@@ -167,12 +177,18 @@ public class OperateActionUtil {
                     chapterUrlList != null && !chapterUrlList.isEmpty()) {
                 if (currentChapterInfo.getChapterUrl() != null) {
                     currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
-                    searchBookContent(currentChapterInfo.getChapterUrl());
+                    searchBookContentRemote(currentChapterInfo.getChapterUrl());
                 }
             }
 
             if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
                 chapterContentHtml = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
+            }
+
+            // settings
+            settings = cacheService.getSettings();
+            if (settings == null) {
+                settings = configYaml.getSettings();
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
@@ -208,6 +224,11 @@ public class OperateActionUtil {
                         Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
                         return;
                     }
+
+                    // 设置数据加载模式
+                    settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
+                    cacheService.setSettings(settings);
+
                     handleBookList(searchBookResult);
                 });
             }
@@ -445,7 +466,7 @@ public class OperateActionUtil {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     currentChapterInfo.setChapterUrl(chapterUrl);
                     try {
-                        searchBookContent(chapterUrl);
+                        searchBookContentRemote(chapterUrl);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -466,6 +487,10 @@ public class OperateActionUtil {
             frame.setTitle("目录");
             // 居中显示
             frame.setLocationRelativeTo(null);
+
+            // 设置数据加载模式
+            settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
+            cacheService.setSettings(settings);
         }
     }
 
@@ -478,27 +503,15 @@ public class OperateActionUtil {
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             chapterListJBList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
-                    int selectedIndex = chapterListJBList.getSelectedIndex();
-                    currentChapterIndex = selectedIndex;
-                    String chapterTitle = chapterList.get(currentChapterIndex);
-                    String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
-                    String chapterUrl = chapterSuffixUrl;
-                    if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
-                        chapterUrl = baseUrl + chapterSuffixUrl;
-                    }
-                    currentChapterInfo.setChapterTitle(chapterTitle);
-                    currentChapterInfo.setChapterUrl(chapterUrl);
-                    try {
-                        Element chapterElement = searchBookContent(chapterUrl);
-                        currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
-                        currentChapterInfo.setChapterContent(chapterContentHtml);
-                        currentChapterInfo.setChapterContentStr(chapterContentText);
-                        cacheService.setSelectedChapterInfo(currentChapterInfo);
-                        if (listener != null) {
-                            listener.onClickItem(selectedIndex, chapterList, chapterElement);
-                        }
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                    // 获取数据加载模式
+                    int dataLoadType = settings.getDataLoadType();
+                    switch (dataLoadType) {
+                        case Settings.DATA_LOAD_TYPE_NETWORK:
+                            loadBookDirectoryRemote(chapterListJBList, listener);
+                            break;
+                        case Settings.DATA_LOAD_TYPE_LOCAL:
+                            loadBookDirectoryLocal(chapterListJBList, listener);
+                            break;
                     }
                 }
             });
@@ -518,13 +531,78 @@ public class OperateActionUtil {
     }
 
     /**
-     * 获取小说内容
+     * 远程加载小说目录
+     *
+     * @param chapterListJBList
+     * @param listener
+     */
+    public void loadBookDirectoryRemote(JBList<String> chapterListJBList, BookDirectoryListener listener) {
+        // 获取选中的章节索引
+        int selectedIndex = chapterListJBList.getSelectedIndex();
+        currentChapterIndex = selectedIndex;
+        // 提取章节名称和章节链接
+        String chapterTitle = chapterList.get(currentChapterIndex);
+        // 提取章节链接
+        String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
+        String chapterUrl = chapterSuffixUrl;
+        if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+            chapterUrl = baseUrl + chapterSuffixUrl;
+        }
+        currentChapterInfo.setChapterTitle(chapterTitle);
+        currentChapterInfo.setChapterUrl(chapterUrl);
+        try {
+            // 搜索章节内容
+            Element chapterElement = searchBookContentRemote(chapterUrl);
+            // 缓存当前章节信息
+            currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
+            if (listener != null) {
+                listener.onClickItem(selectedIndex, chapterList, chapterElement);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * 本地加载小说目录
+     * @param chapterListJBList
+     * @param listener
+     */
+    public void loadBookDirectoryLocal(JBList<String> chapterListJBList, BookDirectoryListener listener) {
+        // 获取选中的章节索引
+        int selectedIndex = chapterListJBList.getSelectedIndex();
+        currentChapterIndex = selectedIndex;
+        chapterContentList = cacheService.getChapterContentList();
+        if (chapterContentList != null && !chapterContentList.isEmpty()) {
+            // 提取章节名称和章节链接
+            String chapterTitle = chapterList.get(currentChapterIndex);
+            currentChapterInfo.setChapterTitle(chapterTitle);
+            // 提取章节内容
+            chapterContentHtml = chapterContentList.get(currentChapterIndex);
+            // 缓存当前章节信息
+            currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+            currentChapterInfo.setChapterContent(chapterContentHtml);
+            currentChapterInfo.setChapterContentStr(chapterContentText);
+            cacheService.setSelectedChapterInfo(currentChapterInfo);
+            if (listener != null) {
+                Element chapterElement = new Element("<pre>");
+                chapterElement.appendText(chapterContentText);
+                listener.onClickItem(selectedIndex, chapterList, chapterElement);
+            }
+        }
+    }
+
+    /**
+     * 远程获取小说内容
      *
      * @param url
      * @return Element 小说内容Element
      * @throws IOException
      */
-    public Element searchBookContent(String url) throws IOException {
+    public Element searchBookContentRemote(String url) throws IOException {
         Document document = Jsoup.connect(url)
                 .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
                 .get();
@@ -582,7 +660,7 @@ public class OperateActionUtil {
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(prevChapterUrl);
-            Element element = searchBookContent(prevChapterUrl);
+            Element element = searchBookContentRemote(prevChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -611,7 +689,7 @@ public class OperateActionUtil {
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterUrl(nextChapterUrl);
-            Element element = searchBookContent(nextChapterUrl);
+            Element element = searchBookContentRemote(nextChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -666,6 +744,76 @@ public class OperateActionUtil {
         }
     }
 
+    /**
+     * 加载本地文件
+     */
+    public void loadLocalFile() {
+        FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false,
+                false, false, false, false);
+        fileChooserDescriptor.setTitle("选择文本文件");
+        VirtualFile virtualFile = FileChooser.chooseFile(fileChooserDescriptor, null, null);
+        if (virtualFile != null) {
+            String filePath = virtualFile.getPath();
+            File file = new File(filePath);
+            String fileName = file.getName();
+            // 读取文件内容
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "GBK"))) {
+                // 使用正则表达式(ConstUtil.TEXT_FILE_DIR_REGEX)提取章节标题和章节内容
+                StringBuilder contentBuilder = new StringBuilder();
+                String line;
+                List<String> chapterList = new ArrayList<>();
+                List<String> chapterContentList = new ArrayList<>();
+                Map<String, String> chapterContentMap = new HashMap<>();
+                while ((line = reader.readLine()) != null) {
+                    Pattern pattern = Pattern.compile(ConstUtil.TEXT_FILE_DIR_REGEX);
+                    Matcher matcher = pattern.matcher(line);
+                    if (matcher.find()) {
+                        // 当前章节列表为空，说明contentBuilder缓存的内容不是小说的正文，非正文内容无需添加
+                        if (!chapterList.isEmpty()) {
+                            chapterContentMap.put(line, contentBuilder.toString());
+                            // 将contentBuilder中缓存的内容添加到章节内容列表中
+                            chapterContentList.add(contentBuilder.toString());
+                        }
+                        chapterList.add(line);
+                        // 提取章节标题
+                        String chapterTitle = matcher.group(4).trim();
+                        // 清空内容构建器
+                        contentBuilder.setLength(0);
+                    }
+                    contentBuilder.append(line);
+                }
+
+                // 创建一个BookInfo对象，并设置文件名、文件路径和内容
+                BookInfo bookInfo = new BookInfo();
+                bookInfo.setBookName(fileName);
+                bookInfo.setBookDesc(fileName);
+                cacheService.setSelectedBookInfo(bookInfo);
+                cacheService.setChapterList(chapterList);
+                cacheService.setChapterContentList(chapterContentList);
+                cacheService.setChapterUrlList(null);
+
+                // 重置选中章节信息
+                ChapterInfo selectedChapterInfoTemp = new ChapterInfo();
+                selectedChapterInfoTemp.setChapterTitle("");
+                selectedChapterInfoTemp.setChapterContent("");
+                selectedChapterInfoTemp.setSelectedChapterIndex(0);
+                selectedChapterInfoTemp.setChapterContentStr("");
+                selectedChapterInfoTemp.setLastReadLineNum(1);
+                selectedChapterInfoTemp.setPrevReadLineNum(1);
+                selectedChapterInfoTemp.setNextReadLineNum(1);
+                selectedChapterInfoTemp.setChapterContentList(null);
+                cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
+
+                // 设置数据加载模式
+                settings.setDataLoadType(Settings.DATA_LOAD_TYPE_LOCAL);
+                cacheService.setSettings(settings);
+
+                Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * ToolWindow工具类
@@ -738,6 +886,4 @@ public class OperateActionUtil {
             return null;
         }
     }
-
-
 }

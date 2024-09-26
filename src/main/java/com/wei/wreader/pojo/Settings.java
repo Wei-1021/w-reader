@@ -29,6 +29,15 @@ public class Settings {
      * 显示类型。控制台终端
      */
     public static final String DISPLAY_TYPE_TERMINAL_STR = "控制台终端";
+    /**
+     * 数据加载模式--网络加载（默认）
+     */
+    public static final int DATA_LOAD_TYPE_NETWORK = 1;
+    /**
+     * 数据加载模式--本地加载
+     */
+    public static final int DATA_LOAD_TYPE_LOCAL = 2;
+
 
 
     /**
@@ -43,6 +52,10 @@ public class Settings {
      * 显示类型。1-侧边栏（默认），2-底部状态栏，3-左下角控制台
      */
     private int displayType;
+    /**
+     * 数据加载模式。1-网络加载，2-本地加载
+     */
+    private int dataLoadType;
 
     public int getSingleLineChars() {
         return singleLineChars;
@@ -66,5 +79,13 @@ public class Settings {
 
     public void setDisplayType(int displayType) {
         this.displayType = displayType;
+    }
+
+    public int getDataLoadType() {
+        return dataLoadType;
+    }
+
+    public void setDataLoadType(int dataLoadType) {
+        this.dataLoadType = dataLoadType;
     }
 }

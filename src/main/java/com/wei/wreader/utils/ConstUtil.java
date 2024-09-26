@@ -1,5 +1,8 @@
 package com.wei.wreader.utils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * 常量工具类
  * @author weizhanjie
@@ -18,6 +21,7 @@ public class ConstUtil {
 
     public static final String WREADER_SEARCH_BOOK_TITLE = "搜索小说";
     public static final String WREADER_SEARCH_BOOK_TIP_TEXT = "请输入书名进行搜索";
+    public static final String WREADER_LOAD_SUCCESS = "加载成功";
     public static final String WREADER_SEARCH_EMPTY = "书名不能为空";
     public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
@@ -31,4 +35,9 @@ public class ConstUtil {
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
     public static final String ELEMENT_CLASS_STR = "class";
     public static final String ELEMENT_ID_STR = "id";
+    /**
+     * 正则表达式--文本文件内容小说目录匹配
+     */
+    public static final String TEXT_FILE_DIR_REGEX = "(^\\s*第)(.{1,9})[章节卷集部篇回](\\s{1})(.*)($\\s*)";
+
 }

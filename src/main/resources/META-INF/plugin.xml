@@ -89,6 +89,11 @@
                 icon="/icon/font_add.svg"/>
         <action id="ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
                 icon="com.intellij.icons.ExpUiIcons.Gutter.Colors"/>
+        <action id="LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
+                icon="AllIcons.Nodes.Folder"
+                description="加载本地文件">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
+        </action>
 
         <!-- Group -->
         <group id="WReaderGroup" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">

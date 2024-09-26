@@ -231,7 +231,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         int lastReadLineNum = selectedChapterInfoTemp.getLastReadLineNum();
         if (chapterContentList != null &&
                 !chapterContentList.isEmpty() &&
-                lastReadLineNum < chapterContentList.size()) {
+                lastReadLineNum <= chapterContentList.size()) {
             lastReadLineNum++;
             selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
             selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);

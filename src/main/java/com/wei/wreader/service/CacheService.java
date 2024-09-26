@@ -57,6 +57,10 @@ public final class CacheService implements PersistentStateComponent<CacheService
      * 章节链接列表
      */
     private List<String> chapterUrlList;
+    /**
+     * 章节内容列表（本地加载时使用）
+     */
+    private List<String> chapterContentList;
 
     private static CacheService instance;
 
@@ -124,6 +128,14 @@ public final class CacheService implements PersistentStateComponent<CacheService
 
     public void setChapterList(List<String> chapterList) {
         this.chapterList = chapterList;
+    }
+
+    public List<String> getChapterContentList() {
+        return chapterContentList;
+    }
+
+    public void setChapterContentList(List<String> chapterContentList) {
+        this.chapterContentList = chapterContentList;
     }
 
     public String getFontColorHex() {
