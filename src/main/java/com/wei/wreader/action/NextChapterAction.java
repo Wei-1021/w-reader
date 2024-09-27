@@ -20,24 +20,20 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class NextChapterAction extends AnAction {
+public class NextChapterAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
             return;
         }
 
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
-            return;
-        }
-
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                Element element = OperateActionUtil.getInstance().nextPageChapter();
+                ChapterInfo nextPageChapter = OperateActionUtil.getInstance().nextPageChapter();
 
                 ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
                 selectedChapterInfoTemp.setLastReadLineNum(1);
@@ -54,8 +50,16 @@ public class NextChapterAction extends AnAction {
                         // 获取内容面板JTextPane
                         JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
                         if (contentTextPanel != null) {
+                            String fontColorHex = cacheService.getFontColorHex();
+                            String fontFamily = cacheService.getFontFamily();
+                            int fontSize = cacheService.getFontSize();
+                            String chapterContent = nextPageChapter.getChapterContent();
                             // 设置内容
-                            contentTextPanel.setText(element.html());
+                            String style = "color:" + fontColorHex + ";" +
+                                    "font-family: '" + fontFamily + "';" +
+                                    "font-size: " + fontSize + "px;";
+                            chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
+                            contentTextPanel.setText(chapterContent);
                             // 设置光标位置
                             contentTextPanel.setCaretPosition(0);
                         }

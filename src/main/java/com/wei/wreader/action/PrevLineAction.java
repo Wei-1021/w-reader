@@ -11,18 +11,14 @@ import com.wei.wreader.widget.WReaderStatusBarWidget;
  * 状态栏模式时切换至上一行文字
  * @author weizhanjie
  */
-public class PrevLineAction extends AnAction {
+public class PrevLineAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
-            return;
-        }
-
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
             return;
         }
 

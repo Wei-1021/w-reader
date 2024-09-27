@@ -19,25 +19,21 @@ import org.jsoup.nodes.Element;
 
 import javax.swing.*;
 
-public class PrevChapterAction extends AnAction {
+public class PrevChapterAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
-            return;
-        }
-
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
             return;
         }
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
                 OperateActionUtil operateAction = OperateActionUtil.getInstance();
-                Element element = operateAction.prevPageChapter();
+                ChapterInfo prevPageChapter = operateAction.prevPageChapter();
 
                 ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
                 selectedChapterInfoTemp.setLastReadLineNum(1);
@@ -55,7 +51,16 @@ public class PrevChapterAction extends AnAction {
                         JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
                         if (contentTextPanel != null) {
                             // 设置内容
-                            contentTextPanel.setText(element.html());
+                            String fontColorHex = cacheService.getFontColorHex();
+                            String fontFamily = cacheService.getFontFamily();
+                            int fontSize = cacheService.getFontSize();
+                            String chapterContent = prevPageChapter.getChapterContent();
+                            // 设置内容
+                            String style = "color:" + fontColorHex + ";" +
+                                    "font-family: '" + fontFamily + "';" +
+                                    "font-size: " + fontSize + "px;";
+                            chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
+                            contentTextPanel.setText(chapterContent);
                             // 设置光标位置
                             contentTextPanel.setCaretPosition(0);
                         }

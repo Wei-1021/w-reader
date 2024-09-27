@@ -8,10 +8,12 @@ import com.wei.wreader.ui.WReaderSettingForm;
 
 import javax.swing.*;
 
-public class SettingAction extends AnAction {
+public class SettingAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         SwingUtilities.invokeLater(() -> {
             Project project = e.getProject();
             ShowSettingsUtil showSettingsUtil = ShowSettingsUtil.getInstance();

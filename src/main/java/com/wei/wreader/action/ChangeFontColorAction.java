@@ -10,6 +10,7 @@ import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
@@ -20,18 +21,14 @@ import javax.swing.*;
  * 改变字体颜色
  * @author weizhanjie
  */
-public class ChangeFontColorAction extends AnAction {
+public class ChangeFontColorAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
-            return;
-        }
-
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
             return;
         }
 

@@ -20,6 +20,7 @@ import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -190,6 +191,9 @@ public class OperateActionUtil {
             if (settings == null) {
                 settings = configYaml.getSettings();
             }
+            if (StringUtils.isBlank(settings.getCharset())) {
+                settings.setCharset(configYaml.getSettings().getCharset());
+            }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
             throw new RuntimeException(e);
@@ -291,7 +295,7 @@ public class OperateActionUtil {
                         String bookName = aElement.text();
 
                         try {
-                            bookUrl = JsUtil.buildFullURL(location, bookUrl);
+                            bookUrl = UrlUtil.buildFullURL(location, bookUrl);
                         } catch (MalformedURLException e) {
                             throw new RuntimeException(e);
                         }
@@ -440,7 +444,7 @@ public class OperateActionUtil {
                 chapterList.add(text);
                 try {
                     // 转化url路径，将相对路径转化成绝对路径
-                    href = JsUtil.buildFullURL(location, href);
+                    href = UrlUtil.buildFullURL(location, href);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
@@ -559,7 +563,7 @@ public class OperateActionUtil {
             currentChapterInfo.setChapterContentStr(chapterContentText);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, chapterElement);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -582,15 +586,15 @@ public class OperateActionUtil {
             currentChapterInfo.setChapterTitle(chapterTitle);
             // 提取章节内容
             chapterContentHtml = chapterContentList.get(currentChapterIndex);
+            Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+            chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
             // 缓存当前章节信息
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                Element chapterElement = new Element("<pre>");
-                chapterElement.appendText(chapterContentText);
-                listener.onClickItem(selectedIndex, chapterList, chapterElement);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
             }
         }
     }
@@ -645,7 +649,7 @@ public class OperateActionUtil {
     /**
      * 上一页
      */
-    public Element prevPageChapter() {
+    public ChapterInfo prevPageChapter() {
         try {
             if (currentChapterIndex <= 0) {
                 return null;
@@ -653,19 +657,32 @@ public class OperateActionUtil {
 
             currentChapterIndex = currentChapterIndex - 1;
             String chapterTitle = chapterList.get(currentChapterIndex);
-            String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
-            String prevChapterUrl = prevChapterSuffixUrl;
-            if (!prevChapterSuffixUrl.startsWith("http://") && !prevChapterSuffixUrl.startsWith("https://")) {
-                prevChapterUrl = baseUrl + prevChapterSuffixUrl;
+
+            int dataLoadType = settings.getDataLoadType();
+            if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
+                String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
+                String prevChapterUrl = prevChapterSuffixUrl;
+                if (!prevChapterSuffixUrl.startsWith("http://") && !prevChapterSuffixUrl.startsWith("https://")) {
+                    prevChapterUrl = baseUrl + prevChapterSuffixUrl;
+                }
+                currentChapterInfo.setChapterUrl(prevChapterUrl);
+                searchBookContentRemote(prevChapterUrl);
+            } else if (dataLoadType == Settings.DATA_LOAD_TYPE_LOCAL) {
+                chapterContentList = cacheService.getChapterContentList();
+                if (chapterContentList != null && !chapterContentList.isEmpty()) {
+                    // 提取章节内容
+                    chapterContentHtml = chapterContentList.get(currentChapterIndex);
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                }
             }
+
             currentChapterInfo.setChapterTitle(chapterTitle);
-            currentChapterInfo.setChapterUrl(prevChapterUrl);
-            Element element = searchBookContentRemote(prevChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
-            return element;
+            return currentChapterInfo;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -674,28 +691,45 @@ public class OperateActionUtil {
     /**
      * 下一页
      */
-    public Element nextPageChapter() {
+    public ChapterInfo nextPageChapter() {
         try {
-            if (currentChapterIndex >= chapterUrlList.size() - 1) {
-                return null;
+            int dataLoadType = settings.getDataLoadType();
+            if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
+                if (currentChapterIndex >= chapterUrlList.size() - 1) {
+                    return null;
+                }
+                currentChapterIndex = currentChapterIndex + 1;
+
+                String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
+                String nextChapterUrl = nextChapterSuffixUrl;
+                if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
+                    nextChapterUrl = baseUrl + nextChapterSuffixUrl;
+                }
+                currentChapterInfo.setChapterUrl(nextChapterUrl);
+                searchBookContentRemote(nextChapterUrl);
+            } else if (dataLoadType == Settings.DATA_LOAD_TYPE_LOCAL) {
+                chapterContentList = cacheService.getChapterContentList();
+                if (currentChapterIndex >= chapterContentList.size() - 1) {
+                    return null;
+                }
+                currentChapterIndex = currentChapterIndex + 1;
+
+                if (!chapterContentList.isEmpty()) {
+                    // 提取章节内容
+                    chapterContentHtml = chapterContentList.get(currentChapterIndex);
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                }
             }
 
-            currentChapterIndex = currentChapterIndex + 1;
             String chapterTitle = chapterList.get(currentChapterIndex);
-            String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
-            String nextChapterUrl = nextChapterSuffixUrl;
-            if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
-                nextChapterUrl = baseUrl + nextChapterSuffixUrl;
-            }
             currentChapterInfo.setChapterTitle(chapterTitle);
-            currentChapterInfo.setChapterUrl(nextChapterUrl);
-            Element element = searchBookContentRemote(nextChapterUrl);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
 
-            return element;
+            return currentChapterInfo;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -751,13 +785,15 @@ public class OperateActionUtil {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false,
                 false, false, false, false);
         fileChooserDescriptor.setTitle("选择文本文件");
+        fileChooserDescriptor.setDescription(ConstUtil.WREADER_LOAD_LOCAL_TIP);
         VirtualFile virtualFile = FileChooser.chooseFile(fileChooserDescriptor, null, null);
         if (virtualFile != null) {
             String filePath = virtualFile.getPath();
             File file = new File(filePath);
             String fileName = file.getName();
             // 读取文件内容
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "GBK"))) {
+            String charset = settings.getCharset();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
                 // 使用正则表达式(ConstUtil.TEXT_FILE_DIR_REGEX)提取章节标题和章节内容
                 StringBuilder contentBuilder = new StringBuilder();
                 String line;
@@ -765,6 +801,8 @@ public class OperateActionUtil {
                 List<String> chapterContentList = new ArrayList<>();
                 Map<String, String> chapterContentMap = new HashMap<>();
                 while ((line = reader.readLine()) != null) {
+//                    line.replaceAll(" ", "&nbsp;");
+
                     Pattern pattern = Pattern.compile(ConstUtil.TEXT_FILE_DIR_REGEX);
                     Matcher matcher = pattern.matcher(line);
                     if (matcher.find()) {
@@ -780,8 +818,9 @@ public class OperateActionUtil {
                         // 清空内容构建器
                         contentBuilder.setLength(0);
                     }
-                    contentBuilder.append(line);
+                    contentBuilder.append(line).append("<br>");
                 }
+                chapterContentList.add(contentBuilder.toString());
 
                 // 创建一个BookInfo对象，并设置文件名、文件路径和内容
                 BookInfo bookInfo = new BookInfo();

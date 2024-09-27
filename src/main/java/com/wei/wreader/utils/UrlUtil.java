@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-public class JsUtil {
+public class UrlUtil {
 
     /**
      * 转化html中href的链接，转化成完整的url

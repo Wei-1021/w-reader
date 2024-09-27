@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.icons.ExpUiIcons;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -18,26 +17,20 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.Gray;
-import com.intellij.ui.JBColor;
-import com.intellij.ui.ToolbarDecorator;
-import com.intellij.ui.components.IconLabelButton;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
-import com.wei.wreader.pojo.BookInfo;
-import com.wei.wreader.pojo.BookSiteInfo;
-import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.pojo.ToolWindowInfo;
+import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.JsUtil;
+import com.wei.wreader.utils.OperateActionUtil;
+import com.wei.wreader.utils.UrlUtil;
 import groovy.util.logging.Log4j2;
-import kotlin.Unit;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -60,6 +53,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 
 /**
@@ -148,6 +142,10 @@ public class WReaderToolWindow implements Configurable {
      */
     private List<String> chapterUrlList = new ArrayList<>();
     /**
+     * 章节链接列表
+     */
+    private List<String> chapterContentList = new ArrayList<>();
+    /**
      * 当前章节索引
      */
     private int currentChapterIndex = 0;
@@ -194,6 +192,8 @@ public class WReaderToolWindow implements Configurable {
     private ConfigYaml configYaml;
 
     private CacheService cacheService;
+    private Settings settings;
+    private OperateActionUtil operateAction;
     //endregion
     //endregion
 
@@ -208,7 +208,7 @@ public class WReaderToolWindow implements Configurable {
 //            initMenuTool(toolWindow);
             initMenuToolTabs(toolWindow);
             // 初始化编辑器
-            initContentTextArea();
+            initContentTextArea(toolWindow);
             // 初始化数据
             initData();
             // 监听编辑器颜色修改
@@ -322,8 +322,8 @@ public class WReaderToolWindow implements Configurable {
     public void initMenuToolTabs(ToolWindow toolWindow) {
         menuToolBarPanel.setVisible(true);
         ActionManager actionManager = ActionManager.getInstance();
-        ActionGroup toolWindowBarGroup = (ActionGroup) actionManager.getAction("toolWindowBar");
-        ActionToolbar actionToolbar = actionManager.createActionToolbar("toolWindowToolBar", toolWindowBarGroup, true);
+        ActionGroup toolWindowBarGroup = (ActionGroup) actionManager.getAction(ConstUtil.WREADER_GROUP_TOOL_WINDOW_BAR_ID);
+        ActionToolbar actionToolbar = actionManager.createActionToolbar(ConstUtil.WREADER_TOOL_WINDOW_TOOL_BAR_ID, toolWindowBarGroup, true);
         actionToolbar.setTargetComponent(menuToolBarPanel);
         JComponent actionToolbarComponent = actionToolbar.getComponent();
         actionToolbarComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -343,6 +343,16 @@ public class WReaderToolWindow implements Configurable {
      */
     public void initData() {
         try {
+            operateAction = OperateActionUtil.getInstance();
+            // settings
+            settings = cacheService.getSettings();
+            if (settings == null) {
+                settings = configYaml.getSettings();
+            }
+            if (StringUtils.isBlank(settings.getCharset())) {
+                settings.setCharset(configYaml.getSettings().getCharset());
+            }
+
             // 加载字体信息
             fontFamily = cacheService.getFontFamily();
             if (fontFamily == null || fontFamily.isEmpty()) {
@@ -391,12 +401,14 @@ public class WReaderToolWindow implements Configurable {
             // 选择的站点基础网址
             baseUrl = selectedBookSiteInfo.getBaseUrl();
             setContentText("<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>");
-            if (chapterList != null && !chapterList.isEmpty() &&
-                    chapterUrlList != null && !chapterUrlList.isEmpty()) {
-                if (currentChapterInfo.getChapterUrl() != null) {
-                    currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
-                    searchBookContent(currentChapterInfo.getChapterUrl());
-                }
+            if (chapterList != null && !chapterList.isEmpty()) {
+                currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
+                chapterContentHtml = currentChapterInfo.getChapterContent();
+                chapterContentText = currentChapterInfo.getChapterContentStr();
+                String style = String.format("font-family:%s;font-size:%dpx;color:%s;",
+                        fontFamily, fontSize, fontColorHex);
+                chapterContentHtml = String.format("<div style='%s'>%s</div>", style, chapterContentText);
+                setContentText(chapterContentHtml);
             }
 
             if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
@@ -422,10 +434,16 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 初始化内容编辑器JTextArea
      */
-    public void initContentTextArea() {
+    public void initContentTextArea(ToolWindow toolWindow) {
+        JComponent toolWindowComponent = toolWindow.getComponent();
+
+        contentPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+
         contentTextPane = new JTextPane();
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
+        contentTextPane.setAlignmentY(Component.TOP_ALIGNMENT);
+        contentTextPane.setSize(toolWindowComponent.getWidth(), toolWindowComponent.getHeight());
         contentTextPane.addMouseListener(new MouseAdapter() {
             /**
              * {@inheritDoc}
@@ -437,10 +455,11 @@ public class WReaderToolWindow implements Configurable {
                 super.mouseClicked(e);
                 if (e.getClickCount() == 2) {
                     // 双击事件，显示/隐藏工具菜单
-                    menuToolPanel.setVisible(!menuToolPanel.isVisible());
+//                    menuToolPanel.setVisible(!menuToolPanel.isVisible());
                 }
             }
         });
+        contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);
         contentScrollPane.setBorder(JBUI.Borders.empty(2, 5));
 
@@ -768,6 +787,7 @@ public class WReaderToolWindow implements Configurable {
                 Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
                 throw new RuntimeException(e);
             }
+
             // 小说列表的HTML标签类型（class, id）
             String bookListElementType = selectedBookSiteInfo.getBookListElementType();
             Element element = null;
@@ -788,7 +808,7 @@ public class WReaderToolWindow implements Configurable {
                         String bookName = aElement.text();
 
                         try {
-                            bookUrl = JsUtil.buildFullURL(location, bookUrl);
+                            bookUrl = UrlUtil.buildFullURL(location, bookUrl);
                         } catch (MalformedURLException e) {
                             throw new RuntimeException(e);
                         }
@@ -861,7 +881,7 @@ public class WReaderToolWindow implements Configurable {
                 chapterList.add(text);
                 try {
                     // 转化url路径，将相对路径转化成绝对路径
-                    href = JsUtil.buildFullURL(location, href);
+                    href = UrlUtil.buildFullURL(location, href);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }

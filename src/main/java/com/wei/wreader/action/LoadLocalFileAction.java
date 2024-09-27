@@ -11,23 +11,17 @@ import com.wei.wreader.utils.OperateActionUtil;
  * 加载本地文件
  * @author weizhanjie
  */
-public class LoadLocalFileAction extends AnAction {
+public class LoadLocalFileAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
             return;
         }
 
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
-            return;
-        }
-
         OperateActionUtil.getInstance().loadLocalFile();
-
-
     }
 }

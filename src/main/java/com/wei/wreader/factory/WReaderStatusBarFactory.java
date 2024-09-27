@@ -31,16 +31,18 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
     private Settings settings;
     private ConfigYaml configYaml;
 
-    private static final String WIDGET_ID = ConfigYaml.getInstance().getNameHump() + "StatusBar";
-    private static final String DISPLAY_NAME = ConfigYaml.getInstance().getNameHump() + "StatusBar";
+    private String WIDGET_ID;
+    private String DISPLAY_NAME;
 
     @Override
     public @NotNull @NonNls String getId() {
+        WIDGET_ID = ConstUtil.WREADER_STATUS_BAR_ID;
         return WIDGET_ID;
     }
 
     @Override
     public @NotNull @NlsContexts.ConfigurableName String getDisplayName() {
+        DISPLAY_NAME = ConstUtil.WREADER_STATUS_BAR_ID;
         return DISPLAY_NAME;
     }
 

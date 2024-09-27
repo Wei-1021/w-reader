@@ -12,19 +12,14 @@ import com.wei.wreader.widget.WReaderStatusBarWidget;
  *
  * @author weizhanjie
  */
-public class NextLineAction extends AnAction {
+public class NextLineAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
-            return;
-        }
-
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-
-        if (settings == null) {
             return;
         }
 

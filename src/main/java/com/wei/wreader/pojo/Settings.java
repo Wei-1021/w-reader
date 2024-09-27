@@ -56,6 +56,10 @@ public class Settings {
      * 数据加载模式。1-网络加载，2-本地加载
      */
     private int dataLoadType;
+    /**
+     * 字符集
+     */
+    private String charset;
 
     public int getSingleLineChars() {
         return singleLineChars;
@@ -87,5 +91,13 @@ public class Settings {
 
     public void setDataLoadType(int dataLoadType) {
         this.dataLoadType = dataLoadType;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
     }
 }

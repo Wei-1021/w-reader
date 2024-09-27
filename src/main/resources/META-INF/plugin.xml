@@ -20,11 +20,15 @@
         功能特性：
         </p>
         <ul>
-            <li>&nbsp;&nbsp;无缝阅读：直接在IDEA内阅读喜爱的小说，无需切换应用。</li>
+            <li>&nbsp;&nbsp;支持在线通过书名搜索小说、点击目录快速跳转章节。</li>
+            <li>&nbsp;&nbsp;支持本地加载小说。</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.1
+    </p>
     ]]></change-notes>
 
     <!-- Product and plugin compatibility requirements.
@@ -34,89 +38,100 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity id="com.wei.wreader.factory.StartupFactory"
+        <postStartupActivity id="wreader.StartupFactory"
                              implementation="com.wei.wreader.factory.StartupFactory"
                              order="first"/>
-        <!--        <toolWindow id="WReader"-->
-        <!--                    factoryClass="com.wei.wreader.factory.WReaderToolWindowFactory"-->
-        <!--                    anchor="right"-->
-        <!--                    canCloseContents="true"-->
-        <!--                    icon="/icon/mainIcon.svg"/>-->
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
-                                 id="com.wei.wreader.ui.WReaderSettingForm"
+                                 id="wreader.WReaderSettingForm"
                                  displayName="W-Reader"/>
-        <statusBarWidgetFactory id="WReaderStatusBar"
+        <statusBarWidgetFactory id="wreader.WReaderStatusBar"
                                 implementation="com.wei.wreader.factory.WReaderStatusBarFactory"
                                 order="first"/>
     </extensions>
 
     <actions>
         <!-- Action -->
-        <action id="WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置"
+        <action id="wreader.WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置"
                 icon="AllIcons.General.Settings">
         </action>
-        <action id="SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索"
+        <action id="wreader.SearchBookName" class="com.wei.wreader.action.SearchBookNameAction" text="搜索"
                 icon="AllIcons.Actions.Search">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD7"/>
         </action>
-        <action id="ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录"
+        <action id="wreader.ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录"
                 icon="com.intellij.icons.ExpUiIcons.FileTypes.ChangedFile">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD9"/>
         </action>
-        <action id="PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"
+        <action id="wreader.PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"
                 icon="AllIcons.Actions.Play_first">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
         </action>
-        <action id="NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章"
+        <action id="wreader.NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章"
                 icon="AllIcons.Actions.Play_last">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
         </action>
-        <action id="PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
+        <action id="wreader.PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
                 description="状态栏模式下切换至上一行文字"
                 icon="com.intellij.icons.ExpUiIcons.General.MoveUp">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD4"/>
         </action>
-        <action id="NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
+        <action id="wreader.NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
                 icon="com.intellij.icons.ExpUiIcons.General.MoveDown"
                 description="状态栏模式下切换至下一行文字">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD6"/>
         </action>
-        <action id="FontSizeSubAction" class="com.wei.wreader.action.FontSizeSubAction" text="字体缩小"
+        <action id="wreader.FontSizeSubAction" class="com.wei.wreader.action.FontSizeSubAction" text="字体缩小"
                 icon="/icon/font_sub.svg"/>
-        <action id="FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
+        <action id="wreader.FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
                 icon="/icon/font_add.svg"/>
-        <action id="ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
+        <action id="wreader.ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
                 icon="com.intellij.icons.ExpUiIcons.Gutter.Colors"/>
-        <action id="LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
+        <action id="wreader.LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
                 icon="AllIcons.Nodes.Folder"
                 description="加载本地文件">
             <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
         </action>
 
         <!-- Group -->
-        <group id="WReaderGroup" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
+        <group id="wreader.group.WReader" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </group>
-        <group id="remote">
-            <reference id="WReaderSetting"/>
+        <group id="wreader.group.remote">
+            <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.LoadLocalFileAction"/>
             <separator/>
-            <reference id="SearchBookName"/>
-            <reference id="ChapterListAction"/>
-            <reference id="PrevChapterAction"/>
-            <reference id="NextChapterAction"/>
-            <add-to-group group-id="WReaderGroup"/>
+            <reference id="wreader.SearchBookName"/>
+            <reference id="wreader.ChapterListAction"/>
+            <reference id="wreader.PrevChapterAction"/>
+            <reference id="wreader.NextChapterAction"/>
+            <add-to-group group-id="wreader.group.WReader"/>
             <separator/>
         </group>
-        <group id="toolWindowBar">
-            <reference id="SearchBookName"/>
-            <reference id="FontSizeSubAction"/>
-            <reference id="FontSizeAddAction"/>
-            <reference id="ChapterListAction"/>
-            <reference id="PrevChapterAction"/>
-            <reference id="NextChapterAction"/>
-            <reference id="ChangeFontColorAction"/>
+        <group id="wreader.group.toolWindowBar">
+            <reference id="wreader.SearchBookName"/>
+            <reference id="wreader.ChapterListAction"/>
+            <separator/>
+            <reference id="wreader.FontSizeSubAction"/>
+            <reference id="wreader.FontSizeAddAction"/>
+            <reference id="wreader.PrevChapterAction"/>
+            <reference id="wreader.NextChapterAction"/>
+            <separator/>
+            <reference id="wreader.ChangeFontColorAction"/>
+            <reference id="wreader.LoadLocalFileAction"/>
+        </group>
+        <group id="wreader.group.statusBar">
+            <reference id="wreader.WReaderSetting"/>
+            <separator/>
+            <reference id="wreader.SearchBookName"/>
+            <reference id="wreader.LoadLocalFileAction"/>
+            <reference id="wreader.ChapterListAction"/>
+            <separator/>
+            <reference id="wreader.PrevChapterAction"/>
+            <reference id="wreader.NextChapterAction"/>
+            <reference id="wreader.PrevLineAction"/>
+            <reference id="wreader.NextLineAction"/>
         </group>
     </actions>
 </idea-plugin>

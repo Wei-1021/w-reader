@@ -1,9 +1,6 @@
 package com.wei.wreader.widget;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
@@ -66,7 +63,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             if (settings == null) {
                 settings = configYaml.getSettings();
             }
-            WIDGET_ID = configYaml.getNameHump() + "StatusBarWidget";
+            WIDGET_ID = ConstUtil.WREADER_STATUS_BAR_WIDGET_ID;
             toolWindow = configYaml.getToolWindow();
         });
     }
@@ -139,29 +136,19 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     @Nullable
     @Override
     protected ListPopup createPopup(@NotNull DataContext dataContext) {
-        ComponentIdKey componentIdKey = configYaml.getComponentIdKey();
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionGroup group = (ActionGroup) actionManager.getAction(ConstUtil.WREADER_GROUP_STATUS_BAR_ID);
 
-        ActionManager instance = ActionManager.getInstance();
-        AnAction settingAction = instance.getAction(componentIdKey.getSetting());
-        AnAction searchBookNameAction = instance.getAction(componentIdKey.getSearchBook());
-        AnAction chapterListAction = instance.getAction(componentIdKey.getBookDirectory());
-        AnAction prevChapterAction = instance.getAction(componentIdKey.getPrevChapter());
-        AnAction nextChapterAction = instance.getAction(componentIdKey.getNextChapter());
-        AnAction prevLineAction = instance.getAction(componentIdKey.getPrevLine());
-        AnAction nextLineAction = instance.getAction(componentIdKey.getNextLine());
-        List<AnAction> actionList = List.of(settingAction, searchBookNameAction, chapterListAction,
-                prevChapterAction, nextChapterAction, prevLineAction, nextLineAction);
-        DefaultActionGroup actionGroup = new DefaultActionGroup(actionList);
         return JBPopupFactory
                 .getInstance()
-                .createActionGroupPopup(configYaml.getName(), actionGroup, dataContext,
+                .createActionGroupPopup(configYaml.getName(), group, dataContext,
                         JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true);
     }
 
     @NotNull
     @Override
     public String ID() {
-        WIDGET_ID = ConstUtil.WREADER_ID + "StatusBarWidget";
+        WIDGET_ID = ConstUtil.WREADER_STATUS_BAR_WIDGET_ID;
         return WIDGET_ID;
     }
 
@@ -169,7 +156,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private static WReaderStatusBarWidget findWidget(@NotNull Project project) {
         StatusBar bar = WindowManager.getInstance().getStatusBar(project);
         if (bar != null) {
-            return (WReaderStatusBarWidget) bar.getWidget(ConstUtil.WREADER_ID + "StatusBarWidget");
+            return (WReaderStatusBarWidget) bar.getWidget(ConstUtil.WREADER_STATUS_BAR_WIDGET_ID);
         }
         return null;
     }
@@ -179,13 +166,13 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (widget != null) {
             widget.currentContentStr = chapterContent;
             widget.update(() -> {
-                widget.myStatusBar.updateWidget(ConstUtil.WREADER_ID + "StatusBarWidget");
+                widget.myStatusBar.updateWidget(ConstUtil.WREADER_STATUS_BAR_WIDGET_ID);
             });
         }
     }
 
     public static String getWidgetId() {
-        return ConstUtil.WREADER_ID + "StatusBarWidget";
+        return ConstUtil.WREADER_STATUS_BAR_WIDGET_ID;
     }
 
     /**

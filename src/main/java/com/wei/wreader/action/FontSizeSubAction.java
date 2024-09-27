@@ -22,18 +22,14 @@ import javax.swing.*;
  *
  * @author weizhanjie
  */
-public class FontSizeSubAction extends AnAction {
+public class FontSizeSubAction extends BaseAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        super.actionPerformed(e);
+
         Project project = e.getProject();
         if (project == null) {
-            return;
-        }
-
-        CacheService cacheService = CacheService.getInstance();
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
             return;
         }
 
@@ -58,7 +54,6 @@ public class FontSizeSubAction extends AnAction {
                             JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
                             if (contentTextPanel != null) {
                                 int caretPosition = contentTextPanel.getCaretPosition();
-                                System.out.println("caretPosition: " + caretPosition);
                                 String text = getContent(cacheService, selectedChapterInfo);
                                 contentTextPanel.setText(text);
                                 contentTextPanel.setCaretPosition(caretPosition);

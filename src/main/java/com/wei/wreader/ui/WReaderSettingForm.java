@@ -1,27 +1,23 @@
 package com.wei.wreader.ui;
 
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.NlsContexts;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.NumberDocument;
 import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
-import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.List;
+import java.nio.charset.Charset;
+import java.util.SortedMap;
 
 /**
  * 设置窗口
@@ -37,6 +33,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JRadioButton sideBarRadioButton;
     private JRadioButton statusBarRadioButton;
     private JRadioButton terminalRadioButton;
+    private JComboBox charsetComboBox;
+    private JLabel charsetLabel;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -50,6 +48,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings = cacheService.getSettings();
         if (settings == null) {
             settings = configYaml.getSettings();
+        }
+
+        if (StringUtils.isBlank(settings.getCharset())) {
+            settings.setCharset(configYaml.getSettings().getCharset());
         }
     }
 
@@ -92,6 +94,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         sideBarRadioButton.setText(Settings.DISPLAY_TYPE_SIDEBAR_STR);
         statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
         terminalRadioButton.setText(Settings.DISPLAY_TYPE_TERMINAL_STR);
+
+        // 字符集
+        SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
+        for (String key : stringCharsetSortedMap.keySet()) {
+            charsetComboBox.addItem(key);
+        }
+        charsetComboBox.setSelectedItem(settings.getCharset());
+        charsetComboBox.addActionListener(e -> {
+            settings.setCharset((String) charsetComboBox.getSelectedItem());
+        });
 
         int displayTypeTemp = settings.getDisplayType();
         switch (displayTypeTemp) {

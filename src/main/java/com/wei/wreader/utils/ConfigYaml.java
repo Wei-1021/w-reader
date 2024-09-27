@@ -159,6 +159,8 @@ public class ConfigYaml {
         settings.setSingleLineChars(Integer.parseInt(settingsMap.get("singleLineChars").toString()));
         settings.setShowLineNum(Boolean.parseBoolean(settingsMap.get("isShowLineNum").toString()));
         settings.setDisplayType(Integer.parseInt(settingsMap.get("displayType").toString()));
+        settings.setDataLoadType(Integer.parseInt(settingsMap.get("dataLoadType").toString()));
+        settings.setCharset(settingsMap.get("charset").toString());
         return settings;
     }
 
