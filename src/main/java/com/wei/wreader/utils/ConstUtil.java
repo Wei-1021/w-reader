@@ -104,6 +104,9 @@ public class ConstUtil {
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
     public static final String WREADER_ERROR = "出现异常，请重试！";
+    public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
+    public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
+    public static final String WREADER_LOAD_FAIL = "文件加载出现异常，请重试！";
     public static final String WREADER_INIT_ERROR = "W-Reader加载失败！";
     public static final String WREADER_LOAD_LOCAL_TIP = "若出现文字乱码，请尝试在设置中修改字符集，然后重新加载文件";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
@@ -121,5 +124,13 @@ public class ConstUtil {
      * 正则表达式--匹配HTML标签和空白符
      */
     public static final String HTML_TAG_REGEX = "<[^>]+>|\\s|\\p{Zs}";
+    /**
+     * 文件类型--txt
+     */
+    public static final String FILE_TYPE_TXT = "txt";
+    /**
+     * 文件类型--epub
+     */
+    public static final String FILE_TYPE_EPUB = "epub";
 
 }

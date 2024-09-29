@@ -20,8 +20,10 @@
         功能特性：
         </p>
         <ul>
+            <li>&nbsp;&nbsp;支持多个站点之间的切换搜索。</li>
             <li>&nbsp;&nbsp;支持在线通过书名搜索小说、点击目录快速跳转章节。</li>
             <li>&nbsp;&nbsp;支持本地加载小说。</li>
+            <li>&nbsp;&nbsp;支持txt 和 epub 格式。</li>
         </ul>
     ]]></description>
 
@@ -120,6 +122,7 @@
             <separator/>
             <reference id="wreader.ChangeFontColorAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
+            <reference id="wreader.WReaderSetting"/>
         </group>
         <group id="wreader.group.statusBar">
             <reference id="wreader.WReaderSetting"/>

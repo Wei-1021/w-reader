@@ -101,9 +101,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             charsetComboBox.addItem(key);
         }
         charsetComboBox.setSelectedItem(settings.getCharset());
-        charsetComboBox.addActionListener(e -> {
-            settings.setCharset((String) charsetComboBox.getSelectedItem());
-        });
 
         int displayTypeTemp = settings.getDisplayType();
         switch (displayTypeTemp) {
@@ -149,6 +146,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
 
+        if (!modifiedSettings.getCharset().equals(charsetComboBox.getSelectedItem())) {
+            return true;
+        }
+
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
         if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
@@ -169,6 +170,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setSingleLineChars(Integer.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
+        settings.setCharset((String) charsetComboBox.getSelectedItem());
         cacheService.setSettings(settings);
 
         ProjectManager projectManager = ProjectManager.getInstance();

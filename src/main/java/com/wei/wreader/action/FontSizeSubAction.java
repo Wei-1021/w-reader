@@ -28,11 +28,6 @@ public class FontSizeSubAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfo == null) {
             return;
@@ -42,7 +37,7 @@ public class FontSizeSubAction extends BaseAction {
         SwingUtilities.invokeLater(() -> {
             switch (settings.getDisplayType()) {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
-                    OperateActionUtil.getInstance().fontSizeSub();
+                    OperateActionUtil.getInstance(project).fontSizeSub();
 
                     ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
                     ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);

@@ -2,6 +2,7 @@ package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
@@ -13,6 +14,7 @@ public abstract class BaseAction extends AnAction {
     protected CacheService cacheService;
     protected ConfigYaml configYaml;
     protected Settings settings;
+    protected Project project;
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         cacheService = CacheService.getInstance();
@@ -27,5 +29,10 @@ public abstract class BaseAction extends AnAction {
             settings.setCharset(configYaml.getSettings().getCharset());
             cacheService.setSettings(settings);
         }
+
+
+        project = anActionEvent.getProject();
+
+
     }
 }

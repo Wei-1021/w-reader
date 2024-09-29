@@ -210,7 +210,7 @@ public class WReaderToolWindow implements Configurable {
             // 初始化编辑器
             initContentTextArea(toolWindow);
             // 初始化数据
-            initData();
+            initData(toolWindow);
             // 监听编辑器颜色修改
             appEditorColorsListener();
         });
@@ -341,9 +341,9 @@ public class WReaderToolWindow implements Configurable {
     /**
      * 初始化数据
      */
-    public void initData() {
+    public void initData(ToolWindow toolWindow) {
         try {
-            operateAction = OperateActionUtil.getInstance();
+            operateAction = OperateActionUtil.getInstance(toolWindow.getProject());
             // settings
             settings = cacheService.getSettings();
             if (settings == null) {
@@ -407,7 +407,7 @@ public class WReaderToolWindow implements Configurable {
                 chapterContentText = currentChapterInfo.getChapterContentStr();
                 String style = String.format("font-family:%s;font-size:%dpx;color:%s;",
                         fontFamily, fontSize, fontColorHex);
-                chapterContentHtml = String.format("<div style='%s'>%s</div>", style, chapterContentText);
+                chapterContentHtml = String.format("<div style='%s'>%s</div>", style, chapterContentHtml);
                 setContentText(chapterContentHtml);
             }
 
@@ -443,7 +443,7 @@ public class WReaderToolWindow implements Configurable {
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
         contentTextPane.setAlignmentY(Component.TOP_ALIGNMENT);
-        contentTextPane.setSize(toolWindowComponent.getWidth(), toolWindowComponent.getHeight());
+        contentTextPane.setPreferredSize(new Dimension(toolWindowComponent.getWidth(), toolWindowComponent.getHeight()));
         contentTextPane.addMouseListener(new MouseAdapter() {
             /**
              * {@inheritDoc}

@@ -45,6 +45,7 @@ dependencies {
     }
 
     implementation("org.yaml:snakeyaml:2.0")
+    implementation("io.documentnode:epub4j-core:4.2.1")
 }
 
 tasks {

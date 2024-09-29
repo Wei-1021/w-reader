@@ -4,6 +4,9 @@ wreader:
   version: '0.0.1'
   description: 'A simple reader'
   author: 'weizhanjie'
+  allowFileExtension: # 允许的文件后缀
+    - 'txt'
+    - 'epub'
   settings:
     singleLineChars: 30 #最大单行字数
     isShowLineNum: false #是否显示行号

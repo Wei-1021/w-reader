@@ -17,11 +17,6 @@ public class PrevLineAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
         WReaderStatusBarWidget.prevLine(project);
     }
 }

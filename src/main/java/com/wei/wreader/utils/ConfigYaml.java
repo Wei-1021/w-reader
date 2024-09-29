@@ -140,6 +140,10 @@ public class ConfigYaml {
         return (String) getObject("wreader.author");
     }
 
+    public List<String> getAllowFileExtension() {
+        return (List<String>) getObject("wreader.allowFileExtension");
+    }
+
     public ComponentIdKey getComponentIdKey() {
         LinkedHashMap<String, Object> componentIdKeyMap = (LinkedHashMap<String, Object>) getObject("wreader.componentIdKey");
         ComponentIdKey componentIdKey = new ComponentIdKey();

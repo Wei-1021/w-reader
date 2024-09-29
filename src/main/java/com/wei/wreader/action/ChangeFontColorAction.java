@@ -27,18 +27,13 @@ public class ChangeFontColorAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfo == null) {
             return;
         }
 
         SwingUtilities.invokeLater(() -> {
-            OperateActionUtil.getInstance().changeFontColor();
+            OperateActionUtil.getInstance(project).changeFontColor();
             switch (settings.getDisplayType()) {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);

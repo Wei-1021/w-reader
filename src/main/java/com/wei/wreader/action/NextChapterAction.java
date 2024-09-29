@@ -26,14 +26,9 @@ public class NextChapterAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                ChapterInfo nextPageChapter = OperateActionUtil.getInstance().nextPageChapter();
+                ChapterInfo nextPageChapter = OperateActionUtil.getInstance(project).nextPageChapter();
 
                 ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
                 selectedChapterInfoTemp.setLastReadLineNum(1);

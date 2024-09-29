@@ -25,14 +25,9 @@ public class PrevChapterAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                OperateActionUtil operateAction = OperateActionUtil.getInstance();
+                OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
                 ChapterInfo prevPageChapter = operateAction.prevPageChapter();
 
                 ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();

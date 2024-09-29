@@ -7,19 +7,29 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.*;
+import com.intellij.openapi.ui.messages.MessageDialog;
+import com.intellij.openapi.vcs.impl.projectlevelman.PersistentVcsShowConfirmationOption;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.util.ui.ConfirmationDialog;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import io.documentnode.epub4j.domain.Book;
+import io.documentnode.epub4j.domain.Resource;
+import io.documentnode.epub4j.domain.TOCReference;
+import io.documentnode.epub4j.domain.TableOfContents;
+import io.documentnode.epub4j.epub.EpubReader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,6 +37,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -36,17 +47,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 操作工具类
+ *
+ * @author weizhanjie
+ */
 public class OperateActionUtil {
+    //region 属性参数
     private ConfigYaml configYaml;
     private CacheService cacheService;
     private Settings settings;
+    private static Project mProject;
     private static OperateActionUtil instance;
     /**
      * 书本名称列表
@@ -112,20 +130,30 @@ public class OperateActionUtil {
      * 当前章节信息
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
+    //endregion
 
-    public static OperateActionUtil getInstance() {
-        if (instance == null) {
-            instance = new OperateActionUtil();
+    /**
+     * 单例
+     *
+     * @return
+     */
+    public static OperateActionUtil getInstance(Project project) {
+        if (instance == null && !project.equals(mProject)) {
+            instance = new OperateActionUtil(project);
         }
         return instance;
     }
 
-    public OperateActionUtil() {
+    public OperateActionUtil(Project project) {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
+        mProject = project;
         initData();
     }
 
+    /**
+     * 初始化数据
+     */
     private void initData() {
         try {
             // 加载字体信息
@@ -203,40 +231,45 @@ public class OperateActionUtil {
     /**
      * 构建搜索弹出窗口
      */
-    public void buildSearchBookDialog() {
+    public void buildSearchBookDialog(Project project) {
         SwingUtilities.invokeLater(() -> {
             // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
             ComboBox<String> comboBox = getStringComboBox();
             JTextField searchBookTextField = new JTextField(20);
-            Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TITLE, comboBox, searchBookTextField};
-            int result = JOptionPane.showConfirmDialog(null, objs,
-                    ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, JOptionPane.OK_CANCEL_OPTION);
-            if (result == JOptionPane.OK_OPTION) {
-                SwingUtilities.invokeLater(() -> {
-                    String bookName = searchBookTextField.getText();
-                    if (bookName == null || bookName.trim().isEmpty()) {
-                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_EMPTY, "提示", Messages.getInformationIcon());
-                        return;
-                    }
+            Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, comboBox, searchBookTextField};
+            MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
+                    () -> searchBook(searchBookTextField));
 
-                    String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
-                            "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
-
-                    // 获取搜索结果
-                    String searchBookResult = searchBookList(searchBookUrl);
-                    if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
-                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
-                        return;
-                    }
-
-                    // 设置数据加载模式
-                    settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
-                    cacheService.setSettings(settings);
-
-                    handleBookList(searchBookResult);
-                });
-            }
         });
+    }
+
+    /**
+     * 搜索小说
+     *
+     * @param searchBookTextField
+     */
+    public void searchBook(JTextField searchBookTextField) {
+        String bookName = searchBookTextField.getText();
+        if (bookName == null || bookName.trim().isEmpty()) {
+            Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_EMPTY, "提示", Messages.getInformationIcon());
+            return;
+        }
+
+        String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
+                "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
+
+        // 获取搜索结果
+        String searchBookResult = searchBookList(searchBookUrl);
+        if (searchBookResult == null || ConstUtil.STR_ONE.equals(searchBookResult)) {
+            Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
+            return;
+        }
+
+        // 设置数据加载模式
+        settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
+        cacheService.setSettings(settings);
+
+        handleBookList(searchBookResult);
     }
 
     private @NotNull ComboBox<String> getStringComboBox() {
@@ -393,14 +426,7 @@ public class OperateActionUtil {
 
                 // 使用滚动面板来添加滚动条
                 JBScrollPane jScrollPane = new JBScrollPane(searchBookList);
-
-                JFrame frame = new JFrame();
-                frame.setSize(350, 500);
-                frame.setVisible(true);
-                frame.add(jScrollPane);
-                frame.setTitle("搜索结果");
-                // 居中显示
-                frame.setLocationRelativeTo(null);
+                MessageDialogUtil.showMessage(mProject, "搜索结果", jScrollPane);
             }
         }
     }
@@ -483,14 +509,8 @@ public class OperateActionUtil {
             });
 
             JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
-
-            JFrame frame = new JFrame();
-            frame.setSize(350, 500);
-            frame.setVisible(true);
-            frame.add(jScrollPane);
-            frame.setTitle("目录");
-            // 居中显示
-            frame.setLocationRelativeTo(null);
+            jScrollPane.setPreferredSize(new Dimension(400, 500));
+            MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
 
             // 设置数据加载模式
             settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
@@ -521,13 +541,8 @@ public class OperateActionUtil {
             });
 
             JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
-            JFrame frame = new JFrame();
-            frame.setSize(350, 500);
-            frame.setVisible(true);
-            frame.add(jScrollPane);
-            frame.setTitle("目录");
-            // 居中显示
-            frame.setLocationRelativeTo(null);
+            jScrollPane.setPreferredSize(new Dimension(400, 500));
+            MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
 
             chapterListJBList.setSelectedIndex(currentChapterIndex);
             chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
@@ -572,6 +587,7 @@ public class OperateActionUtil {
 
     /**
      * 本地加载小说目录
+     *
      * @param chapterListJBList
      * @param listener
      */
@@ -782,6 +798,7 @@ public class OperateActionUtil {
      * 加载本地文件
      */
     public void loadLocalFile() {
+        // 文件选择器
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false,
                 false, false, false, false);
         fileChooserDescriptor.setTitle("选择文本文件");
@@ -789,68 +806,141 @@ public class OperateActionUtil {
         VirtualFile virtualFile = FileChooser.chooseFile(fileChooserDescriptor, null, null);
         if (virtualFile != null) {
             String filePath = virtualFile.getPath();
-            File file = new File(filePath);
-            String fileName = file.getName();
-            // 读取文件内容
-            String charset = settings.getCharset();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
-                // 使用正则表达式(ConstUtil.TEXT_FILE_DIR_REGEX)提取章节标题和章节内容
-                StringBuilder contentBuilder = new StringBuilder();
-                String line;
-                List<String> chapterList = new ArrayList<>();
-                List<String> chapterContentList = new ArrayList<>();
-                Map<String, String> chapterContentMap = new HashMap<>();
-                while ((line = reader.readLine()) != null) {
-//                    line.replaceAll(" ", "&nbsp;");
-
-                    Pattern pattern = Pattern.compile(ConstUtil.TEXT_FILE_DIR_REGEX);
-                    Matcher matcher = pattern.matcher(line);
-                    if (matcher.find()) {
-                        // 当前章节列表为空，说明contentBuilder缓存的内容不是小说的正文，非正文内容无需添加
-                        if (!chapterList.isEmpty()) {
-                            chapterContentMap.put(line, contentBuilder.toString());
-                            // 将contentBuilder中缓存的内容添加到章节内容列表中
-                            chapterContentList.add(contentBuilder.toString());
-                        }
-                        chapterList.add(line);
-                        // 提取章节标题
-                        String chapterTitle = matcher.group(4).trim();
-                        // 清空内容构建器
-                        contentBuilder.setLength(0);
-                    }
-                    contentBuilder.append(line).append("<br>");
-                }
-                chapterContentList.add(contentBuilder.toString());
-
-                // 创建一个BookInfo对象，并设置文件名、文件路径和内容
-                BookInfo bookInfo = new BookInfo();
-                bookInfo.setBookName(fileName);
-                bookInfo.setBookDesc(fileName);
-                cacheService.setSelectedBookInfo(bookInfo);
-                cacheService.setChapterList(chapterList);
-                cacheService.setChapterContentList(chapterContentList);
-                cacheService.setChapterUrlList(null);
-
-                // 重置选中章节信息
-                ChapterInfo selectedChapterInfoTemp = new ChapterInfo();
-                selectedChapterInfoTemp.setChapterTitle("");
-                selectedChapterInfoTemp.setChapterContent("");
-                selectedChapterInfoTemp.setSelectedChapterIndex(0);
-                selectedChapterInfoTemp.setChapterContentStr("");
-                selectedChapterInfoTemp.setLastReadLineNum(1);
-                selectedChapterInfoTemp.setPrevReadLineNum(1);
-                selectedChapterInfoTemp.setNextReadLineNum(1);
-                selectedChapterInfoTemp.setChapterContentList(null);
-                cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
-
-                // 设置数据加载模式
-                settings.setDataLoadType(Settings.DATA_LOAD_TYPE_LOCAL);
-                cacheService.setSettings(settings);
-
-                Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
-            } catch (IOException e) {
-                e.printStackTrace();
+            String fileName = virtualFile.getName();
+            // 获取文件后缀
+            String fileExtension = virtualFile.getExtension();
+            List<String> allowFileExtensions = configYaml.getAllowFileExtension();
+            if (fileExtension == null || !allowFileExtensions.contains(fileExtension)) {
+                String message = String.format(ConstUtil.WREADER_ONLY_SUPPORTED_FILE_TYPE, allowFileExtensions.toString());
+                Messages.showMessageDialog(message, "提示", Messages.getInformationIcon());
+                return;
             }
+            File file = new File(filePath);
+
+            // 清空缓存数据
+            cacheService.setChapterList(null);
+            cacheService.setChapterContentList(null);
+            cacheService.setSelectedChapterInfo(null);
+            cacheService.setSelectedBookInfo(null);
+            cacheService.setChapterUrlList(null);
+
+            // 读取文件内容
+            if (ConstUtil.FILE_TYPE_TXT.equalsIgnoreCase(fileExtension)) {
+                loadFileTypeTxt(file);
+            } else if (ConstUtil.FILE_TYPE_EPUB.equalsIgnoreCase(fileExtension)) {
+                loadFileTypeEpub(file);
+            }
+
+            // 创建一个BookInfo对象，并设置文件名、文件路径和内容
+            BookInfo bookInfo = new BookInfo();
+            // 分离文件名和后缀
+            int dotIndex = fileName.lastIndexOf('.');
+            String fileNameWithoutExtension = fileName.substring(0, dotIndex);
+            bookInfo.setBookName(fileNameWithoutExtension);
+            bookInfo.setBookDesc(fileNameWithoutExtension);
+            cacheService.setSelectedBookInfo(bookInfo);
+
+            // 重置选中章节信息
+            ChapterInfo selectedChapterInfoTemp = new ChapterInfo();
+            selectedChapterInfoTemp.setChapterTitle("");
+            selectedChapterInfoTemp.setChapterContent("");
+            selectedChapterInfoTemp.setSelectedChapterIndex(0);
+            selectedChapterInfoTemp.setChapterContentStr("");
+            selectedChapterInfoTemp.setLastReadLineNum(1);
+            selectedChapterInfoTemp.setPrevReadLineNum(1);
+            selectedChapterInfoTemp.setNextReadLineNum(1);
+            selectedChapterInfoTemp.setChapterContentList(null);
+            cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
+
+            // 设置数据加载模式
+            settings.setDataLoadType(Settings.DATA_LOAD_TYPE_LOCAL);
+            cacheService.setSettings(settings);
+
+            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
+
+        }
+    }
+
+    /**
+     * 加载本地文件--txt格式
+     *
+     * @param file
+     */
+    public void loadFileTypeTxt(File file) {
+        // 读取文件内容
+        String charset = settings.getCharset();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
+            // 使用正则表达式(ConstUtil.TEXT_FILE_DIR_REGEX)提取章节标题和章节内容
+            StringBuilder contentBuilder = new StringBuilder();
+            String line;
+            List<String> chapterList = new ArrayList<>();
+            List<String> chapterContentList = new ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                Pattern pattern = Pattern.compile(ConstUtil.TEXT_FILE_DIR_REGEX);
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    // 当前章节列表为空，说明contentBuilder缓存的内容不是小说的正文，非正文内容无需添加
+                    if (!chapterList.isEmpty()) {
+                        // 将contentBuilder中缓存的内容添加到章节内容列表中
+                        chapterContentList.add(contentBuilder.toString());
+                    }
+                    chapterList.add(line);
+                    // 清空内容构建器
+                    contentBuilder.setLength(0);
+                }
+                contentBuilder.append(line).append("<br>");
+            }
+            chapterContentList.add(contentBuilder.toString());
+
+            cacheService.setChapterList(chapterList);
+            cacheService.setChapterContentList(chapterContentList);
+            this.chapterList = chapterList;
+            this.chapterContentList = chapterContentList;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_FAIL, "提示", Messages.getInformationIcon());
+        }
+    }
+
+    /**
+     * 加载本地文件--epub格式
+     *
+     * @param file
+     */
+    public void loadFileTypeEpub(File file) {
+        // 读取文件内容
+        String charset = settings.getCharset();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            // 创建一个EpubReader对象，用于解析EPUB文件
+            EpubReader epubReader = new EpubReader();
+            // 使用EpubReader对象读取EPUB文件，并获取一个Book对象
+            Book book = epubReader.readEpub(fis, charset);
+            // 获取书籍的章节列表
+            TableOfContents tableOfContents = book.getTableOfContents();
+            // 创建两个列表，分别存储章节标题和章节内容
+            List<String> chapterList = new ArrayList<>();
+            List<String> chapterContentList = new ArrayList<>();
+            // 遍历章节列表，获取章节内容
+            List<TOCReference> tocReferences = tableOfContents.getTocReferences();
+            for (TOCReference tocReference : tocReferences) {
+                Resource resource = tocReference.getResource();
+                byte[] content = resource.getData();
+                // 获取输入编码
+                String inputEncoding = resource.getInputEncoding();
+                // 将章节内容byte转换为字符串
+                String contentStr = new String(content, inputEncoding);
+                // 获取<body>标签中的内容
+                String contentStrBody = contentStr.substring(contentStr.indexOf("<body>") + 6, contentStr.indexOf("</body>"));
+                chapterList.add(tocReference.getTitle());
+                chapterContentList.add(contentStrBody);
+            }
+            cacheService.setChapterList(chapterList);
+            cacheService.setChapterContentList(chapterContentList);
+            this.chapterList = chapterList;
+            this.chapterContentList = chapterContentList;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_FAIL, "提示", Messages.getInformationIcon());
         }
     }
 

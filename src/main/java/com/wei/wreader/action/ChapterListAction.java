@@ -26,12 +26,7 @@ public class ChapterListAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            return;
-        }
-
-        OperateActionUtil operateAction = OperateActionUtil.getInstance();
+        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
         operateAction.showBookDirectory(new BookDirectoryListener() {
             @Override
             public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo) {

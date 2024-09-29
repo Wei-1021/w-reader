@@ -55,6 +55,11 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
      */
     public void createToolWindow(@NotNull Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+        if (toolWindow != null) {
+            return;
+        }
+
         toolWindowManager.registerToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID, registerToolWindowTaskBuilder -> {
             registerToolWindowTaskBuilder.anchor = ToolWindowAnchor.RIGHT;
             registerToolWindowTaskBuilder.canCloseContent = true;
