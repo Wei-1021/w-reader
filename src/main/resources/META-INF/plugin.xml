@@ -5,7 +5,7 @@
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>W-Reader</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
 
@@ -29,9 +29,18 @@
 
     <change-notes><![CDATA[
     <p>
-        0.0.1
+        0.0.2:
+        <ul>
+            <li>新增本地加载小说功能，并优化其他功能的问题；</li>
+        </ul>
     </p>
-    ]]></change-notes>
+    <p>
+        0.0.1:
+        <ul>
+            <li>初始版本</li>
+        </ul>
+    </p>
+    ]]></change-notes>l
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->

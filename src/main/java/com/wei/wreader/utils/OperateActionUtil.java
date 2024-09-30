@@ -7,24 +7,24 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.progress.util.BackgroundTaskUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.*;
-import com.intellij.openapi.ui.messages.MessageDialog;
-import com.intellij.openapi.vcs.impl.projectlevelman.PersistentVcsShowConfirmationOption;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.util.ui.ConfirmationDialog;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.widget.WReaderStatusBarWidget;
 import io.documentnode.epub4j.domain.Book;
 import io.documentnode.epub4j.domain.Resource;
 import io.documentnode.epub4j.domain.TOCReference;
@@ -37,7 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,8 +46,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -130,6 +127,10 @@ public class OperateActionUtil {
      * 当前章节信息
      */
     private ChapterInfo currentChapterInfo = new ChapterInfo();
+    /**
+     * 搜索小说对话框
+     */
+    private DialogBuilder searchBookDialogBuilder;
     //endregion
 
     /**
@@ -237,9 +238,8 @@ public class OperateActionUtil {
             ComboBox<String> comboBox = getStringComboBox();
             JTextField searchBookTextField = new JTextField(20);
             Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, comboBox, searchBookTextField};
-            MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
+            searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
                     () -> searchBook(searchBookTextField));
-
         });
     }
 
@@ -270,6 +270,9 @@ public class OperateActionUtil {
         cacheService.setSettings(settings);
 
         handleBookList(searchBookResult);
+        if (searchBookDialogBuilder != null) {
+            searchBookDialogBuilder.dispose();
+        }
     }
 
     private @NotNull ComboBox<String> getStringComboBox() {
@@ -296,6 +299,7 @@ public class OperateActionUtil {
      */
     public String searchBookList(String url) {
         String result = null;
+
         // 获取小说列表的接口返回的是否是html
         if (selectedBookSiteInfo.isHtml()) {
             // 获取html
@@ -344,7 +348,8 @@ public class OperateActionUtil {
                 });
                 return jsonArray.toString();
             }
-        } else {
+        }
+        else {
             HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
             try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpGet)) {
@@ -421,6 +426,7 @@ public class OperateActionUtil {
                         chapterList = new ArrayList<>();
                         chapterUrlList = new ArrayList<>();
                         searchBookDirectory(bookUrl);
+                        cacheService.setChapterContentList(null);
                     }
                 });
 
@@ -505,6 +511,9 @@ public class OperateActionUtil {
                     currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
                     // 缓存当前章节信息
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
+
+                    // 更新内容
+                    updateContentText();
                 }
             });
 
@@ -541,12 +550,67 @@ public class OperateActionUtil {
             });
 
             JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
-            jScrollPane.setPreferredSize(new Dimension(400, 500));
-            MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
-
             chapterListJBList.setSelectedIndex(currentChapterIndex);
             chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
+            jScrollPane.setPreferredSize(new Dimension(400, 500));
+            MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
         });
+    }
+
+    /**
+     * 更新内容
+     */
+    public void updateContentText() {
+        switch (settings.getDisplayType()) {
+            case Settings.DISPLAY_TYPE_SIDEBAR:
+                // 清空缓存
+                ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
+                selectedChapterInfoTemp.setLastReadLineNum(1);
+                selectedChapterInfoTemp.setPrevReadLineNum(1);
+                selectedChapterInfoTemp.setNextReadLineNum(1);
+                selectedChapterInfoTemp.setChapterContentList(null);
+                cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
+
+                // 获取工具窗口
+                ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(mProject);
+                ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+
+                if (toolWindow != null) {
+                    ContentManager contentManager = toolWindow.getContentManager();
+                    Content rootContent = contentManager.getContent(0);
+                    if (rootContent != null) {
+                        // 获取内容面板JTextPane
+                        JTextPane contentTextPanel = ToolWindowUtils.getContentTextPanel(rootContent);
+                        if (contentTextPanel != null) {
+                            // 设置内容
+                            String fontColorHex = cacheService.getFontColorHex();
+                            String fontFamily = cacheService.getFontFamily();
+                            int fontSize = cacheService.getFontSize();
+                            String chapterContent = cacheService.getSelectedChapterInfo().getChapterContent();
+                            // 设置内容
+                            String style = "color:" + fontColorHex + ";" +
+                                    "font-family: '" + fontFamily + "';" +
+                                    "font-size: " + fontSize + "px;";
+                            chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
+                            contentTextPanel.setText(chapterContent);
+                            // 设置光标位置
+                            contentTextPanel.setCaretPosition(0);
+                        }
+                    }
+                }
+
+                break;
+            case Settings.DISPLAY_TYPE_STATUSBAR:
+                ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+                selectedChapterInfo.setLastReadLineNum(1);
+                selectedChapterInfo.setPrevReadLineNum(1);
+                selectedChapterInfo.setNextReadLineNum(1);
+                selectedChapterInfo.setChapterContentList(null);
+                WReaderStatusBarWidget.update(mProject, "");
+                break;
+            case Settings.DISPLAY_TYPE_TERMINAL:
+                break;
+        }
     }
 
     /**
@@ -673,6 +737,7 @@ public class OperateActionUtil {
 
             currentChapterIndex = currentChapterIndex - 1;
             String chapterTitle = chapterList.get(currentChapterIndex);
+            currentChapterInfo.setChapterTitle(chapterTitle);
 
             int dataLoadType = settings.getDataLoadType();
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
@@ -693,7 +758,6 @@ public class OperateActionUtil {
                 }
             }
 
-            currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -716,6 +780,9 @@ public class OperateActionUtil {
                 }
                 currentChapterIndex = currentChapterIndex + 1;
 
+                String chapterTitle = chapterList.get(currentChapterIndex);
+                currentChapterInfo.setChapterTitle(chapterTitle);
+
                 String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
                 String nextChapterUrl = nextChapterSuffixUrl;
                 if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
@@ -731,6 +798,8 @@ public class OperateActionUtil {
                 currentChapterIndex = currentChapterIndex + 1;
 
                 if (!chapterContentList.isEmpty()) {
+                    String chapterTitle = chapterList.get(currentChapterIndex);
+                    currentChapterInfo.setChapterTitle(chapterTitle);
                     // 提取章节内容
                     chapterContentHtml = chapterContentList.get(currentChapterIndex);
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
@@ -738,11 +807,12 @@ public class OperateActionUtil {
                 }
             }
 
-            String chapterTitle = chapterList.get(currentChapterIndex);
-            currentChapterInfo.setChapterTitle(chapterTitle);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+            currentChapterInfo.setPrevReadLineNum(1);
+            currentChapterInfo.setNextReadLineNum(2);
+            currentChapterInfo.setLastReadLineNum(1);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
 
             return currentChapterInfo;
@@ -947,7 +1017,7 @@ public class OperateActionUtil {
     /**
      * ToolWindow工具类
      */
-    public static class ToolWindow {
+    public static class ToolWindowUtils {
 
         /**
          * 获取ToolWindow的根内容面板

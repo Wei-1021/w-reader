@@ -108,6 +108,11 @@ public class ConstUtil {
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
     public static final String WREADER_LOAD_FAIL = "文件加载出现异常，请重试！";
     public static final String WREADER_INIT_ERROR = "W-Reader加载失败！";
+    public static final String WREADER_LOADING = "loading...";
+    public static final String WREADER_SEARCH_LOADING = "search loading...";
+    public static final String WREADER_BOOK = "BOOK";
+    public static final String WREADER_DIRECTORY = "directory";
+    public static final String WREADER_CONTENT = "content";
     public static final String WREADER_LOAD_LOCAL_TIP = "若出现文字乱码，请尝试在设置中修改字符集，然后重新加载文件";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";

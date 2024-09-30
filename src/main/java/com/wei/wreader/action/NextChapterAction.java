@@ -30,6 +30,10 @@ public class NextChapterAction extends BaseAction {
             case Settings.DISPLAY_TYPE_SIDEBAR:
                 ChapterInfo nextPageChapter = OperateActionUtil.getInstance(project).nextPageChapter();
 
+                if (nextPageChapter == null) {
+                    return;
+                }
+
                 ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
                 selectedChapterInfoTemp.setLastReadLineNum(1);
                 selectedChapterInfoTemp.setPrevReadLineNum(1);
@@ -43,7 +47,7 @@ public class NextChapterAction extends BaseAction {
                     Content rootContent = contentManager.getContent(0);
                     if (rootContent != null) {
                         // 获取内容面板JTextPane
-                        JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
+                        JTextPane contentTextPanel = OperateActionUtil.ToolWindowUtils.getContentTextPanel(rootContent);
                         if (contentTextPanel != null) {
                             String fontColorHex = cacheService.getFontColorHex();
                             String fontFamily = cacheService.getFontFamily();

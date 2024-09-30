@@ -1,7 +1,9 @@
 package com.wei.wreader.utils;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -37,11 +39,11 @@ public class MessageDialogUtil {
      * @param message
      * @param okRunnable 确认按钮点击事件
      */
-    public static void showMessageDialogDialog(Project project,
-                                               String title,
-                                               String message,
-                                               Runnable okRunnable) {
-        showMessageDialog(project, title, message, okRunnable, null);
+    public static DialogBuilder showMessageDialogDialog(Project project,
+                                                        String title,
+                                                        String message,
+                                                        Runnable okRunnable) {
+        return showMessageDialog(project, title, message, okRunnable, null);
     }
 
     /**
@@ -53,11 +55,11 @@ public class MessageDialogUtil {
      * @param okRunnable      确认按钮点击事件
      * @param cancelOperation 取消按钮点击事件
      */
-    public static void showMessageDialog(Project project,
-                                         String title,
-                                         String message,
-                                         Runnable okRunnable,
-                                         Runnable cancelOperation) {
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  String message,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation) {
         // 中心组件
         JPanel dialogPanel = new JPanel();
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
@@ -65,7 +67,7 @@ public class MessageDialogUtil {
         JLabel messageLabel = new JLabel(message);
         dialogPanel.add(messageLabel);
 
-        showMessageDialog(project, title, dialogPanel, okRunnable, cancelOperation);
+        return showMessageDialog(project, title, dialogPanel, okRunnable, cancelOperation);
     }
 
     /**
@@ -76,11 +78,11 @@ public class MessageDialogUtil {
      * @param centerPanel
      * @param okRunnable  确认按钮点击事件
      */
-    public static void showMessageDialog(Project project,
-                                         String title,
-                                         JComponent centerPanel,
-                                         Runnable okRunnable) {
-        showMessageDialog(project, title, centerPanel, okRunnable, null);
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  JComponent centerPanel,
+                                                  Runnable okRunnable) {
+        return showMessageDialog(project, title, centerPanel, okRunnable, null);
     }
 
 
@@ -92,10 +94,10 @@ public class MessageDialogUtil {
      * @param objs       显示内容的组件集合
      * @param okRunnable 确认按钮点击事件
      */
-    public static void showMessageDialog(Project project,
-                                         String title,
-                                         Object[] objs,
-                                         Runnable okRunnable) {
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  Object[] objs,
+                                                  Runnable okRunnable) {
         JPanel centerPanel = new JPanel();
         GridLayoutManager layout = new GridLayoutManager(objs.length, 1);
         centerPanel.setLayout(layout);
@@ -112,7 +114,7 @@ public class MessageDialogUtil {
             }
         }
 
-        showMessageDialog(project, title, centerPanel, okRunnable, null);
+        return showMessageDialog(project, title, centerPanel, okRunnable, null);
     }
 
     /**
@@ -124,11 +126,11 @@ public class MessageDialogUtil {
      * @param okRunnable      确认按钮点击事件
      * @param cancelOperation 取消按钮点击事件
      */
-    public static void showMessageDialog(Project project,
-                                         String title,
-                                         Object[] objs,
-                                         Runnable okRunnable,
-                                         Runnable cancelOperation) {
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  Object[] objs,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation) {
         JPanel centerPanel = new JPanel();
         GridLayoutManager layout = new GridLayoutManager(1, objs.length);
         centerPanel.setLayout(layout);
@@ -145,7 +147,7 @@ public class MessageDialogUtil {
             }
         }
 
-        showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation);
+        return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation);
     }
 
     /**
@@ -157,20 +159,35 @@ public class MessageDialogUtil {
      * @param okRunnable      确认按钮点击事件
      * @param cancelOperation 取消按钮点击事件
      */
-    public static void showMessageDialog(Project project,
-                                         String title,
-                                         JComponent centerPanel,
-                                         Runnable okRunnable,
-                                         Runnable cancelOperation) {
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  JComponent centerPanel,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation) {
 
         DialogBuilder builder = new DialogBuilder(project);
         builder.centerPanel(centerPanel);
         builder.title(title);
         builder.addOkAction();
         builder.addCancelAction();
-        builder.setOkOperation(okRunnable);
-        builder.setCancelOperation(cancelOperation);
         builder.show();
+
+        DialogWrapper dialogWrapper = builder.getDialogWrapper();
+        if (dialogWrapper != null) {
+            if (dialogWrapper.isOK()) {
+                if (okRunnable != null) {
+                    // 确认按钮点击事件
+                    okRunnable.run();
+                }
+            } else {
+                if (cancelOperation != null) {
+                    // 取消按钮点击事件
+                    cancelOperation.run();
+                }
+            }
+        }
+
+        return builder;
     }
 
     /**
@@ -180,15 +197,15 @@ public class MessageDialogUtil {
      * @param title
      * @param message
      */
-    public static void showMessage(Project project,
-                                   String title,
-                                   String message) {
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            String message) {
         // 中心组件
         JPanel dialogPanel = new JPanel();
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
         dialogPanel.setLayout(flowLayout);
         dialogPanel.add(new JLabel(message));
-        showMessage(project, title, dialogPanel);
+        return showMessage(project, title, dialogPanel);
     }
 
 
@@ -199,9 +216,9 @@ public class MessageDialogUtil {
      * @param title   标题
      * @param objs    显示内容的组件集合
      */
-    public static void showMessage(Project project,
-                                   String title,
-                                   Object[] objs) {
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            Object[] objs) {
         JPanel centerPanel = new JPanel();
         GridLayoutManager layout = new GridLayoutManager(1, objs.length);
         centerPanel.setLayout(layout);
@@ -218,7 +235,7 @@ public class MessageDialogUtil {
             }
         }
 
-        showMessage(project, title, centerPanel);
+        return showMessage(project, title, centerPanel);
     }
 
     /**
@@ -228,14 +245,16 @@ public class MessageDialogUtil {
      * @param title
      * @param centerPanel
      */
-    public static void showMessage(Project project,
-                                   String title,
-                                   JComponent centerPanel) {
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            JComponent centerPanel) {
 
         DialogBuilder builder = new DialogBuilder(project);
         builder.centerPanel(centerPanel);
         builder.title(title);
         builder.show();
+
+        return builder;
     }
 
 }

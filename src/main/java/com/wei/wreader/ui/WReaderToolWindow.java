@@ -462,11 +462,12 @@ public class WReaderToolWindow implements Configurable {
         contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);
         contentScrollPane.setBorder(JBUI.Borders.empty(2, 5));
-
     }
 
     private void setContentText(String content) {
         contentTextPane.setText(content);
+        // 滚动到顶部
+        contentTextPane.setCaretPosition(0);
     }
 
     /**

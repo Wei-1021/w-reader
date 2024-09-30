@@ -47,7 +47,7 @@ public class ChapterListAction extends BaseAction {
                             Content rootContent = contentManager.getContent(0);
                             if (rootContent != null) {
                                 // 获取内容面板JTextPane
-                                JTextPane contentTextPanel = OperateActionUtil.ToolWindow.getContentTextPanel(rootContent);
+                                JTextPane contentTextPanel = OperateActionUtil.ToolWindowUtils.getContentTextPanel(rootContent);
                                 if (contentTextPanel != null) {
                                     // 设置内容
                                     String fontColorHex = cacheService.getFontColorHex();
