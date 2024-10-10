@@ -80,7 +80,7 @@ public class OperateActionUtil {
      */
     private List<String> chapterUrlList = new ArrayList<>();
     /**
-     * 章节链接列表
+     * 章节内容列表
      */
     private List<String> chapterContentList = new ArrayList<>();
     /**
@@ -289,7 +289,6 @@ public class OperateActionUtil {
         });
         return comboBox;
     }
-
 
     /**
      * 搜索小说列表
@@ -918,7 +917,7 @@ public class OperateActionUtil {
             selectedChapterInfoTemp.setChapterContentStr("");
             selectedChapterInfoTemp.setLastReadLineNum(1);
             selectedChapterInfoTemp.setPrevReadLineNum(1);
-            selectedChapterInfoTemp.setNextReadLineNum(1);
+            selectedChapterInfoTemp.setNextReadLineNum(2);
             selectedChapterInfoTemp.setChapterContentList(null);
             cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
 
@@ -926,8 +925,23 @@ public class OperateActionUtil {
             settings.setDataLoadType(Settings.DATA_LOAD_TYPE_LOCAL);
             cacheService.setSettings(settings);
 
-            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
+            // 重置内容面板
+            ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(mProject);
+            ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+            if (toolWindow != null) {
+                ContentManager contentManager = toolWindow.getContentManager();
+                Content rootContent = contentManager.getContent(0);
+                if (rootContent != null) {
+                    // 获取内容面板JTextPane
+                    JTextPane contentTextPanel = ToolWindowUtils.getContentTextPanel(rootContent);
+                    // 清空内容面板
+                    if (contentTextPanel != null) {
+                        contentTextPanel.setText("");
+                    }
+                }
+            }
 
+            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
         }
     }
 
@@ -1012,6 +1026,22 @@ public class OperateActionUtil {
             e.printStackTrace();
             Messages.showMessageDialog(ConstUtil.WREADER_LOAD_FAIL, "提示", Messages.getInformationIcon());
         }
+    }
+
+    /**
+     * 分割章节内容
+     */
+    public void splitChapterContent() {
+        String chapterContentStr = currentChapterInfo.getChapterContentStr();
+        // 获取将章节内容按指定字符长度分割的集合
+        List<String> chapterContentSplitList = currentChapterInfo.getChapterContentList();
+        int singleLineChars = settings.getSingleLineChars();
+
+        // 当chapterContentSplitList为空时, 按照单行最大字数将字符串分割成数组
+        if (chapterContentSplitList == null || chapterContentSplitList.isEmpty()) {
+            chapterContentSplitList = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
+        }
+        currentChapterInfo.setChapterContentList(chapterContentSplitList);
     }
 
     /**

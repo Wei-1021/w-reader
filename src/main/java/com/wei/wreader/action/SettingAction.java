@@ -5,13 +5,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.wei.wreader.ui.WReaderSettingForm;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class SettingAction extends BaseAction {
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
         SwingUtilities.invokeLater(() -> {

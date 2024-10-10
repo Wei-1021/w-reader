@@ -70,7 +70,7 @@ public class ConstUtil {
     /**
      * 配置文件id--组--远程
      */
-    public static final String WREADER_GROUP_REMOTE_ID = "wreader.group.remote";
+    public static final String WREADER_GROUP_TOOLMENU_ID = "wreader.group.toolMenu";
     /**
      * 配置文件id--组--工具窗口的工具栏
      */
@@ -113,7 +113,7 @@ public class ConstUtil {
     public static final String WREADER_BOOK = "BOOK";
     public static final String WREADER_DIRECTORY = "directory";
     public static final String WREADER_CONTENT = "content";
-    public static final String WREADER_LOAD_LOCAL_TIP = "若出现文字乱码，请尝试在设置中修改字符集，然后重新加载文件";
+    public static final String WREADER_LOAD_LOCAL_TIP = "若目录未加载成功或文字乱码，请尝试修改字符集，然后重新加载文件";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";
     public static final String DEFAULT_FONT_FAMILY = "JetBrains Mono";
@@ -137,5 +137,9 @@ public class ConstUtil {
      * 文件类型--epub
      */
     public static final String FILE_TYPE_EPUB = "epub";
+    /**
+     * 注释文字颜色
+     */
+    public static final String LINE_COMMENT_COLOR = "#7A7E85";
 
 }

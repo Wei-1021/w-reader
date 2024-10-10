@@ -1,6 +1,8 @@
 package com.wei.wreader.utils;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -255,6 +257,11 @@ public class MessageDialogUtil {
         builder.show();
 
         return builder;
+    }
+
+    public static void showEditorMessage(Editor editor, JComponent msgComponent) {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.showInformationHint(editor, msgComponent);
     }
 
 }

@@ -6,6 +6,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.NumberDocument;
+import com.intellij.ui.components.JBRadioButton;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
@@ -30,11 +33,15 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JCheckBox isShowLineNumCheckBox;
     private JLabel lineMaxNumsLabel;
     private JLabel displayTypeLabel;
-    private JRadioButton sideBarRadioButton;
-    private JRadioButton statusBarRadioButton;
-    private JRadioButton terminalRadioButton;
+    private JBRadioButton sideBarRadioButton;
+    private JBRadioButton statusBarRadioButton;
+    private JBRadioButton editorBannerRadioButton;
     private JComboBox charsetComboBox;
     private JLabel charsetLabel;
+    /**
+     * 显示类型Panel
+     */
+    private JPanel displayTypeRadioPanel;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -91,9 +98,33 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         isShowLineNumCheckBox.setSelected(settings.isShowLineNum());
 
         // 显示类型
+        // 创建单选按钮--侧边栏
+        sideBarRadioButton = new JBRadioButton();
         sideBarRadioButton.setText(Settings.DISPLAY_TYPE_SIDEBAR_STR);
+        // 创建单选按钮--底部状态栏
+        statusBarRadioButton = new JBRadioButton();
         statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
-        terminalRadioButton.setText(Settings.DISPLAY_TYPE_TERMINAL_STR);
+        // 创建单选按钮--编辑器顶部提示
+        editorBannerRadioButton = new JBRadioButton();
+        editorBannerRadioButton.setText(Settings.DISPLAY_TYPE_EDITOR_BANNER_STR);
+
+        // 设置显示类型Panel布局
+        GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
+        displayTypeRadioPanel.setLayout(displayTypeRadioPanelLayoutManager);
+
+        // 添加单选按钮至布局中
+        GridConstraints sideBarRadioGridConstraints = new GridConstraints();
+        sideBarRadioGridConstraints.setRow(0);
+        sideBarRadioGridConstraints.setColumn(0);
+        displayTypeRadioPanel.add(sideBarRadioButton, sideBarRadioGridConstraints);
+        GridConstraints statusBarRadioGridConstraints = new GridConstraints();
+        statusBarRadioGridConstraints.setRow(0);
+        statusBarRadioGridConstraints.setColumn(1);
+        displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
+        GridConstraints editorBannerRadioGridConstraints = new GridConstraints();
+        editorBannerRadioGridConstraints.setRow(0);
+        editorBannerRadioGridConstraints.setColumn(2);
+        displayTypeRadioPanel.add(editorBannerRadioButton, editorBannerRadioGridConstraints);
 
         // 字符集
         SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
@@ -110,15 +141,15 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             case Settings.DISPLAY_TYPE_STATUSBAR:
                 statusBarRadioButton.setSelected(true);
                 break;
-            case Settings.DISPLAY_TYPE_TERMINAL:
-                terminalRadioButton.setSelected(true);
+            case Settings.DISPLAY_TYPE_EDITOR_BANNER:
+                editorBannerRadioButton.setSelected(true);
                 break;
         }
 
         displayTypeRadioGroup = new ButtonGroup();
         displayTypeRadioGroup.add(sideBarRadioButton);
         displayTypeRadioGroup.add(statusBarRadioButton);
-        displayTypeRadioGroup.add(terminalRadioButton);
+        displayTypeRadioGroup.add(editorBannerRadioButton);
 
         return settingPanel;
     }
@@ -153,8 +184,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
         if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
-        } else if (terminalRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_TERMINAL;
+        } else if (editorBannerRadioButton.isSelected()) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
         }
 
         return modifiedSettings.getDisplayType() != selectedDisplayType;

@@ -10,7 +10,13 @@ import java.util.List;
 public class ChapterInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private String chapterUrl;
+    /**
+     * 章节标题
+     */
     private String chapterTitle;
+    /**
+     * 章节内容
+     */
     private String chapterContent;
     /**
      * 章节内容字符串（剔除html标签）
@@ -32,6 +38,9 @@ public class ChapterInfo implements Serializable {
      * 下一行阅读的行数
      */
     private int nextReadLineNum;
+    /**
+     * 将章节内容按指定字符长度分割为集合
+     */
     private List<String> chapterContentList;
 
     public String getChapterUrl() {

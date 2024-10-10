@@ -24,7 +24,7 @@ import javax.swing.*;
  */
 public class FontSizeAddAction extends BaseAction {
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();

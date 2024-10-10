@@ -14,9 +14,13 @@ public class Settings {
      */
     public static final int DISPLAY_TYPE_STATUSBAR = 2;
     /**
-     * 显示类型。3-控制台终端
+     * 显示类型。3-编辑器顶部提示
      */
-    public static final int DISPLAY_TYPE_TERMINAL = 3;
+    public static final int DISPLAY_TYPE_EDITOR_BANNER = 3;
+    /**
+     * 显示类型。4-终端控制台
+     */
+    public static final int DISPLAY_TYPE_TERMINAL = 4;
     /**
      * 显示类型。侧边栏（默认）
      */
@@ -25,6 +29,10 @@ public class Settings {
      * 显示类型。底部状态栏
      */
     public static final String DISPLAY_TYPE_STATUSBAR_STR = "底部状态栏";
+    /**
+     * 显示类型。编辑器顶部提示
+     */
+    public static final String DISPLAY_TYPE_EDITOR_BANNER_STR = "编辑器横幅";
     /**
      * 显示类型。控制台终端
      */

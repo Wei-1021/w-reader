@@ -10,8 +10,6 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup;
-import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
-import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
@@ -20,12 +18,10 @@ import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.utils.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

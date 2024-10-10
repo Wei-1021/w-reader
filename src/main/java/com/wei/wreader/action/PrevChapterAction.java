@@ -1,28 +1,23 @@
 package com.wei.wreader.action;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.service.CacheService;
-import com.wei.wreader.ui.WReaderToolWindow;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
-import org.jsoup.nodes.Element;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class PrevChapterAction extends BaseAction {
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
         switch (settings.getDisplayType()) {
@@ -56,8 +51,8 @@ public class PrevChapterAction extends BaseAction {
                             String chapterContent = prevPageChapter.getChapterContent();
                             // 设置内容
                             String style = "color:" + fontColorHex + ";" +
-                                    "font-family: '" + fontFamily + "';" +
-                                    "font-size: " + fontSize + "px;";
+                                    "font-family:'" + fontFamily + "';" +
+                                    "font-size:" + fontSize + "px;";
                             chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
                             contentTextPanel.setText(chapterContent);
                             // 设置光标位置

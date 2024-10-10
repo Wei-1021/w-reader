@@ -1,4 +1,6 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<!--
+Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html
+-->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.wei.wreader</id>
@@ -40,7 +42,7 @@
             <li>初始版本</li>
         </ul>
     </p>
-    ]]></change-notes>l
+    ]]></change-notes>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -60,6 +62,7 @@
         <statusBarWidgetFactory id="wreader.WReaderStatusBar"
                                 implementation="com.wei.wreader.factory.WReaderStatusBarFactory"
                                 order="first"/>
+<!--        <editorNotificationProvider implementation="com.wei.wreader.action.EditorBannerMessageAction"/>-->
     </extensions>
 
     <actions>
@@ -104,14 +107,33 @@
                 description="加载本地文件">
             <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
         </action>
+        <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction" text="编辑器提示消息">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD0"/>
+        </action>
+        <action id="wreader.EditorBannerMessageAction" class="com.wei.wreader.action.EditorBannerMessageAction"
+                text="编辑器顶部提示信息">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>
+        </action>
+        <action id="wreader.CommentBlockAction" class="com.wei.wreader.action.CommentBlockAction" text="代码注释块">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD1"/>
+        </action>
 
         <!-- Group -->
+        <!-- Tool菜单 -->
         <group id="wreader.group.WReader" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </group>
-        <group id="wreader.group.remote">
+        <!-- 编辑器右键 -->
+        <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
+            <reference id="wreader.CommentBlockAction"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </group>
+        <!-- Tool菜单分组 -->
+        <group id="wreader.group.toolMenu">
             <reference id="wreader.WReaderSetting"/>
             <reference id="wreader.LoadLocalFileAction"/>
+            <reference id="wreader.EditorMessageAction"/>
+            <reference id="wreader.EditorBannerMessageAction"/>
             <separator/>
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -120,6 +142,7 @@
             <add-to-group group-id="wreader.group.WReader"/>
             <separator/>
         </group>
+        <!-- 工具窗口 -->
         <group id="wreader.group.toolWindowBar">
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -133,6 +156,7 @@
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.WReaderSetting"/>
         </group>
+        <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
             <reference id="wreader.WReaderSetting"/>
             <separator/>

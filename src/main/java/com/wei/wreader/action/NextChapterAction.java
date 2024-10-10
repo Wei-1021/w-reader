@@ -14,6 +14,7 @@ import com.wei.wreader.ui.WReaderToolWindow;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
 
 import javax.swing.*;
@@ -23,7 +24,7 @@ import java.awt.*;
 public class NextChapterAction extends BaseAction {
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
         switch (settings.getDisplayType()) {

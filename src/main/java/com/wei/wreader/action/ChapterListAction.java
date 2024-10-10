@@ -15,6 +15,7 @@ import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
 
 import javax.swing.*;
@@ -23,7 +24,7 @@ import java.util.List;
 public class ChapterListAction extends BaseAction {
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
         OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
