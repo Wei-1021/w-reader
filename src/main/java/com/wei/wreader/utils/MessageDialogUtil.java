@@ -1,15 +1,12 @@
 package com.wei.wreader.utils;
 
 import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,10 +38,10 @@ public class MessageDialogUtil {
      * @param message
      * @param okRunnable 确认按钮点击事件
      */
-    public static DialogBuilder showMessageDialogDialog(Project project,
-                                                        String title,
-                                                        String message,
-                                                        Runnable okRunnable) {
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  String message,
+                                                  Runnable okRunnable) {
         return showMessageDialog(project, title, message, okRunnable, null);
     }
 
@@ -66,7 +63,8 @@ public class MessageDialogUtil {
         JPanel dialogPanel = new JPanel();
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
         dialogPanel.setLayout(flowLayout);
-        JLabel messageLabel = new JLabel(message);
+        JTextPane messageLabel = new JTextPane();
+        messageLabel.setText(message);
         dialogPanel.add(messageLabel);
 
         return showMessageDialog(project, title, dialogPanel, okRunnable, cancelOperation);
@@ -206,7 +204,11 @@ public class MessageDialogUtil {
         JPanel dialogPanel = new JPanel();
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
         dialogPanel.setLayout(flowLayout);
-        dialogPanel.add(new JLabel(message));
+
+        JTextPane messageLabel = new JTextPane();
+        messageLabel.setText(message);
+
+        dialogPanel.add(messageLabel);
         return showMessage(project, title, dialogPanel);
     }
 
