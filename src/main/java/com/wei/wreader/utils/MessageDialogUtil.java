@@ -29,6 +29,8 @@ public class MessageDialogUtil {
     public static final String TITLE_LOADING = "加载中";
     public static final String TITLE_LOAD_FAIL = "加载失败";
     public static final String TITLE_LOAD_SUCCESS = "加载成功";
+    public static final String TITLE_HELP = "帮助";
+    public static final String HELP_LOAD_FAIL = "帮助文件加载失败";
 
     /**
      * 显示消息对话框
@@ -206,6 +208,29 @@ public class MessageDialogUtil {
         dialogPanel.setLayout(flowLayout);
 
         JTextPane messageLabel = new JTextPane();
+        messageLabel.setText(message);
+
+        dialogPanel.add(messageLabel);
+        return showMessage(project, title, dialogPanel);
+    }
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param message
+     */
+    public static DialogBuilder showMessageHTML(Project project,
+                                                String title,
+                                                String message) {
+        // 中心组件
+        JPanel dialogPanel = new JPanel();
+        FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
+        dialogPanel.setLayout(flowLayout);
+
+        JTextPane messageLabel = new JTextPane();
+        messageLabel.setContentType("text/html");
         messageLabel.setText(message);
 
         dialogPanel.add(messageLabel);

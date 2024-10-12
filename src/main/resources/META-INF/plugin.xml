@@ -7,7 +7,7 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>W-Reader</name>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
 
@@ -80,21 +80,21 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
         </action>
         <action id="wreader.PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"
                 icon="AllIcons.Actions.Play_first">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD4"/>
         </action>
         <action id="wreader.NextChapterAction" class="com.wei.wreader.action.NextChapterAction" text="下一章"
                 icon="AllIcons.Actions.Play_last">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD6"/>
         </action>
         <action id="wreader.PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
                 description="状态栏模式下切换至上一行文字"
                 icon="com.intellij.icons.ExpUiIcons.General.MoveUp">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD4"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
         </action>
         <action id="wreader.NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
                 icon="com.intellij.icons.ExpUiIcons.General.MoveDown"
                 description="状态栏模式下切换至下一行文字">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD6"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
         </action>
         <action id="wreader.FontSizeSubAction" class="com.wei.wreader.action.FontSizeSubAction" text="字体缩小"
                 icon="/icon/font_sub.svg"/>
@@ -107,16 +107,20 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
                 description="加载本地文件">
             <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
         </action>
-        <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction" text="编辑器提示消息">
+        <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction" text="编辑器提示消息"
+                icon="AllIcons.General.Balloon">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD0"/>
         </action>
-        <action id="wreader.EditorBannerMessageAction" class="com.wei.wreader.action.EditorBannerMessageAction"
-                text="编辑器顶部提示信息">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>
-        </action>
-        <action id="wreader.CommentBlockAction" class="com.wei.wreader.action.CommentBlockAction" text="代码注释块">
+<!--        <action id="wreader.EditorBannerMessageAction" class="com.wei.wreader.action.EditorBannerMessageAction"-->
+<!--                text="编辑器顶部提示信息">-->
+<!--            <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>-->
+<!--        </action>-->
+        <action id="wreader.CommentBlockAction" class="com.wei.wreader.action.CommentBlockAction" text="代码注释块"
+                icon="AllIcons.Actions.InlayRenameInComments">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD1"/>
         </action>
+        <action id="wreader.HelpAction" class="com.wei.wreader.action.HelpAction" text="帮助"
+                icon="AllIcons.Actions.Help"/>
 
         <!-- Group -->
         <!-- Tool菜单 -->
@@ -125,15 +129,18 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
         </group>
         <!-- 编辑器右键 -->
         <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
+            <reference id="wreader.EditorMessageAction"/>
             <reference id="wreader.CommentBlockAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->
         <group id="wreader.group.toolMenu">
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.HelpAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.EditorMessageAction"/>
-            <reference id="wreader.EditorBannerMessageAction"/>
+<!--            <reference id="wreader.EditorBannerMessageAction"/>-->
+            <reference id="wreader.CommentBlockAction"/>
             <separator/>
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -142,7 +149,7 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
             <add-to-group group-id="wreader.group.WReader"/>
             <separator/>
         </group>
-        <!-- 工具窗口 -->
+        <!-- 工具窗口Bar -->
         <group id="wreader.group.toolWindowBar">
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -155,10 +162,12 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
             <reference id="wreader.ChangeFontColorAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.HelpAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.HelpAction"/>
             <separator/>
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.LoadLocalFileAction"/>

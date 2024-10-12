@@ -64,10 +64,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.5.0")
+        classpath("com.guardsquare:proguard-gradle:7.3.0")
     }
 }
 
+val buildDir = layout.buildDirectory
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
@@ -102,26 +103,29 @@ tasks {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 
-    val proguardJar = layout.buildDirectory.file("libs/$pluginName-$version-proguard.jar")
-    val proguard by registering(ProGuardTask::class) {
-        printmapping(layout.buildDirectory.file("mapping.txt").get())
-        configuration("proguard-rules.pro")
-
-//        injars(composedJar.map { it.archiveFile })
-        val inputJar = layout.buildDirectory.file("libs/$pluginName-$version.jar")
-        println("inputJar: ${inputJar.get()}")
-        injars(inputJar.get())
-        outjars(proguardJar)
-    }
-
-    prepareSandbox {
-        pluginJar = proguardJar
-        dependsOn(proguard)
-    }
-
-    composedJar {
-        dependsOn(proguard)
-    }
+//    // 获取构建目录
+//    val buildDir = layout.buildDirectory
+//    val printMappingFile = buildDir.file("mapping.txt").get()
+//    val inJarsFile = buildDir.file("libs/$pluginName-$version.jar").get()
+//    val proguardJar = buildDir.file("libs/$pluginName-$version-proguard.jar")
+//    val proguard by registering(ProGuardTask::class) {
+//        printmapping(printMappingFile)
+//        configuration("proguard-rules.pro")
+//
+//        injars(inJarsFile)
+////        injars(composedJar.map { it.archiveFile })
+//        outjars(proguardJar)
+//    }
+//
+//    // 显式声明 proguard 任务依赖于 composedJar 任务
+//    proguard {
+//        dependsOn(composedJar)
+//    }
+//
+//    prepareSandbox {
+//        pluginJar = proguardJar
+//        dependsOn(proguard)
+//    }
 
     intellijPlatform {
         autoReload.set(true)

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助页面</title>
+    <style>
+        /* 基本样式 */
+        body {
+            font-family: "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10px;
+        }
+
+        th, td {
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .t-left {
+            text-align: left;
+        }
+
+        .t-right {
+            text-align: right;
+        }
+
+        .mt-10 {
+            margin-top: 10px;
+        }
+
+        .sub-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .li-label {
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <div id="defaultKey">
+            <div class="sub-title">默认快捷键</div>
+            <p>若没有小键盘，可通过"File"->"Settings"->"Keymap"->"Plugins"->"W-Reader"前往修改快捷键。</p>
+            <table>
+                <thead>
+                <tr>
+                    <th class="t-right">功能</th>
+                    <th class="t-left">快捷键</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="t-right">搜索</td>
+                    <td class="t-left">Alt + NumPad-7(小键盘7)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">目录</td>
+                    <td class="t-left">Alt + NumPad-9(小键盘9)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">加载本地文件</td>
+                    <td class="t-left">Alt + NumPad add(小键盘+号)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">编辑器提示消息</td>
+                    <td class="t-left">Alt + NumPad-0(小键盘0)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">代码注释块</td>
+                    <td class="t-left">Alt + NumPad-1(小键盘1)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">上一章</td>
+                    <td class="t-left">Alt + NumPad-4(小键盘4)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">下一章</td>
+                    <td class="t-left">Alt + NumPad-6(小键盘6)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">上一行</td>
+                    <td class="t-left">Alt + NumPad-8(小键盘8)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">下一行</td>
+                    <td class="t-left">Alt + NumPad-2(小键盘2)</td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div id="faq">
+            <div class="sub-title">常见问题</div>
+            <ul>
+                <li>
+                    <div class="li-label">1.侧边栏不小心关闭，不显示内容：</div>
+                    <span>
+                        通过"File"->"Settings"->"Tools"->"W-Reader"进入设置页面，
+                        将类型切换至其它（点击Apply按钮）后再切换回"侧边栏"即可。
+                    </span>
+                </li>
+                <li class="mt-10">
+                    <div class="li-label">2."编辑器提示消息"功能不起作用：</div>
+                    <span>
+                        代码编辑器中必须有焦点，并且编辑器中要有文本插入符（闪烁的竖线）存在，才能使用此功能。<br>
+                        ps: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。
+                    </span>
+                </li>
+                <li class="mt-10">
+                    <div class="li-label">3."代码注释块"功能不起作用：</div>
+                    <span>
+                        与问题2类似，但有一个额外的条件，就是当前编辑器所选择的文件处于可写状态。<br>
+                        ps: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <div id="contact">
+            <div class="sub-title">联系方式</div>
+            <p>如果您有任何问题或建议，请通过以下方式联系：</p>
+            <ul>
+                <li>Email: 1075542448@qq.com</li>
+                <li>qq: 1075542448</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

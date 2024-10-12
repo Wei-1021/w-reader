@@ -14,6 +14,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
@@ -324,17 +325,15 @@ public class WReaderToolWindow implements Configurable {
         ActionManager actionManager = ActionManager.getInstance();
         ActionGroup toolWindowBarGroup = (ActionGroup) actionManager.getAction(ConstUtil.WREADER_GROUP_TOOL_WINDOW_BAR_ID);
         ActionToolbar actionToolbar = actionManager.createActionToolbar(ConstUtil.WREADER_TOOL_WINDOW_TOOL_BAR_ID, toolWindowBarGroup, true);
+
         actionToolbar.setTargetComponent(menuToolBarPanel);
         JComponent actionToolbarComponent = actionToolbar.getComponent();
         actionToolbarComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
         actionToolbarComponent.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
+        BorderLayout layout = new BorderLayout();
         menuToolBarPanel.setLayout(layout);
-        GridConstraints menuToolBarGridConstraints = new GridConstraints();
-        menuToolBarGridConstraints.setRow(0);
-        menuToolBarGridConstraints.setColumn(0);
-        menuToolBarPanel.add(actionToolbarComponent, menuToolBarGridConstraints);
+        menuToolBarPanel.add(actionToolbarComponent, BorderLayout.NORTH);
         menuToolBarPanel.setAlignmentY(Component.TOP_ALIGNMENT);
     }
 
@@ -586,7 +585,7 @@ public class WReaderToolWindow implements Configurable {
         fontSize = fontSize - 1;
         cacheService.setFontSize(fontSize);
 
-        String style = "font-family: '" + fontFamily+ "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
+        String style = "font-family: '" + fontFamily + "'; font-size: " + fontSize + "px;color:" + fontColorHex + ";";
         String text = "<div style=\"" + style + "\">" + chapterContentHtml + "</div>";
         setContentText(text);
     }

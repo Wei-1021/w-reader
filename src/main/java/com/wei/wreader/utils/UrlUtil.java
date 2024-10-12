@@ -51,8 +51,8 @@ public class UrlUtil {
             return new URL(base.getProtocol(), base.getHost(), base.getPort(), relativePath).toString();
         }
 
-        // 使用java.nio.file.Paths来处理相对路径（这里是一个简单的模拟，实际上并不完全准确，因为Paths是为文件系统设计的）
-        // 但我们可以利用它的normalize方法来处理`./`和`../`
+        // 使用java.nio.file.Paths来处理相对路径
+        // 利用normalize方法来处理`./`和`../`
         String normalizedPath = Paths.get(base.getPath(), relativePath).normalize().toString();
         normalizedPath = normalizedPath.replaceAll("\\\\", "/");
 
