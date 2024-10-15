@@ -42,6 +42,10 @@ public final class CacheService implements PersistentStateComponent<CacheService
      */
     private BookInfo selectedBookInfo;
     /**
+     * 是否隐藏文字
+     */
+    private boolean isHideText;
+    /**
      * 选中的站点信息
      */
     private BookSiteInfo selectedBookSiteInfo;
@@ -162,4 +166,11 @@ public final class CacheService implements PersistentStateComponent<CacheService
         this.fontFamily = fontFamily;
     }
 
+    public boolean isHideText() {
+        return this.isHideText;
+    }
+
+    public void setHideText(boolean hideText) {
+        this.isHideText = hideText;
+    }
 }

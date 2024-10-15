@@ -1,11 +1,7 @@
 package com.wei.wreader.action;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +20,8 @@ public class LoadLocalFileAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
         // 创建提示标签
-        JLabel tipLabel = new JLabel("请选择字符集：");
+        JLabel tipLabel = new JLabel("请选择字符集");
+        JLabel tip2Label = new JLabel("PS:字符集不正确会导致内容无法加载或乱码");
 
         // 创建编码选择框
         ComboBox<String> charsetComboBox = new ComboBox<>();
@@ -39,7 +36,7 @@ public class LoadLocalFileAction extends BaseAction {
             cacheService.setSettings(settings);
         });
 
-        Object[] objs = {tipLabel, charsetComboBox};
+        Object[] objs = {tipLabel, tip2Label, charsetComboBox};
         MessageDialogUtil.showMessageDialog(project, "请选择字符集", objs, () -> {
             // 打开文件选择器，并处理文件
             OperateActionUtil.getInstance(project).loadLocalFile();

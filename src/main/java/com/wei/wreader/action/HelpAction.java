@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 帮助
@@ -30,15 +31,18 @@ public class HelpAction extends BaseAction {
                 return;
             }
 
-            String content = new String(is.readAllBytes());
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
             JTextPane textPane = new JTextPane();
+            textPane.setEditable(false);
             textPane.setContentType("text/html");
             textPane.setText(content);
 
             JBScrollPane scrollPane = new JBScrollPane();
             scrollPane.setViewportView(textPane);
             scrollPane.setPreferredSize(new Dimension(500, 600));
+
+            textPane.setCaretPosition(0);
 
             MessageDialogUtil.showMessageDialog(project, MessageDialogUtil.TITLE_HELP, scrollPane, null);
         } catch (IOException ex) {

@@ -1,19 +1,9 @@
-<!--
-Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html
--->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.wei.wreader</id>
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>W-Reader</name>
     <version>0.0.3</version>
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
         <p>
         W-Reader是一款基于Intellij IDEA的轻量级小说阅读插件，为开发者提供了沉浸式阅读小说的体验。<br>
@@ -24,12 +14,19 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
         <ul>
             <li>&nbsp;&nbsp;支持多个站点之间的切换搜索。</li>
             <li>&nbsp;&nbsp;支持在线通过书名搜索小说、点击目录快速跳转章节。</li>
-            <li>&nbsp;&nbsp;支持本地加载小说。</li>
-            <li>&nbsp;&nbsp;支持txt 和 epub 格式。</li>
+            <li>&nbsp;&nbsp;支持本地加载小说，支持txt 和 epub 格式。</li>
+            <li>&nbsp;&nbsp;支持侧边栏、状态栏模式之间切换。</li>
+            <li>&nbsp;&nbsp;支持编辑器提示消息、代码注释块模式阅读。</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.3:
+        <ul>
+            <li>新增编辑器提示消息模式和代码注释块模式，添加快捷键操作，优化其他问题；</li>
+        </ul>
+    </p>
     <p>
         0.0.2:
         <ul>
@@ -44,12 +41,8 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
     </p>
     ]]></change-notes>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity id="wreader.StartupFactory"
                              implementation="com.wei.wreader.factory.StartupFactory"
@@ -66,7 +59,7 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
     </extensions>
 
     <actions>
-        <!-- Action -->
+        <!--region Action-->
         <action id="wreader.WReaderSetting" class="com.wei.wreader.action.SettingAction" text="设置"
                 icon="AllIcons.General.Settings">
         </action>
@@ -75,7 +68,7 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD7"/>
         </action>
         <action id="wreader.ChapterListAction" class="com.wei.wreader.action.ChapterListAction" text="目录"
-                icon="com.intellij.icons.ExpUiIcons.FileTypes.ChangedFile">
+                icon="AllIcons.General.InlineVariablesHover">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD9"/>
         </action>
         <action id="wreader.PrevChapterAction" class="com.wei.wreader.action.PrevChapterAction" text="上一章"
@@ -88,11 +81,11 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
         </action>
         <action id="wreader.PrevLineAction" class="com.wei.wreader.action.PrevLineAction" text="上一行"
                 description="状态栏模式下切换至上一行文字"
-                icon="com.intellij.icons.ExpUiIcons.General.MoveUp">
+                icon="AllIcons.Actions.MoveUp">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD8"/>
         </action>
         <action id="wreader.NextLineAction" class="com.wei.wreader.action.NextLineAction" text="下一行"
-                icon="com.intellij.icons.ExpUiIcons.General.MoveDown"
+                icon="AllIcons.Actions.MoveDown"
                 description="状态栏模式下切换至下一行文字">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
         </action>
@@ -101,7 +94,7 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
         <action id="wreader.FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
                 icon="/icon/font_add.svg"/>
         <action id="wreader.ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
-                icon="com.intellij.icons.ExpUiIcons.Gutter.Colors"/>
+                icon="AllIcons.Actions.Colors"/>
         <action id="wreader.LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
                 icon="AllIcons.Nodes.Folder"
                 description="加载本地文件">
@@ -117,12 +110,17 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
 <!--        </action>-->
         <action id="wreader.CommentBlockAction" class="com.wei.wreader.action.CommentBlockAction" text="代码注释块"
                 icon="AllIcons.Actions.InlayRenameInComments">
-            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD1"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>
         </action>
         <action id="wreader.HelpAction" class="com.wei.wreader.action.HelpAction" text="帮助"
                 icon="AllIcons.Actions.Help"/>
+        <action id="wreader.HideTextAction" class="com.wei.wreader.action.HideOrShowTextAction" text="隐藏/显示文字"
+                icon="AllIcons.General.InspectionsEye">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt SUBTRACT"/>
+        </action>
+        <!--endregion-->
 
-        <!-- Group -->
+        <!--region Group-->
         <!-- Tool菜单 -->
         <group id="wreader.group.WReader" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
@@ -172,11 +170,13 @@ Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intelli
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.ChapterListAction"/>
+            <reference id="wreader.HideTextAction"/>
             <separator/>
             <reference id="wreader.PrevChapterAction"/>
             <reference id="wreader.NextChapterAction"/>
             <reference id="wreader.PrevLineAction"/>
             <reference id="wreader.NextLineAction"/>
         </group>
+        <!--endregion-->
     </actions>
 </idea-plugin>

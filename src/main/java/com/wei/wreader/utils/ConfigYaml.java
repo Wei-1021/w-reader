@@ -140,6 +140,10 @@ public class ConfigYaml {
         return (String) getObject("wreader.author");
     }
 
+    public Map<String, Object> getLanguage() {
+        return (Map<String, Object>) getObject("wreader.language");
+    }
+
     public List<String> getAllowFileExtension() {
         return (List<String>) getObject("wreader.allowFileExtension");
     }

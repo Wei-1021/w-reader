@@ -28,6 +28,73 @@ wreader:
     chapter-list-title: '目录'
     prev-chapter-title: '上一章'
     next-chapter-title: '下一章'
+  language:
+    java:
+      name: 'java'
+      commentStart: '/**'
+      commentEnd: ' */'
+      commentLine: ' *'
+    kt:
+      name: 'kotlin'
+      commentStart: '/**'
+      commentEnd: ' */'
+      commentLine: ' *'
+    js:
+      name: 'javascript'
+      commentStart: '/*'
+      commentEnd: '*/'
+      commentLine: '*'
+    html:
+      name: 'html'
+      commentStart: '<!--'
+      commentEnd: '-->'
+      commentLine: ''
+    xml:
+      name: 'html'
+      commentStart: <!--'
+      commentEnd: '-->'
+      commentLine: ''
+    css:
+      name: 'css'
+      commentStart: '/*'
+      commentEnd: '*/'
+      commentLine: '*'
+    py:
+      name: 'python'
+      commentStart: '"""'
+      commentEnd: '"""'
+      commentLine: ''
+    cpp:
+      name: 'cpp'
+      commentStart: '/*'
+      commentEnd: '*/'
+      commentLine: ''
+    php:
+      name: 'php'
+      commentStart: '/*'
+      commentEnd: '*/'
+      commentLine: '*'
+    rs:
+      name: 'rust'
+      commentStart: '//'
+      commentEnd: ''
+      commentLine: '//'
+    go:
+      name: 'go'
+      commentStart: '/*'
+      commentEnd: '*/'
+      commentLine: '*'
+    yaml:
+      name: 'yaml'
+      commentStart: '#'
+      commentEnd: ''
+      commentLine: '#'
+    yml:
+      name: 'yaml'
+      commentStart: '#'
+      commentEnd: ''
+      commentLine: '#'
+
   site_list:
     - id: 'xbiqugu.net'
       name: '笔趣阁-书香小说'

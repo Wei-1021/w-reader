@@ -9,12 +9,14 @@ import com.intellij.openapi.ui.MessageUtil;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.TextRange;
 import com.wei.wreader.pojo.ChapterInfo;
+import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 代码注释块
@@ -33,17 +35,40 @@ public class CommentBlockAction extends BaseAction {
             return;
         }
 
-        // 获取主文本插入符
+        // 获取文本插入符
         CaretModel caretModel = editor.getCaretModel();
         List<Caret> allCarets = caretModel.getAllCarets();
         if (allCarets.isEmpty()) {
             return;
         }
 
+        // 获取文件名称
+        String editorFileName = editor.getVirtualFile().getName();
+        // 获取文件类型
+        String editorFileExtension = editorFileName.substring(editorFileName.lastIndexOf(".") + 1);
+        // 代码注释符号
+        String commentStartSymbol = "/*";
+        String commentEndSymbol = "*/";
+        String commentLineSymbol = "*";
+        Map<String, Object> languageMap = ConfigYaml.getInstance().getLanguage();
+        for (String language : languageMap.keySet()) {
+            if (editorFileExtension.equals(language)) {
+                Map<String, Object> languageObj = (Map<String, Object>) languageMap.get(language);
+                commentStartSymbol = languageObj.get("commentStart").toString();
+                commentEndSymbol = languageObj.get("commentEnd").toString();
+                commentLineSymbol = languageObj.get("commentLine").toString();
+                break;
+            }
+        }
+
+        // 获取主文本插入符
         Caret primaryCaret = caretModel.getPrimaryCaret();
 
         // 在文本插入符处插入文本
         Document document = editor.getDocument();
+        String finalCommentStartSymbol = commentStartSymbol;
+        String finalCommentEndSymbol = commentEndSymbol;
+        String finalCommentLineSymbol = commentLineSymbol;
         WriteCommandAction.runWriteCommandAction(project, () -> {
             OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
             operateAction.splitChapterContent();
@@ -60,12 +85,18 @@ public class CommentBlockAction extends BaseAction {
                 return;
             }
 
-            StringBuilder text = new StringBuilder();
+            StringBuilder text = new StringBuilder(finalCommentStartSymbol);
+            text.append("\n");
             for (String content : chapterContentList) {
-                text.append("/* ").append(content).append(" */\n");
+                text.append(finalCommentLineSymbol)
+                        .append(" ")
+                        .append(content)
+                        .append("\n");
             }
+            text.append(finalCommentEndSymbol);
 
             document.insertString(primaryCaret.getOffset(), text.toString());
         });
     }
 }
+

@@ -63,15 +63,19 @@
                 </tr>
                 <tr>
                     <td class="t-right">加载本地文件</td>
-                    <td class="t-left">Alt + NumPad add(小键盘+号)</td>
+                    <td class="t-left">Alt + NumPad ADD(小键盘+号)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">隐藏/显示文字</td>
+                    <td class="t-left">Alt + NumPad SUBTRACT(小键盘-号)</td>
+                </tr>
+                <tr>
+                    <td class="t-right">代码注释块</td>
+                    <td class="t-left">Alt + NumPad DIVIDE(小键盘/号)</td>
                 </tr>
                 <tr>
                     <td class="t-right">编辑器提示消息</td>
                     <td class="t-left">Alt + NumPad-0(小键盘0)</td>
-                </tr>
-                <tr>
-                    <td class="t-right">代码注释块</td>
-                    <td class="t-left">Alt + NumPad-1(小键盘1)</td>
                 </tr>
                 <tr>
                     <td class="t-right">上一章</td>
@@ -115,7 +119,14 @@
                     <div class="li-label">3."代码注释块"功能不起作用：</div>
                     <span>
                         与问题2类似，但有一个额外的条件，就是当前编辑器所选择的文件处于可写状态。<br>
-                        ps: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。
+                        ps1: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。<br>
+                        ps2: 文件提交至Git、SVN等版本控制系统前，请把注释块删除，或者在忽略文件中使用此功能。
+                    </span>
+                </li>
+                <li class="mt-10">
+                    <div class="li-label">4.本地加载小说文件后不显示内容（包括目录不显示），或者内容文字出现乱码：</div>
+                    <span>
+                        这种情况很大原因是文件字符集设置不正确所导致，请尝试修改文件字符集，如GBK、UTF-8等。
                     </span>
                 </li>
             </ul>

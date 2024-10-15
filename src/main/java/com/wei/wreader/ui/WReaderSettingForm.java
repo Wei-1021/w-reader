@@ -105,8 +105,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         statusBarRadioButton = new JBRadioButton();
         statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
         // 创建单选按钮--编辑器顶部提示
-        editorBannerRadioButton = new JBRadioButton();
-        editorBannerRadioButton.setText(Settings.DISPLAY_TYPE_EDITOR_BANNER_STR);
+//        editorBannerRadioButton = new JBRadioButton();
+//        editorBannerRadioButton.setText(Settings.DISPLAY_TYPE_EDITOR_BANNER_STR);
 
         // 设置显示类型Panel布局
         GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
@@ -121,10 +121,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         statusBarRadioGridConstraints.setRow(0);
         statusBarRadioGridConstraints.setColumn(1);
         displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
-        GridConstraints editorBannerRadioGridConstraints = new GridConstraints();
-        editorBannerRadioGridConstraints.setRow(0);
-        editorBannerRadioGridConstraints.setColumn(2);
-        displayTypeRadioPanel.add(editorBannerRadioButton, editorBannerRadioGridConstraints);
+//        GridConstraints editorBannerRadioGridConstraints = new GridConstraints();
+//        editorBannerRadioGridConstraints.setRow(0);
+//        editorBannerRadioGridConstraints.setColumn(2);
+//        displayTypeRadioPanel.add(editorBannerRadioButton, editorBannerRadioGridConstraints);
 
         // 字符集
         SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
@@ -142,14 +142,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 statusBarRadioButton.setSelected(true);
                 break;
             case Settings.DISPLAY_TYPE_EDITOR_BANNER:
-                editorBannerRadioButton.setSelected(true);
+//                editorBannerRadioButton.setSelected(true);
                 break;
         }
 
         displayTypeRadioGroup = new ButtonGroup();
         displayTypeRadioGroup.add(sideBarRadioButton);
         displayTypeRadioGroup.add(statusBarRadioButton);
-        displayTypeRadioGroup.add(editorBannerRadioButton);
+//        displayTypeRadioGroup.add(editorBannerRadioButton);
 
         return settingPanel;
     }
@@ -184,9 +184,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
         if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
-        } else if (editorBannerRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
         }
+//        else if (editorBannerRadioButton.isSelected()) {
+//            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
+//        }
 
         return modifiedSettings.getDisplayType() != selectedDisplayType;
     }
