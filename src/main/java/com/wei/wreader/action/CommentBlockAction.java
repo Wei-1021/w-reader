@@ -5,9 +5,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.ui.MessageUtil;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.MessageDialogUtil;
@@ -29,11 +32,20 @@ public class CommentBlockAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        FileEditor selectedEditor = fileEditorManager.getSelectedEditor();
+        if (selectedEditor == null) {
+            return;
+        }
+
         // 获取编辑器实例
-        Editor editor = e.getData(LangDataKeys.EDITOR);
+//        Editor editor = e.getData(LangDataKeys.EDITOR);
+        Editor editor = fileEditorManager.getSelectedTextEditor();
         if (editor == null) {
             return;
         }
+
+        Document document = editor.getDocument();
 
         // 获取文本插入符
         CaretModel caretModel = editor.getCaretModel();
@@ -43,7 +55,8 @@ public class CommentBlockAction extends BaseAction {
         }
 
         // 获取文件名称
-        String editorFileName = editor.getVirtualFile().getName();
+        VirtualFile file = selectedEditor.getFile();
+        String editorFileName = file.getName();
         // 获取文件类型
         String editorFileExtension = editorFileName.substring(editorFileName.lastIndexOf(".") + 1);
         // 代码注释符号
@@ -65,7 +78,6 @@ public class CommentBlockAction extends BaseAction {
         Caret primaryCaret = caretModel.getPrimaryCaret();
 
         // 在文本插入符处插入文本
-        Document document = editor.getDocument();
         String finalCommentStartSymbol = commentStartSymbol;
         String finalCommentEndSymbol = commentEndSymbol;
         String finalCommentLineSymbol = commentLineSymbol;

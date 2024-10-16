@@ -1,4 +1,5 @@
-import proguard.gradle.ProGuardTask;
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 
 plugins {
     id("java")
@@ -65,6 +66,22 @@ buildscript {
     }
     dependencies {
         classpath("com.guardsquare:proguard-gradle:7.3.0")
+    }
+}
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.1")
+            local(providers.gradleProperty("localIDEAPath"))
+            recommended()
+            select {
+                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
+                channels = listOf(ProductRelease.Channel.RELEASE)
+                sinceBuild = providers.gradleProperty("pluginSinceBuild")
+                untilBuild = providers.gradleProperty("pluginUntilBuild")
+            }
+        }
     }
 }
 

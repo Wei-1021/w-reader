@@ -67,9 +67,9 @@
 <!--        <editorNotificationProvider implementation="com.wei.wreader.action.EditorBannerMessageAction"/>-->
     </extensions>
 
-    <applicationListeners>
-        <applicationListener implementation="com.wei.wreader.listener.WReaderApplicationListener" />
-    </applicationListeners>
+<!--    <applicationListeners>-->
+<!--        <applicationListener implementation="com.wei.wreader.listener.WReaderApplicationListener" />-->
+<!--    </applicationListeners>-->
 
     <actions>
         <!--region Action-->

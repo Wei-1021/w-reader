@@ -71,11 +71,6 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         return new WReaderStatusBarWidget(project);
     }
 
-    @Override
-    public void disposeWidget(@NotNull StatusBarWidget widget) {
-        StatusBarWidgetFactory.super.disposeWidget(widget);
-    }
-
     /**
      * Returns availability of the widget.
      * <p>

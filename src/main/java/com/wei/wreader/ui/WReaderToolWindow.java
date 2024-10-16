@@ -3,8 +3,6 @@ package com.wei.wreader.ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.intellij.icons.AllIcons;
-import com.intellij.icons.ExpUiIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
@@ -14,14 +12,9 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBList;
-import com.intellij.ui.tabs.impl.JBTabsImpl;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
@@ -120,8 +113,6 @@ public class WReaderToolWindow implements Configurable {
      */
     private JPanel colorShowPanel;
     private JPanel menuToolBarPanel;
-
-    private JBTabsImpl menuToolTabs;
 
     private JToolBar menuToolBar;
     //endregion
