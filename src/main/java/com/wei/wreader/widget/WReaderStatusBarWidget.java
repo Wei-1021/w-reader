@@ -100,6 +100,11 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     protected WidgetState getWidgetState(@Nullable VirtualFile virtualFile) {
         initData();
 
+        boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
+        if (!isVisible) {
+            return WidgetState.HIDDEN;
+        }
+
         if (!isHideText) {
             String chapterContentStr = selectedChapterInfo.getChapterContentStr();
             contentArr = selectedChapterInfo.getChapterContentList();
@@ -129,6 +134,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
                 .WidgetState(tooltipText, showContentStr, true);
         Icon icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderStatusBarWidget.class);
         widgetState.setIcon(icon);
+
         return widgetState;
     }
 

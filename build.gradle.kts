@@ -8,7 +8,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.3"
+version = "0.0.4"
 
 repositories {
     maven {
@@ -100,7 +100,7 @@ tasks {
     }
 
     publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        token.set(providers.gradleProperty("publicToken"))
     }
 
 //    // 获取构建目录

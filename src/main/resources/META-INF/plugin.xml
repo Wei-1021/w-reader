@@ -1,10 +1,13 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.3</version>
-    <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">2668910548</vendor>
+    <version>0.0.4</version>
+    <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
+        <p>
+        W-Reader is a lightweight novel reading plugin based on Intellij IDEA, providing developers with an immersive experience for reading novels.<br>
+        </p>
         <p>
         W-Reader是一款基于Intellij IDEA的轻量级小说阅读插件，为开发者提供了沉浸式阅读小说的体验。<br>
         </p>
@@ -21,6 +24,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.4:
+        <ul>
+            <li>新增隐藏/显示文字功能；</li>
+        </ul>
+    </p>
     <p>
         0.0.3:
         <ul>
@@ -57,6 +66,10 @@
                                 order="first"/>
 <!--        <editorNotificationProvider implementation="com.wei.wreader.action.EditorBannerMessageAction"/>-->
     </extensions>
+
+    <applicationListeners>
+        <applicationListener implementation="com.wei.wreader.listener.WReaderApplicationListener" />
+    </applicationListeners>
 
     <actions>
         <!--region Action-->

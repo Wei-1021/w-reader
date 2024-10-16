@@ -1,14 +1,11 @@
 package com.wei.wreader.factory;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -16,13 +13,13 @@ import javax.swing.*;
  * 启动工厂
  * @author weizhanjie
  */
-public class StartupFactory implements ProjectActivity {
+public class StartupFactory implements StartupActivity {
     private CacheService cacheService;
     private ConfigYaml configYaml;
     private Settings settings;
-    @Nullable
+
     @Override
-    public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+    public void runActivity(@NotNull Project project) {
         SwingUtilities.invokeLater(() -> {
             cacheService = CacheService.getInstance();
             settings = cacheService.getSettings();
@@ -37,6 +34,5 @@ public class StartupFactory implements ProjectActivity {
             wReaderStatusBarFactory.setEnabled(project, true);
 
         });
-        return null;
     }
 }
