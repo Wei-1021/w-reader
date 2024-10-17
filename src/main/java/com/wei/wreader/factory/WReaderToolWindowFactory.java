@@ -65,7 +65,7 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
             registerToolWindowTaskBuilder.canCloseContent = true;
             registerToolWindowTaskBuilder.icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderToolWindowFactory.class);
             // 创建工具窗口内容
-            registerToolWindowTaskBuilder.contentFactory = this;
+            registerToolWindowTaskBuilder.contentFactory = WReaderToolWindowFactory.this;
             return Unit.INSTANCE;
         });
     }

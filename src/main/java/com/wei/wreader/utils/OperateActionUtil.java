@@ -196,17 +196,18 @@ public class OperateActionUtil {
             if (currentChapterInfo == null) {
                 currentChapterInfo = new ChapterInfo();
             }
+            currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
             // 加载持久化数据--目录名称列表
             chapterList = cacheService.getChapterList();
             // 加载持久化数据--目录章节链接列表
             chapterUrlList = cacheService.getChapterUrlList();
+
 
             // 选择的站点基础网址
             baseUrl = selectedBookSiteInfo.getBaseUrl();
             if (chapterList != null && !chapterList.isEmpty() &&
                     chapterUrlList != null && !chapterUrlList.isEmpty()) {
                 if (currentChapterInfo.getChapterUrl() != null) {
-                    currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
                     searchBookContentRemote(currentChapterInfo.getChapterUrl());
                 }
             }
@@ -417,7 +418,7 @@ public class OperateActionUtil {
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         cacheService.setSelectedBookInfo(selectBookInfo);
                         String bookUrl = selectBookInfo.getBookUrl();
-                        if (!selectBookInfo.getBookUrl().startsWith("http://") && !selectBookInfo.getBookUrl().startsWith("https://")) {
+                        if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) && !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
                             bookUrl = baseUrl + selectBookInfo.getBookUrl();
                         }
 
@@ -495,7 +496,7 @@ public class OperateActionUtil {
                     String chapterTitle = chapterList.get(currentChapterIndex);
                     String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
                     String chapterUrl = chapterSuffixUrl;
-                    if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+                    if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                         chapterUrl = baseUrl + chapterSuffixUrl;
                     }
                     currentChapterInfo.setChapterTitle(chapterTitle);
@@ -627,7 +628,7 @@ public class OperateActionUtil {
         // 提取章节链接
         String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
         String chapterUrl = chapterSuffixUrl;
-        if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+        if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
             chapterUrl = baseUrl + chapterSuffixUrl;
         }
         currentChapterInfo.setChapterTitle(chapterTitle);
@@ -742,7 +743,7 @@ public class OperateActionUtil {
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
                 String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
                 String prevChapterUrl = prevChapterSuffixUrl;
-                if (!prevChapterSuffixUrl.startsWith("http://") && !prevChapterSuffixUrl.startsWith("https://")) {
+                if (!prevChapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !prevChapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                     prevChapterUrl = baseUrl + prevChapterSuffixUrl;
                 }
                 currentChapterInfo.setChapterUrl(prevChapterUrl);
@@ -784,7 +785,7 @@ public class OperateActionUtil {
 
                 String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
                 String nextChapterUrl = nextChapterSuffixUrl;
-                if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
+                if (!nextChapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !nextChapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                     nextChapterUrl = baseUrl + nextChapterSuffixUrl;
                 }
                 currentChapterInfo.setChapterUrl(nextChapterUrl);

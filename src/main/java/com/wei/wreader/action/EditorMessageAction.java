@@ -31,7 +31,10 @@ public class EditorMessageAction extends BaseAction {
         super.actionPerformed(e);
 
         // 获取当前编辑器实例
-        Editor editor = e.getRequiredData(LangDataKeys.EDITOR);
+        Editor editor = e.getData(LangDataKeys.EDITOR);
+        if (editor == null) {
+            return;
+        }
 
         // 获取小说内容
         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();

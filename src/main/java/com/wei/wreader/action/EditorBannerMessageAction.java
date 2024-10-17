@@ -45,8 +45,8 @@ public class EditorBannerMessageAction extends BaseAction implements EditorNotif
     }
 
     @Override
-    public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(
-            @NotNull Project project, @NotNull VirtualFile virtualFile) {
+    public Function<? super FileEditor, ? extends JComponent> collectNotificationData(
+            Project project, VirtualFile virtualFile) {
         cacheService = CacheService.getInstance();
         configYaml = ConfigYaml.getInstance();
         settings = cacheService.getSettings();

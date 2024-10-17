@@ -190,14 +190,13 @@ public class WReaderToolWindow implements Configurable {
     //endregion
 
     public WReaderToolWindow(ToolWindow toolWindow) {
+        configYaml = new ConfigYaml();
+        cacheService = CacheService.getInstance();
+
         menuToolPanel.setVisible(false);
         menuToolBarPanel.setVisible(false);
         SwingUtilities.invokeLater(() -> {
-            configYaml = new ConfigYaml();
-            cacheService = CacheService.getInstance();
             // 初始化组件
-//            initComponent(toolWindow);
-//            initMenuTool(toolWindow);
             initMenuToolTabs(toolWindow);
             // 初始化编辑器
             initContentTextArea(toolWindow);
@@ -438,7 +437,7 @@ public class WReaderToolWindow implements Configurable {
             String chapterTitle = chapterList.get(currentChapterIndex);
             String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
             String prevChapterUrl = prevChapterSuffixUrl;
-            if (!prevChapterSuffixUrl.startsWith("http://") && !prevChapterSuffixUrl.startsWith("https://")) {
+            if (!prevChapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !prevChapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                 prevChapterUrl = baseUrl + prevChapterSuffixUrl;
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
@@ -469,7 +468,7 @@ public class WReaderToolWindow implements Configurable {
             String chapterTitle = chapterList.get(currentChapterIndex);
             String nextChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
             String nextChapterUrl = nextChapterSuffixUrl;
-            if (!nextChapterSuffixUrl.startsWith("http://") && !nextChapterSuffixUrl.startsWith("https://")) {
+            if (!nextChapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !nextChapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                 nextChapterUrl = baseUrl + nextChapterSuffixUrl;
             }
             currentChapterInfo.setChapterTitle(chapterTitle);
@@ -667,7 +666,7 @@ public class WReaderToolWindow implements Configurable {
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         cacheService.setSelectedBookInfo(selectBookInfo);
                         String bookUrl = selectBookInfo.getBookUrl();
-                        if (!selectBookInfo.getBookUrl().startsWith("http://") && !selectBookInfo.getBookUrl().startsWith("https://")) {
+                        if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) && !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
                             bookUrl = baseUrl + selectBookInfo.getBookUrl();
                         }
 
@@ -828,7 +827,7 @@ public class WReaderToolWindow implements Configurable {
                     String chapterTitle = chapterList.get(currentChapterIndex);
                     String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
                     String chapterUrl = chapterSuffixUrl;
-                    if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+                    if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                         chapterUrl = baseUrl + chapterSuffixUrl;
                     }
                     currentChapterInfo.setChapterTitle(chapterTitle);
@@ -873,7 +872,7 @@ public class WReaderToolWindow implements Configurable {
                     String chapterTitle = chapterList.get(currentChapterIndex);
                     String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
                     String chapterUrl = chapterSuffixUrl;
-                    if (!chapterSuffixUrl.startsWith("http://") && !chapterSuffixUrl.startsWith("https://")) {
+                    if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
                         chapterUrl = baseUrl + chapterSuffixUrl;
                     }
                     currentChapterInfo.setChapterTitle(chapterTitle);

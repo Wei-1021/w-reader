@@ -57,6 +57,7 @@
                              implementation="com.wei.wreader.factory.StartupFactory"
                              order="first"/>
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
+<!--        <projectService id="not.wreader.StatusBarWidgetsManager" serviceImplementation="com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager" />-->
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
                                  id="wreader.WReaderSettingForm"
@@ -64,12 +65,11 @@
         <statusBarWidgetFactory id="wreader.WReaderStatusBar"
                                 implementation="com.wei.wreader.factory.WReaderStatusBarFactory"
                                 order="first"/>
-<!--        <editorNotificationProvider implementation="com.wei.wreader.action.EditorBannerMessageAction"/>-->
     </extensions>
 
-<!--    <applicationListeners>-->
-<!--        <applicationListener implementation="com.wei.wreader.listener.WReaderApplicationListener" />-->
-<!--    </applicationListeners>-->
+    <extensionPoints >
+
+    </extensionPoints>
 
     <actions>
         <!--region Action-->

@@ -2,6 +2,7 @@ package com.wei.wreader.widget;
 
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.util.IconLoader;
@@ -12,10 +13,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.OperateActionUtil;
-import com.wei.wreader.utils.StringUtil;
+import com.wei.wreader.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -102,30 +100,35 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
         boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
         if (!isVisible) {
+            // 隐藏状态栏
             return WidgetState.HIDDEN;
         }
 
         if (!isHideText) {
-            String chapterContentStr = selectedChapterInfo.getChapterContentStr();
-            contentArr = selectedChapterInfo.getChapterContentList();
-            int singleLineChars = settings.getSingleLineChars();
-            int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
+            if (selectedChapterInfo != null) {
+                String chapterContentStr = selectedChapterInfo.getChapterContentStr();
+                contentArr = selectedChapterInfo.getChapterContentList();
+                int singleLineChars = settings.getSingleLineChars();
+                int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
 
-            // 当contentArr为空时, 按照单行最大字数将字符串分割成数组
-            if (contentArr == null || contentArr.isEmpty()) {
-                contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
-            }
-            selectedChapterInfo.setChapterContentList(contentArr);
-            if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum < contentArr.size()) {
-                lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
-                currentContentStr = contentArr.get(lastReadLineNum - 1);
-
-                if (settings.isShowLineNum()) {
-                    currentContentStr = lastReadLineNum + "/" + contentArr.size() + "|" + currentContentStr;
+                // 当contentArr为空时, 按照单行最大字数将字符串分割成数组
+                if (contentArr == null || contentArr.isEmpty()) {
+                    contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
                 }
-            }
+                selectedChapterInfo.setChapterContentList(contentArr);
+                if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum < contentArr.size()) {
+                    lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
+                    currentContentStr = contentArr.get(lastReadLineNum - 1);
 
-            showContentStr = currentContentStr;
+                    if (settings.isShowLineNum()) {
+                        currentContentStr = lastReadLineNum + "/" + contentArr.size() + "|" + currentContentStr;
+                    }
+                }
+
+                showContentStr = currentContentStr;
+            } else {
+                showContentStr = "";
+            }
         }
 
         String tooltipText = getTooltipText();
@@ -177,6 +180,10 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (widget != null) {
             widget.currentContentStr = chapterContent;
             widget.update(() -> {
+                if (widget.myStatusBar == null) {
+                    Messages.showErrorDialog("状态栏更新异常", MessageDialogUtil.TITLE_ERROR);
+                    return;
+                }
                 widget.myStatusBar.updateWidget(ConstUtil.WREADER_STATUS_BAR_WIDGET_ID);
             });
         }

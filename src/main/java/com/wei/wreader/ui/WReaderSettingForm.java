@@ -78,7 +78,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      * @return
      */
     @Override
-    public Configurable @NotNull [] getConfigurables() {
+    public Configurable [] getConfigurables() {
         return new Configurable[0];
     }
 

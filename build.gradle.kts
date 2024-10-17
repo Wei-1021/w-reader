@@ -72,14 +72,14 @@ buildscript {
 intellijPlatform {
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.1")
+            ide(IntelliJPlatformType.PhpStorm, "2023.1")
             local(providers.gradleProperty("localIDEAPath"))
             recommended()
             select {
-                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
+                types = listOf(IntelliJPlatformType.PhpStorm)
                 channels = listOf(ProductRelease.Channel.RELEASE)
                 sinceBuild = providers.gradleProperty("pluginSinceBuild")
-                untilBuild = providers.gradleProperty("pluginUntilBuild")
+                untilBuild = providers.gradleProperty("pluginUntilVerifyBuild")
             }
         }
     }

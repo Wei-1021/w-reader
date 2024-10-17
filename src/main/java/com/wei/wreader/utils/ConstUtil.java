@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
  */
 public class ConstUtil {
     public static final String WREADER_ID = "WReader";
-    public static final String WREADER_STATUS_BAR_WIDGET_ID = "WReaderStatusBarWidget";
-    public static final String WREADER_STATUS_BAR_ID = "WReaderStatusBar";
+    public static final String WREADER_STATUS_BAR_WIDGET_ID = "wreader.WReaderStatusBarWidget";
+    public static final String WREADER_STATUS_BAR_ID = "wreader.WReaderStatusBar";
     /**
      * 配置文件id--设置
      */
@@ -62,7 +62,7 @@ public class ConstUtil {
     /**
      * 工具窗口id
      */
-    public static final String WREADER_TOOL_WINDOW_ID = "WReader";
+    public static final String WREADER_TOOL_WINDOW_ID = "wreader.toolWindow";
     /**
      * 配置文件id--组--WReader
      */
@@ -96,6 +96,8 @@ public class ConstUtil {
             "`-0-0-"`-0-0-"`-0-0-"`-0-0-"`-0-0-"`-0-0-"`-0-0-'\s
             """;
 
+    public static final String HTTP_SCHEME = "http://";
+    public static final String HTTPS_SCHEME = "https://";
     public static final String WREADER_SEARCH_BOOK_TITLE = "搜索小说";
     public static final String WREADER_SEARCH_BOOK_TIP_TEXT = "请输入书名进行搜索";
     public static final String WREADER_LOAD_SUCCESS = "加载成功";

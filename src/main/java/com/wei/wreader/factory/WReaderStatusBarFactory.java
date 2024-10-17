@@ -5,8 +5,6 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
-import com.intellij.openapi.wm.WindowManager;
-import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetSettings;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
@@ -15,9 +13,6 @@ import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.StringUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
-import kotlinx.coroutines.CoroutineScope;
-import kotlinx.coroutines.CoroutineScopeKt;
-import kotlinx.coroutines.Dispatchers;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -69,6 +64,11 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         settings = cacheService.getSettings();
 
         return new WReaderStatusBarWidget(project);
+    }
+
+    @Override
+    public void disposeWidget(@NotNull StatusBarWidget widget) {
+        widget.dispose();
     }
 
     /**
@@ -128,9 +128,11 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         }
 
         if (!isStartupApp) {
-            CoroutineScope scope = CoroutineScopeKt.CoroutineScope(Dispatchers.getDefault());
-            StatusBarWidgetsManager statusBarWidgetsManager = new StatusBarWidgetsManager(project, scope);
-            statusBarWidgetsManager.updateWidget(this);
+            // 兼容性问题
+//            CoroutineScope scope = CoroutineScopeKt.CoroutineScope(Dispatchers.getDefault());
+//            StatusBarWidgetsManager statusBarWidgetsManager = new StatusBarWidgetsManager(project, scope);
+//            StatusBarWidgetsManager statusBarWidgetsManager = project.getService(StatusBarWidgetsManager.class);
+//            statusBarWidgetsManager.updateWidget(this);
 
             boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
             if (isVisible) {
