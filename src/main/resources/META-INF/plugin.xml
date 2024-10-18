@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.4</version>
+    <version>0.0.6</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -24,6 +24,18 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.6:
+        <ul>
+            <li>新增自动阅读功能；</li>
+        </ul>
+    </p>
+    <p>
+        0.0.5:
+        <ul>
+            <li>优化；</li>
+        </ul>
+    </p>
     <p>
         0.0.4:
         <ul>
@@ -103,14 +115,13 @@
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD2"/>
         </action>
         <action id="wreader.FontSizeSubAction" class="com.wei.wreader.action.FontSizeSubAction" text="字体缩小"
-                icon="/icon/font_sub.svg"/>
+                icon="com.wei.wreader.utils.WReaderIcons.FONT_SIZE_SUB"/>
         <action id="wreader.FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
-                icon="/icon/font_add.svg"/>
+                icon="com.wei.wreader.utils.WReaderIcons.FONT_SIZE_ADD"/>
         <action id="wreader.ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
                 icon="AllIcons.Actions.Colors"/>
         <action id="wreader.LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
-                icon="AllIcons.Nodes.Folder"
-                description="加载本地文件">
+                icon="AllIcons.Nodes.Folder">
             <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
         </action>
         <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction" text="编辑器提示消息"
@@ -131,6 +142,10 @@
                 icon="AllIcons.General.InspectionsEye">
             <keyboard-shortcut keymap="$default" first-keystroke="alt SUBTRACT"/>
         </action>
+        <action id="wreader.AutoReadAction"
+                class="com.wei.wreader.action.AutoReadAction"
+                text="自动阅读"
+                icon="com.wei.wreader.utils.WReaderIcons.AUTO_READ_PLAY"/>
         <!--endregion-->
 
         <!--region Group-->
@@ -184,6 +199,7 @@
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.ChapterListAction"/>
             <reference id="wreader.HideTextAction"/>
+            <reference id="wreader.AutoReadAction"/>
             <separator/>
             <reference id="wreader.PrevChapterAction"/>
             <reference id="wreader.NextChapterAction"/>

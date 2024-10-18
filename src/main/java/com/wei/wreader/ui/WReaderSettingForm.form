@@ -83,6 +83,24 @@
         <border type="none"/>
         <children/>
       </grid>
+      <component id="cbd80" class="javax.swing.JLabel" binding="autoReadTimeLabel">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="自动阅读时间间隔"/>
+        </properties>
+      </component>
+      <component id="94d5c" class="javax.swing.JTextField" binding="autoReadTimeTextField">
+        <constraints>
+          <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <minimum-size width="80" height="-1"/>
+            <preferred-size width="80" height="-1"/>
+            <maximum-size width="80" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
     </children>
   </grid>
   <buttonGroups>

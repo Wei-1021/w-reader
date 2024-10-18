@@ -68,6 +68,10 @@ public class Settings {
      * 字符集
      */
     private String charset;
+    /**
+     * 自动阅读时间(秒)
+     */
+    private int autoReadTime;
 
     public int getSingleLineChars() {
         return singleLineChars;
@@ -107,5 +111,13 @@ public class Settings {
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    public int getAutoReadTime() {
+        return autoReadTime;
+    }
+
+    public void setAutoReadTime(int autoReadTime) {
+        this.autoReadTime = autoReadTime;
     }
 }

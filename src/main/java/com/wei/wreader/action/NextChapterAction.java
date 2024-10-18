@@ -27,6 +27,8 @@ public class NextChapterAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
+        OperateActionUtil.getInstance(project).executorServiceShutdown();
+
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
                 ChapterInfo nextPageChapter = OperateActionUtil.getInstance(project).nextPageChapter();
@@ -67,11 +69,10 @@ public class NextChapterAction extends BaseAction {
                 }
                 break;
             case Settings.DISPLAY_TYPE_STATUSBAR:
-                WReaderStatusBarWidget.nextChapter(e.getProject());
-                break;
-            case Settings.DISPLAY_TYPE_TERMINAL:
+                WReaderStatusBarWidget.nextChapter(project);
                 break;
         }
+
     }
 
 }

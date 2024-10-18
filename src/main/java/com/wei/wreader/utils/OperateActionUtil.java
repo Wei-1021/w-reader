@@ -7,10 +7,8 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.progress.util.BackgroundTaskUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.*;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -48,6 +46,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +64,7 @@ public class OperateActionUtil {
     private Settings settings;
     private static Project mProject;
     private static OperateActionUtil instance;
+    private static ScheduledExecutorService executorService;
     /**
      * 书本名称列表
      */
@@ -1043,6 +1045,63 @@ public class OperateActionUtil {
             chapterContentSplitList = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
         }
         currentChapterInfo.setChapterContentList(chapterContentSplitList);
+    }
+
+    /**
+     * 自动阅读下一行，如果已执行，再次调用则会停止
+     */
+    public void autoReadNextLine() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+            return;
+        }
+
+        // 获取当前选中章节信息
+        ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+        if (selectedChapterInfo == null) {
+            return;
+        }
+
+        // 获取当前选中章节内容
+        List<String> chapterContentList = selectedChapterInfo.getChapterContentList();
+        if (chapterContentList == null || chapterContentList.isEmpty()) {
+            return;
+        }
+
+        // 创建一个定时任务执行器
+        if (executorService == null || executorService.isShutdown()) {
+            executorService = Executors.newSingleThreadScheduledExecutor();
+        }
+
+        // 获取章节内容长度
+        int len = chapterContentList.size();
+        // 获取自动阅读时间
+        int autoReadTime = settings.getAutoReadTime();
+        if (autoReadTime <= 0) {
+            autoReadTime = 5;
+        }
+
+        // 创建一个任务，用于每过autoReadTime秒执行一次
+        Runnable readNextLineTask = () -> {
+            int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
+            if (lastReadLineNum < len) {
+                WReaderStatusBarWidget.nextLine(mProject);
+            } else {
+                executorService.shutdown();
+            }
+        };
+
+        // 调度任务，每过autoReadTime秒执行一次
+        executorService.scheduleAtFixedRate(readNextLineTask, autoReadTime, autoReadTime, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 停止定时器
+     */
+    public void executorServiceShutdown() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 
     /**

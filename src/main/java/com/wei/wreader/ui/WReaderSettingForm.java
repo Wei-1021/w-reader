@@ -15,7 +15,6 @@ import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -42,6 +41,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      * 显示类型Panel
      */
     private JPanel displayTypeRadioPanel;
+    private JTextField autoReadTimeTextField;
+    private JLabel autoReadTimeLabel;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -104,9 +105,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 创建单选按钮--底部状态栏
         statusBarRadioButton = new JBRadioButton();
         statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
-        // 创建单选按钮--编辑器顶部提示
-//        editorBannerRadioButton = new JBRadioButton();
-//        editorBannerRadioButton.setText(Settings.DISPLAY_TYPE_EDITOR_BANNER_STR);
 
         // 设置显示类型Panel布局
         GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
@@ -121,10 +119,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         statusBarRadioGridConstraints.setRow(0);
         statusBarRadioGridConstraints.setColumn(1);
         displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
-//        GridConstraints editorBannerRadioGridConstraints = new GridConstraints();
-//        editorBannerRadioGridConstraints.setRow(0);
-//        editorBannerRadioGridConstraints.setColumn(2);
-//        displayTypeRadioPanel.add(editorBannerRadioButton, editorBannerRadioGridConstraints);
 
         // 字符集
         SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
@@ -132,6 +126,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             charsetComboBox.addItem(key);
         }
         charsetComboBox.setSelectedItem(settings.getCharset());
+
+        // 自动阅读
+        autoReadTimeTextField.setDocument(new NumberDocument());
+        int autoReadTime = settings.getAutoReadTime();
+        if (autoReadTime <= 0) {
+            autoReadTime = 5;
+        }
+        autoReadTimeTextField.setText(String.valueOf(autoReadTime));
 
         int displayTypeTemp = settings.getDisplayType();
         switch (displayTypeTemp) {
@@ -168,6 +170,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         String lineMaxNums = lineMaxNumsTextField.getText();
         boolean isShowLineNum = isShowLineNumCheckBox.isSelected();
+        String autoReadTime = autoReadTimeTextField.getText();
 
         if (modifiedSettings.getSingleLineChars() != Integer.parseInt(lineMaxNums)) {
             return true;
@@ -181,13 +184,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
 
+        if (modifiedSettings.getAutoReadTime() != Integer.parseInt(autoReadTime)) {
+            return true;
+        }
+
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
         if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
         }
-//        else if (editorBannerRadioButton.isSelected()) {
-//            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
-//        }
 
         return modifiedSettings.getDisplayType() != selectedDisplayType;
     }
@@ -203,6 +207,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
         settings.setCharset((String) charsetComboBox.getSelectedItem());
+        settings.setAutoReadTime(Integer.parseInt(autoReadTimeTextField.getText()));
         cacheService.setSettings(settings);
 
         ProjectManager projectManager = ProjectManager.getInstance();

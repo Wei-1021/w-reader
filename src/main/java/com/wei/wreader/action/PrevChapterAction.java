@@ -20,6 +20,8 @@ public class PrevChapterAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
+        OperateActionUtil.getInstance(project).executorServiceShutdown();
+
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
                 OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
