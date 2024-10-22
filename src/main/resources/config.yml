@@ -1,13 +1,13 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.6'
+  version: '0.0.7'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
     - 'txt'
     - 'epub'
-  settings:
+  settings: # 设置的默认值
     singleLineChars: 30 #最大单行字数
     isShowLineNum: false #是否显示行号
     displayType: 1 #显示类型。1-侧边栏（默认），2-底部状态栏，3-左下角控制台
@@ -94,17 +94,40 @@ wreader:
       commentStart: '#'
       commentEnd: ''
       commentLine: '#'
-
+  # 网站列表
+  # id: 网站id
+  # name: 网站名称
+  # baseUrl: 网站根路径
+  # searchUrl: 搜索路径
+  # searchBookNameParam: 搜索参数
+  # bookListElementName: 书本列表元素名
+  # bookListElementType: 书本列表元素类型（class、id）
+  # listMainUrl: 目录url
+  # listMainElementName: 目录元素名
+  # listMainElementType: 目录元素类型（class、id）
+  # chapterContentUrl: 章节url
+  # chapterContentElementName: 章节内容元素名
+  # chapterContentElementType: 章节内容元素类型（class、id）
+  # bookNameField: 书籍名字段名
+  # bookUrlField: 书籍url字段名
+  # bookAuthorField: 书籍作者字段名
+  # bookDescField: 书籍描述字段名
+  # bookImgUrlField: 书籍图片字段名
+  # isHtml: 是否为html文件
+  # isPathParam: 是否为路径参数
   site_list:
     - id: 'xbiqugu.net'
       name: '笔趣阁-书香小说'
       baseUrl: 'http://www.xbiqugu.net'
       searchUrl: '/modules/article/waps.php'
       searchBookNameParam: 'searchkey'
+      bookDataId: ''
       bookListElementName: 'grid'
       bookListElementType: 'class'
+      listMainUrl: ''
       listMainElementName: 'list'
       listMainElementType: 'id'
+      chapterContentUrl: ''
       chapterContentElementName: 'content'
       chapterContentElementType: 'id'
       bookNameField: 'even'
@@ -113,15 +136,19 @@ wreader:
       bookDescField: 'bookDesc'
       bookImgUrlField: 'bookImgUrl'
       isHtml: true
+      isPathParam: false
     - id: 'xbiquzw.com'
       name: '笔趣阁-笔尖小说'
       baseUrl: 'http://www.xbiquzw.com/'
       searchUrl: '/modules/article/search.php'
       searchBookNameParam: 'searchkey'
+      bookDataId: ''
       bookListElementName: 'grid'
       bookListElementType: 'class'
+      listMainUrl: ''
       listMainElementName: 'list'
       listMainElementType: 'id'
+      chapterContentUrl: ''
       chapterContentElementName: 'content'
       chapterContentElementType: 'id'
       bookNameField: 'odd'
@@ -130,15 +157,19 @@ wreader:
       bookDescField: 'bookDesc'
       bookImgUrlField: 'bookImgUrl'
       isHtml: true
+      isPathParam: false
     - id: '3bqg.cc'
       name: '笔趣阁'
       baseUrl: 'https://www.3bqg.cc'
       searchUrl: '/user/search.html'
       searchBookNameParam: 'q'
+      bookDataId: ''
       bookListElementName: ''
       bookListElementType: ''
+      listMainUrl: ''
       listMainElementName: 'listmain'
       listMainElementType: 'class'
+      chapterContentUrl: ''
       chapterContentElementName: 'chaptercontent'
       chapterContentElementType: 'id'
       bookNameField: 'articlename'
@@ -147,6 +178,28 @@ wreader:
       bookDescField: 'intro'
       bookImgUrlField: 'url_img'
       isHtml: false
+      isPathParam: false
+#    - id: 'm.qidian.com'
+#      name: '起点'
+#      baseUrl: 'https://m.qidian.com'
+#      searchUrl: '/soushu/{bookName}.html'
+#      searchBookNameParam: ''
+#      bookDataId: 'data-bid'
+#      bookListElementName: 'y-list__content'
+#      bookListElementType: 'class'
+#      listMainUrl: ''
+#      listMainElementName: 'listmain'
+#      listMainElementType: 'class'
+#      chapterContentUrl: ''
+#      chapterContentElementName: 'chaptercontent'
+#      chapterContentElementType: 'id'
+#      bookNameField: 'articlename'
+#      bookUrlField: 'url_list'
+#      bookAuthorField: 'author'
+#      bookDescField: 'intro'
+#      bookImgUrlField: 'url_img'
+#      isHtml: true
+#      isPathParam: true
 
 
 

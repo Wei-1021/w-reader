@@ -8,6 +8,8 @@ import com.wei.wreader.service.CacheService;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 /**
  * 状态栏模式时切换至下一行文字
  *

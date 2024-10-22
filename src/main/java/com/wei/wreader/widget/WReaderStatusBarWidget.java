@@ -178,7 +178,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     public static void update(@NotNull Project project, String chapterContent) {
         WReaderStatusBarWidget widget = findWidget(project);
         if (widget != null) {
-            widget.currentContentStr = chapterContent;
+            currentContentStr = chapterContent;
             widget.update(() -> {
                 if (widget.myStatusBar == null) {
                     Messages.showErrorDialog("状态栏更新异常", MessageDialogUtil.TITLE_ERROR);

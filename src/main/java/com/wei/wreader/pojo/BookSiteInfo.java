@@ -30,6 +30,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String searchBookNameParam;
     /**
+     * 小说id域
+     */
+    private String bookDataId;
+    /**
      * 小说列表的HTML标签元素名称
      */
     private String bookListElementName;
@@ -38,6 +42,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String bookListElementType;
     /**
+     * 小说目录列表URL
+     */
+    private String listMainUrl;
+    /**
      * 小说目录列表的HTML标签元素名称
      */
     private String listMainElementName;
@@ -45,6 +53,10 @@ public class BookSiteInfo implements Serializable {
      * 小说目录列表的HTML标签类型（class, id）
      */
     private String listMainElementType;
+    /**
+     * 小说章节内容URL
+     */
+    private String chapterContentUrl;
     /**
      * 小说内容的HTML标签元素名称
      */
@@ -77,6 +89,10 @@ public class BookSiteInfo implements Serializable {
      * 是否html页面
      */
     private boolean isHtml;
+    /**
+     * 是否路径参数
+     */
+    private boolean isPathParam;
 
     public String getId() {
         return id;
@@ -118,12 +134,28 @@ public class BookSiteInfo implements Serializable {
         this.searchUrl = searchUrl;
     }
 
+    public String getBookDataId() {
+        return bookDataId;
+    }
+
+    public void setBookDataId(String bookDataId) {
+        this.bookDataId = bookDataId;
+    }
+
     public String getBookListElementName() {
         return bookListElementName;
     }
 
     public void setBookListElementName(String bookListElementName) {
         this.bookListElementName = bookListElementName;
+    }
+
+    public String getListMainUrl() {
+        return listMainUrl;
+    }
+
+    public void setListMainUrl(String listMainUrl) {
+        this.listMainUrl = listMainUrl;
     }
 
     public String getListMainElementName() {
@@ -148,6 +180,14 @@ public class BookSiteInfo implements Serializable {
 
     public void setBookListElementType(String bookListElementType) {
         this.bookListElementType = bookListElementType;
+    }
+
+    public String getChapterContentUrl() {
+        return chapterContentUrl;
+    }
+
+    public void setChapterContentUrl(String chapterContentUrl) {
+        this.chapterContentUrl = chapterContentUrl;
     }
 
     public String getChapterContentElementName() {
@@ -214,6 +254,14 @@ public class BookSiteInfo implements Serializable {
         isHtml = html;
     }
 
+    public boolean isPathParam() {
+        return isPathParam;
+    }
+
+    public void setPathParam(boolean pathParam) {
+        isPathParam = pathParam;
+    }
+
     @Override
     public String toString() {
         return "BookSiteInfo{" +
@@ -224,8 +272,10 @@ public class BookSiteInfo implements Serializable {
                 ", searchBookNameParam='" + searchBookNameParam + '\'' +
                 ", bookListElementName='" + bookListElementName + '\'' +
                 ", bookListElementType='" + bookListElementType + '\'' +
+                ", listMainUrl='" + listMainUrl + '\'' +
                 ", listMainElementName='" + listMainElementName + '\'' +
                 ", listMainElementType='" + listMainElementType + '\'' +
+                ", chapterContentUrl='" + chapterContentUrl + '\'' +
                 ", chapterContentElementName='" + chapterContentElementName + '\'' +
                 ", chapterContentElementType='" + chapterContentElementType + '\'' +
                 ", bookNameField='" + bookNameField + '\'' +
@@ -234,6 +284,7 @@ public class BookSiteInfo implements Serializable {
                 ", bookDescField='" + bookDescField + '\'' +
                 ", bookImgUrlField='" + bookImgUrlField + '\'' +
                 ", isHtml=" + isHtml +
+                ", isPathParam=" + isPathParam +
                 '}';
     }
 }

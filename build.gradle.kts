@@ -9,7 +9,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.6"
+version = "0.0.7"
 
 repositories {
     maven {
@@ -72,11 +72,11 @@ buildscript {
 intellijPlatform {
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.PhpStorm, "2023.1")
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2023.1")
             local(providers.gradleProperty("localIDEAPath"))
             recommended()
             select {
-                types = listOf(IntelliJPlatformType.PhpStorm)
+                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
                 channels = listOf(ProductRelease.Channel.RELEASE)
                 sinceBuild = providers.gradleProperty("pluginSinceBuild")
                 untilBuild = providers.gradleProperty("pluginUntilVerifyBuild")

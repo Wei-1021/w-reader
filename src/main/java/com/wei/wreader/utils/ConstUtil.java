@@ -1,8 +1,5 @@
 package com.wei.wreader.utils;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * 常量工具类
  * @author weizhanjie
@@ -62,7 +59,7 @@ public class ConstUtil {
     /**
      * 工具窗口id
      */
-    public static final String WREADER_TOOL_WINDOW_ID = "wreader.toolWindow";
+    public static final String WREADER_TOOL_WINDOW_ID = "wreader";
     /**
      * 配置文件id--组--WReader
      */

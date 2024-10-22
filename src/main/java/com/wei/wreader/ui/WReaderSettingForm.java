@@ -146,6 +146,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             case Settings.DISPLAY_TYPE_EDITOR_BANNER:
 //                editorBannerRadioButton.setSelected(true);
                 break;
+            default:
+                sideBarRadioButton.setSelected(true);
+                break;
         }
 
         displayTypeRadioGroup = new ButtonGroup();
@@ -188,9 +191,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
 
+        // 显示类型
         selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
         if (statusBarRadioButton.isSelected()) {
             selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
+        }
+        if (editorBannerRadioButton.isSelected()) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
         }
 
         return modifiedSettings.getDisplayType() != selectedDisplayType;
@@ -203,6 +210,15 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     @Override
     public void apply() throws ConfigurationException {
+        // 显示类型
+        selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
+        if (statusBarRadioButton.isSelected()) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
+        }
+        if (editorBannerRadioButton.isSelected()) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
+        }
+
         settings.setSingleLineChars(Integer.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
@@ -216,6 +232,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         WReaderToolWindowFactory wReaderToolWindowFactory = new WReaderToolWindowFactory();
         wReaderToolWindowFactory.setEnabled(project);
+
         WReaderStatusBarFactory wReaderStatusBarFactory = new WReaderStatusBarFactory();
         wReaderStatusBarFactory.setEnabled(project, false);
     }

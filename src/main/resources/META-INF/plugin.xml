@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -20,10 +20,18 @@
             <li>&nbsp;&nbsp;支持本地加载小说，支持txt 和 epub 格式。</li>
             <li>&nbsp;&nbsp;支持侧边栏、状态栏模式之间切换。</li>
             <li>&nbsp;&nbsp;支持编辑器提示消息、代码注释块模式阅读。</li>
+            <li>&nbsp;&nbsp;支持自动阅读功能。</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.7:
+        <ul>
+            <li>1.修复 设置显示类型失败的问题；</li>
+            <li>2.修复 状态栏视图重叠问题；</li>
+        </ul>
+    </p>
     <p>
         0.0.6:
         <ul>

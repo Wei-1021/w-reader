@@ -5,6 +5,7 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
@@ -128,11 +129,24 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         }
 
         if (!isStartupApp) {
-            // 兼容性问题
-//            CoroutineScope scope = CoroutineScopeKt.CoroutineScope(Dispatchers.getDefault());
-//            StatusBarWidgetsManager statusBarWidgetsManager = new StatusBarWidgetsManager(project, scope);
-//            StatusBarWidgetsManager statusBarWidgetsManager = project.getService(StatusBarWidgetsManager.class);
-//            statusBarWidgetsManager.updateWidget(this);
+            boolean isExistStatusBarWidget = false;
+
+            // 获取状态栏实例
+            WindowManager windowManager = WindowManager.getInstance();
+            StatusBar statusBar = windowManager.getStatusBar(project);
+            if (statusBar != null) {
+                // 获取状态栏组件
+                StatusBarWidget wReaderStatusBarWidget = statusBar.getWidget(WReaderStatusBarWidget.getWidgetId());
+                if (wReaderStatusBarWidget != null) {
+                    isExistStatusBarWidget = true;
+                }
+            }
+
+            // 状态栏组件不存在，则创建，反正则不创建，防止重复创建出现视图重叠
+            if (!isExistStatusBarWidget) {
+                StatusBarWidgetsManager statusBarWidgetsManager = project.getService(StatusBarWidgetsManager.class);
+                statusBarWidgetsManager.updateWidget(this);
+            }
 
             boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
             if (isVisible) {

@@ -258,8 +258,20 @@ public class OperateActionUtil {
             return;
         }
 
-        String searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
-                "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
+        String searchBookUrl = "";
+        if (selectedBookSiteInfo.isPathParam()) {
+            String searchUrl = selectedBookSiteInfo.getSearchUrl();
+            if (StringUtils.isBlank(searchUrl)) {
+                Messages.showMessageDialog(ConstUtil.WREADER_ERROR, "提示", Messages.getInformationIcon());
+                return;
+            }
+
+            searchUrl = searchUrl.replace("{bookName}", bookName);
+            searchBookUrl = baseUrl + searchUrl;
+        } else {
+            searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
+                    "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
+        }
 
         // 获取搜索结果
         String searchBookResult = searchBookList(searchBookUrl);
@@ -420,7 +432,8 @@ public class OperateActionUtil {
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         cacheService.setSelectedBookInfo(selectBookInfo);
                         String bookUrl = selectBookInfo.getBookUrl();
-                        if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) && !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
+                        if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
+                                !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
                             bookUrl = baseUrl + selectBookInfo.getBookUrl();
                         }
 
@@ -870,6 +883,8 @@ public class OperateActionUtil {
      * 加载本地文件
      */
     public void loadLocalFile() {
+        initData();
+
         // 文件选择器
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false,
                 false, false, false, false);
@@ -1051,6 +1066,7 @@ public class OperateActionUtil {
      * 自动阅读下一行，如果已执行，再次调用则会停止
      */
     public void autoReadNextLine() {
+        // 如果executorService不为空且未关闭，则关闭
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
             return;

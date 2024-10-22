@@ -195,10 +195,13 @@ public class ConfigYaml {
             bookSiteInfo.setBaseUrl(objMap.get("baseUrl").toString());
             bookSiteInfo.setSearchUrl(objMap.get("searchUrl").toString());
             bookSiteInfo.setSearchBookNameParam(objMap.get("searchBookNameParam").toString());
+            bookSiteInfo.setBookDataId(objMap.get("bookDataId").toString());
             bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
             bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
+            bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
             bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
             bookSiteInfo.setListMainElementType(objMap.get("listMainElementType").toString());
+            bookSiteInfo.setChapterContentUrl(objMap.get("chapterContentUrl").toString());
             bookSiteInfo.setChapterContentElementName(objMap.get("chapterContentElementName").toString());
             bookSiteInfo.setChapterContentElementType(objMap.get("chapterContentElementType").toString());
             bookSiteInfo.setBookNameField(objMap.get("bookNameField").toString());
@@ -207,6 +210,7 @@ public class ConfigYaml {
             bookSiteInfo.setBookDescField(objMap.get("bookDescField").toString());
             bookSiteInfo.setBookImgUrlField(objMap.get("bookImgUrlField").toString());
             bookSiteInfo.setHtml(Boolean.parseBoolean(objMap.get("isHtml").toString()));
+            bookSiteInfo.setPathParam(Boolean.parseBoolean(objMap.get("isPathParam").toString()));
             siteList.add(bookSiteInfo);
         });
         return siteList;

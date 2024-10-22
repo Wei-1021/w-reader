@@ -120,4 +120,16 @@ public class Settings {
     public void setAutoReadTime(int autoReadTime) {
         this.autoReadTime = autoReadTime;
     }
+
+    @Override
+    public String toString() {
+        return "Settings{" +
+                "singleLineChars=" + singleLineChars +
+                ", isShowLineNum=" + isShowLineNum +
+                ", displayType=" + displayType +
+                ", dataLoadType=" + dataLoadType +
+                ", charset='" + charset + '\'' +
+                ", autoReadTime=" + autoReadTime +
+                '}';
+    }
 }
