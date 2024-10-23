@@ -28,12 +28,15 @@ import io.documentnode.epub4j.domain.Resource;
 import io.documentnode.epub4j.domain.TOCReference;
 import io.documentnode.epub4j.domain.TableOfContents;
 import io.documentnode.epub4j.epub.EpubReader;
+import io.github.kevinzhwl.edgetts.api.EdgeTTSService;
+import io.github.kevinzhwl.edgetts.api.impl.EdgeTTSServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.dreamwork.tools.tts.TTS;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -1118,6 +1121,21 @@ public class OperateActionUtil {
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
         }
+    }
+
+    /**
+     * 小说内容文本转语音
+     */
+    public void ttsChapterContent() throws IOException {
+        // 获取所选择的小说内容
+        String chapterContent = currentChapterInfo.getChapterContentStr();
+        if (StringUtils.isBlank(chapterContent)) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示");
+            return;
+        }
+        final TTS tts = new TTS();
+//        tts.config()
+
     }
 
     /**

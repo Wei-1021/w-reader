@@ -203,6 +203,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         return modifiedSettings.getDisplayType() != selectedDisplayType;
     }
 
+
     /**
      * 设置页面点击apply按钮事件
      *
