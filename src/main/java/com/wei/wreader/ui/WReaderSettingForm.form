@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.wei.wreader.ui.WReaderSettingForm">
-  <grid id="27dc6" binding="settingPanel" layout-manager="GridLayoutManager" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="settingPanel" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="645" height="400"/>
@@ -8,99 +8,150 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="c6309" class="javax.swing.JLabel" binding="lineMaxNumsLabel">
-        <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="单行最大字数"/>
-        </properties>
-      </component>
-      <component id="9873c" class="javax.swing.JTextField" binding="lineMaxNumsTextField">
-        <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <editable value="true"/>
-          <enabled value="true"/>
-          <text value="40"/>
-        </properties>
-      </component>
-      <component id="ff046" class="javax.swing.JCheckBox" binding="isShowLineNumCheckBox">
-        <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <hideActionText value="true"/>
-          <horizontalAlignment value="0"/>
-          <horizontalTextPosition value="2"/>
-          <selected value="true"/>
-          <text value="是否显示行号"/>
-        </properties>
-      </component>
-      <hspacer id="2043d">
-        <constraints>
-          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </hspacer>
-      <component id="1e0d3" class="javax.swing.JLabel" binding="charsetLabel">
-        <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="字符集"/>
-        </properties>
-      </component>
-      <component id="d1015" class="javax.swing.JComboBox" binding="charsetComboBox">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="180" height="-1"/>
-            <preferred-size width="180" height="-1"/>
-            <maximum-size width="180" height="-1"/>
-          </grid>
-        </constraints>
-        <properties/>
-      </component>
-      <vspacer id="3f4b6">
-        <constraints>
-          <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
-      <component id="3cf1f" class="javax.swing.JLabel" binding="displayTypeLabel">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="类型"/>
-        </properties>
-      </component>
-      <grid id="398f8" binding="displayTypeRadioPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="290c2" binding="generalPanel" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
-        <children/>
-      </grid>
-      <component id="cbd80" class="javax.swing.JLabel" binding="autoReadTimeLabel">
-        <constraints>
-          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="自动阅读时间间隔"/>
-        </properties>
-      </component>
-      <component id="94d5c" class="javax.swing.JTextField" binding="autoReadTimeTextField">
-        <constraints>
-          <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <minimum-size width="80" height="-1"/>
-            <preferred-size width="80" height="-1"/>
-            <maximum-size width="80" height="-1"/>
+        <children>
+          <component id="c6309" class="javax.swing.JLabel" binding="lineMaxNumsLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="单行最大字数"/>
+            </properties>
+          </component>
+          <component id="9873c" class="javax.swing.JTextField" binding="lineMaxNumsTextField">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <editable value="true"/>
+              <enabled value="true"/>
+              <text value="40"/>
+            </properties>
+          </component>
+          <component id="1e0d3" class="javax.swing.JLabel" binding="charsetLabel">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="字符集"/>
+            </properties>
+          </component>
+          <component id="d1015" class="javax.swing.JComboBox" binding="charsetComboBox">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="180" height="-1"/>
+                <preferred-size width="180" height="-1"/>
+                <maximum-size width="180" height="-1"/>
+              </grid>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="94d5c" class="javax.swing.JTextField" binding="autoReadTimeTextField">
+            <constraints>
+              <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <minimum-size width="80" height="-1"/>
+                <preferred-size width="80" height="-1"/>
+                <maximum-size width="80" height="-1"/>
+              </grid>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="cbd80" class="javax.swing.JLabel" binding="autoReadTimeLabel">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="自动阅读时间间隔"/>
+            </properties>
+          </component>
+          <component id="ff046" class="javax.swing.JCheckBox" binding="isShowLineNumCheckBox">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <hideActionText value="true"/>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="2"/>
+              <selected value="true"/>
+              <text value="是否显示行号"/>
+            </properties>
+          </component>
+          <component id="3cf1f" class="javax.swing.JLabel" binding="displayTypeLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="类型"/>
+            </properties>
+          </component>
+          <grid id="398f8" binding="displayTypeRadioPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children/>
           </grid>
+        </children>
+      </grid>
+      <vspacer id="fc782">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="4" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <grid id="39b81" binding="audioManagePanel" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-      </component>
+        <border type="none"/>
+        <children>
+          <component id="1a008" class="javax.swing.JLabel" binding="voiceRoleLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="音色"/>
+            </properties>
+          </component>
+          <component id="8ad78" class="javax.swing.JLabel" binding="timeoutLabel">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="超时等待时间"/>
+            </properties>
+          </component>
+          <component id="38fd9" class="javax.swing.JTextField" binding="timeoutTextField">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <minimum-size width="40" height="-1"/>
+                <preferred-size width="40" height="-1"/>
+                <maximum-size width="40" height="-1"/>
+              </grid>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="40349" class="javax.swing.JComboBox" binding="voiceRoleComboBox">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <minimum-size width="180" height="-1"/>
+                <preferred-size width="180" height="-1"/>
+                <maximum-size width="180" height="-1"/>
+              </grid>
+            </constraints>
+            <properties/>
+          </component>
+        </children>
+      </grid>
     </children>
   </grid>
   <buttonGroups>

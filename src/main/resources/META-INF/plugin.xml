@@ -154,6 +154,12 @@
                 class="com.wei.wreader.action.AutoReadAction"
                 text="自动阅读"
                 icon="com.wei.wreader.utils.WReaderIcons.AUTO_READ_PLAY"/>
+        <action id="wreader.AudioReadingAction"
+                class="com.wei.wreader.action.AudioReadingAction"
+                text="有声阅读"
+                icon="com.wei.wreader.utils.WReaderIcons.AUDIO_READING_PLAY" >
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
+        </action>
         <!--endregion-->
 
         <!--region Group-->
@@ -165,6 +171,7 @@
         <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
             <reference id="wreader.EditorMessageAction"/>
             <reference id="wreader.CommentBlockAction"/>
+            <reference id="wreader.AudioReadingAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->
@@ -173,8 +180,8 @@
             <reference id="wreader.HelpAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.EditorMessageAction"/>
-<!--            <reference id="wreader.EditorBannerMessageAction"/>-->
             <reference id="wreader.CommentBlockAction"/>
+            <reference id="wreader.AudioReadingAction"/>
             <separator/>
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -187,6 +194,7 @@
         <group id="wreader.group.toolWindowBar">
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
+            <reference id="wreader.AudioReadingAction"/>
             <separator/>
             <reference id="wreader.FontSizeSubAction"/>
             <reference id="wreader.FontSizeAddAction"/>

@@ -9,17 +9,21 @@ import com.intellij.ui.NumberDocument;
 import com.intellij.ui.components.JBRadioButton;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.util.ui.JBUI;
 import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import org.apache.commons.lang3.StringUtils;
+import org.dreamwork.tools.tts.VoiceRole;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import java.nio.charset.Charset;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * 设置窗口
@@ -43,6 +47,12 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JPanel displayTypeRadioPanel;
     private JTextField autoReadTimeTextField;
     private JLabel autoReadTimeLabel;
+    private JPanel generalPanel;
+    private JPanel audioManagePanel;
+    private JLabel voiceRoleLabel;
+    private JTextField timeoutTextField;
+    private JLabel timeoutLabel;
+    private JComboBox voiceRoleComboBox;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -90,6 +100,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     @Override
     public @Nullable JComponent createComponent() {
+        Border border = JBUI.Borders.customLine(JBUI.CurrentTheme.Popup.separatorColor(), 1, 0, 0, 0);
+        TitledBorder generalTitledBorder = new TitledBorder(border, "general");
+        generalPanel.setBorder(generalTitledBorder);
+
         // 初始化配置页面
         // 单行最大字数
         lineMaxNumsTextField.setDocument(new NumberDocument());
@@ -156,6 +170,19 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         displayTypeRadioGroup.add(statusBarRadioButton);
 //        displayTypeRadioGroup.add(editorBannerRadioButton);
 
+        // 音频管理
+        TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
+        audioManagePanel.setBorder(audioManageTitledBorder);
+        // 音色
+        VoiceRole[] VoiceRoles = VoiceRole.values();
+        for (VoiceRole voiceRole : VoiceRoles) {
+            voiceRoleComboBox.addItem(voiceRole.name());
+        }
+        voiceRoleComboBox.setSelectedItem(settings.getVoiceRole());
+        // 音频超时
+        timeoutTextField.setDocument(new NumberDocument());
+        timeoutTextField.setText(String.valueOf(settings.getAudioTimeout()));
+
         return settingPanel;
     }
 
@@ -166,6 +193,12 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     @Override
     public boolean isModified() {
+        // 显示类型
+        selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
+        if (statusBarRadioButton.isSelected()) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
+        }
+
         Settings modifiedSettings = cacheService.getSettings();
         if (modifiedSettings == null) {
             return true;
@@ -174,30 +207,29 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         String lineMaxNums = lineMaxNumsTextField.getText();
         boolean isShowLineNum = isShowLineNumCheckBox.isSelected();
         String autoReadTime = autoReadTimeTextField.getText();
-
+        // 单行最大字数
         if (modifiedSettings.getSingleLineChars() != Integer.parseInt(lineMaxNums)) {
             return true;
         }
-
+        // 是否显示行号
         if (modifiedSettings.isShowLineNum() != isShowLineNum) {
             return true;
         }
-
+        // 字符集
         if (!modifiedSettings.getCharset().equals(charsetComboBox.getSelectedItem())) {
             return true;
         }
-
+        // 自动阅读
         if (modifiedSettings.getAutoReadTime() != Integer.parseInt(autoReadTime)) {
             return true;
         }
-
-        // 显示类型
-        selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
-        if (statusBarRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
+        // 音色
+        if (!modifiedSettings.getVoiceRole().equals(voiceRoleComboBox.getSelectedItem())) {
+            return true;
         }
-        if (editorBannerRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
+        // 音频超时
+        if (modifiedSettings.getAudioTimeout() != Integer.parseInt(timeoutTextField.getText())) {
+            return true;
         }
 
         return modifiedSettings.getDisplayType() != selectedDisplayType;
@@ -211,20 +243,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     @Override
     public void apply() throws ConfigurationException {
-        // 显示类型
-        selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
-        if (statusBarRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
-        }
-        if (editorBannerRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_EDITOR_BANNER;
-        }
-
         settings.setSingleLineChars(Integer.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
         settings.setCharset((String) charsetComboBox.getSelectedItem());
         settings.setAutoReadTime(Integer.parseInt(autoReadTimeTextField.getText()));
+        settings.setVoiceRole((String) voiceRoleComboBox.getSelectedItem());
+        settings.setAudioTimeout(Integer.parseInt(timeoutTextField.getText()));
         cacheService.setSettings(settings);
 
         ProjectManager projectManager = ProjectManager.getInstance();

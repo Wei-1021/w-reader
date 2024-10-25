@@ -28,15 +28,15 @@ import io.documentnode.epub4j.domain.Resource;
 import io.documentnode.epub4j.domain.TOCReference;
 import io.documentnode.epub4j.domain.TableOfContents;
 import io.documentnode.epub4j.epub.EpubReader;
-import io.github.kevinzhwl.edgetts.api.EdgeTTSService;
-import io.github.kevinzhwl.edgetts.api.impl.EdgeTTSServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.dreamwork.tools.tts.ITTSListener;
 import org.dreamwork.tools.tts.TTS;
+import org.dreamwork.tools.tts.VoiceRole;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -365,8 +365,7 @@ public class OperateActionUtil {
                 });
                 return jsonArray.toString();
             }
-        }
-        else {
+        } else {
             HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
             try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpGet)) {
@@ -1133,8 +1132,34 @@ public class OperateActionUtil {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示");
             return;
         }
+
+        String voiceRole = settings.getVoiceRole();
+        if (StringUtils.isBlank(voiceRole)) {
+            voiceRole = configYaml.getSettings().getVoiceRole();
+        }
+
+
+
+        int audioTimeout = settings.getAudioTimeout();
+
         final TTS tts = new TTS();
-//        tts.config()
+        tts.config()
+                // 如果在此时间之后没有从服务器收到任何数据，
+                .timeout(audioTimeout, TimeUnit.SECONDS)
+                // 它将进入空闲模式
+                .voice(VoiceRole.valueOf(voiceRole));
+        tts.setListener(new ITTSListener() {
+            @Override
+            public void idle() {
+                tts.dispose();
+            }
+        });
+
+        // 处理本文，将文本按标点符号分割成数组
+        String[] chapterContentSplit = chapterContent.split("[。？！；]");
+        for (String text : chapterContentSplit) {
+            tts.synthesis(text);
+        }
 
     }
 

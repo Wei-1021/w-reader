@@ -113,6 +113,7 @@ public class ConstUtil {
     public static final String WREADER_DIRECTORY = "directory";
     public static final String WREADER_CONTENT = "content";
     public static final String WREADER_LOAD_LOCAL_TIP = "若目录未加载成功或文字乱码，请尝试修改字符集，然后重新加载文件";
+    public static final String WREADER_AUDIO_READING_ERROR = "音频播放异常！";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";
     public static final String DEFAULT_FONT_FAMILY = "JetBrains Mono";

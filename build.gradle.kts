@@ -50,7 +50,7 @@ dependencies {
 
     implementation("org.yaml:snakeyaml:2.0")
     implementation("io.documentnode:epub4j-core:4.2.1")
-    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
+//    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
     implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
 }
 

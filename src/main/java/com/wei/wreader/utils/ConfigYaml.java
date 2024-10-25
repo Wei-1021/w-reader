@@ -169,6 +169,9 @@ public class ConfigYaml {
         settings.setDisplayType(Integer.parseInt(settingsMap.get("displayType").toString()));
         settings.setDataLoadType(Integer.parseInt(settingsMap.get("dataLoadType").toString()));
         settings.setCharset(settingsMap.get("charset").toString());
+        settings.setAutoReadTime(Integer.parseInt(settingsMap.get("autoReadTime").toString()));
+        settings.setVoiceRole(settingsMap.get("voiceRole").toString());
+        settings.setAudioTimeout(Integer.parseInt(settingsMap.get("audioTimeout").toString()));
         return settings;
     }
 

@@ -13,6 +13,9 @@ wreader:
     displayType: 1 #显示类型。1-侧边栏（默认），2-底部状态栏，3-左下角控制台
     dataLoadType: 1 #数据加载模式。1-网络加载，2-本地加载
     charset: 'GBK' #字符集
+    autoReadTime: 5 #自动阅读时间
+    voiceRole: 'Xiaoxuan' #音色
+    audioTimeout: 3 #有声阅读超时
   componentIdKey:
     searchBook: 'SearchBookName'
     bookDirectory: 'ChapterListAction'

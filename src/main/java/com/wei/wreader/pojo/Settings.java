@@ -72,6 +72,14 @@ public class Settings {
      * 自动阅读时间(秒)
      */
     private int autoReadTime;
+    /**
+     * 音色
+     */
+    private String voiceRole;
+    /**
+     * 有声阅读超时(秒)
+     */
+    private int audioTimeout;
 
     public int getSingleLineChars() {
         return singleLineChars;
@@ -121,6 +129,22 @@ public class Settings {
         this.autoReadTime = autoReadTime;
     }
 
+    public String getVoiceRole() {
+        return voiceRole;
+    }
+
+    public void setVoiceRole(String voiceRole) {
+        this.voiceRole = voiceRole;
+    }
+
+    public int getAudioTimeout() {
+        return audioTimeout;
+    }
+
+    public void setAudioTimeout(int audioTimeout) {
+        this.audioTimeout = audioTimeout;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -130,6 +154,8 @@ public class Settings {
                 ", dataLoadType=" + dataLoadType +
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
+                ", voiceRole='" + voiceRole + '\'' +
+                ", audioTimeout=" + audioTimeout +
                 '}';
     }
 }
