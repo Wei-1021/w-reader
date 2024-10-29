@@ -72,6 +72,9 @@ public class Settings {
      * 自动阅读时间(秒)
      */
     private int autoReadTime;
+    //--------------------------------------------
+    //----------------  语音TTS  ------------------
+    //--------------------------------------------
     /**
      * 音色
      */
@@ -80,6 +83,15 @@ public class Settings {
      * 有声阅读超时(秒)
      */
     private int audioTimeout;
+    /**
+     * 语速
+     */
+    private Float rate;
+    /**
+     * 音量
+     */
+    private Integer volume;
+
 
     public int getSingleLineChars() {
         return singleLineChars;
@@ -145,6 +157,22 @@ public class Settings {
         this.audioTimeout = audioTimeout;
     }
 
+    public Float getRate() {
+        return rate;
+    }
+
+    public void setRate(Float rate) {
+        this.rate = rate;
+    }
+
+    public Integer getVolume() {
+        return volume;
+    }
+
+    public void setVolume(Integer volume) {
+        this.volume = volume;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -156,6 +184,8 @@ public class Settings {
                 ", autoReadTime=" + autoReadTime +
                 ", voiceRole='" + voiceRole + '\'' +
                 ", audioTimeout=" + audioTimeout +
+                ", rate=" + rate +
+                ", volume=" + volume +
                 '}';
     }
 }

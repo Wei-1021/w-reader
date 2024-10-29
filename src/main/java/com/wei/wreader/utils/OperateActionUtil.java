@@ -68,6 +68,7 @@ public class OperateActionUtil {
     private static Project mProject;
     private static OperateActionUtil instance;
     private static ScheduledExecutorService executorService;
+    private static TTS tts;
     /**
      * 书本名称列表
      */
@@ -1129,25 +1130,47 @@ public class OperateActionUtil {
         // 获取所选择的小说内容
         String chapterContent = currentChapterInfo.getChapterContentStr();
         if (StringUtils.isBlank(chapterContent)) {
-            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示");
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, MessageDialogUtil.TITLE_INFO);
             return;
         }
 
+        if (tts != null && !tts.isIdle()) {
+            tts.dispose();
+            return;
+        }
+
+        tts = new TTS();
+
+        // 音色
         String voiceRole = settings.getVoiceRole();
         if (StringUtils.isBlank(voiceRole)) {
             voiceRole = configYaml.getSettings().getVoiceRole();
         }
-
-
-
+        // 音频超时时间
         int audioTimeout = settings.getAudioTimeout();
+        if (audioTimeout <= 0) {
+            audioTimeout = configYaml.getSettings().getAudioTimeout();
+        }
+        // 语速
+        Float rate = settings.getRate();
+        if (rate == null || rate <= 0) {
+            rate = configYaml.getSettings().getRate();
+        }
+        // 音量
+        Integer volume = settings.getVolume();
+        if (volume == null || volume < 0) {
+            volume = configYaml.getSettings().getVolume();
+        }
 
-        final TTS tts = new TTS();
         tts.config()
                 // 如果在此时间之后没有从服务器收到任何数据，
                 .timeout(audioTimeout, TimeUnit.SECONDS)
                 // 它将进入空闲模式
-                .voice(VoiceRole.valueOf(voiceRole));
+                .voice(VoiceRole.valueOf(voiceRole))
+                // 语速
+                .rate(rate.toString())
+                // 音量
+                .volume(volume.toString());
         tts.setListener(new ITTSListener() {
             @Override
             public void idle() {
@@ -1161,6 +1184,15 @@ public class OperateActionUtil {
             tts.synthesis(text);
         }
 
+    }
+
+    /**
+     * 停止语音
+     */
+    public void stopTTS() {
+        if (tts != null) {
+            tts.dispose();
+        }
     }
 
     /**

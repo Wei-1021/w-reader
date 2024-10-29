@@ -172,6 +172,8 @@ public class ConfigYaml {
         settings.setAutoReadTime(Integer.parseInt(settingsMap.get("autoReadTime").toString()));
         settings.setVoiceRole(settingsMap.get("voiceRole").toString());
         settings.setAudioTimeout(Integer.parseInt(settingsMap.get("audioTimeout").toString()));
+        settings.setRate(Float.parseFloat(settingsMap.get("rate").toString()));
+        settings.setVolume(Integer.parseInt(settingsMap.get("volume").toString()));
         return settings;
     }
 

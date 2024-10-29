@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -26,10 +26,17 @@
 
     <change-notes><![CDATA[
     <p>
+        0.0.8:
+        <ul>
+            <li>1.</li>
+        </ul>
+    </p>
+    <p>
         0.0.7:
         <ul>
             <li>1.修复 设置显示类型失败的问题；</li>
             <li>2.修复 状态栏视图重叠问题；</li>
+            <li>3.新增 有声阅读功能；</li>
         </ul>
     </p>
     <p>
@@ -77,7 +84,6 @@
                              implementation="com.wei.wreader.factory.StartupFactory"
                              order="first"/>
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
-<!--        <projectService id="not.wreader.StatusBarWidgetsManager" serviceImplementation="com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager" />-->
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
                                  id="wreader.WReaderSettingForm"
@@ -136,10 +142,6 @@
                 icon="AllIcons.General.Balloon">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD0"/>
         </action>
-<!--        <action id="wreader.EditorBannerMessageAction" class="com.wei.wreader.action.EditorBannerMessageAction"-->
-<!--                text="编辑器顶部提示信息">-->
-<!--            <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>-->
-<!--        </action>-->
         <action id="wreader.CommentBlockAction" class="com.wei.wreader.action.CommentBlockAction" text="代码注释块"
                 icon="AllIcons.Actions.InlayRenameInComments">
             <keyboard-shortcut keymap="$default" first-keystroke="alt DIVIDE"/>
@@ -190,7 +192,7 @@
             <add-to-group group-id="wreader.group.WReader"/>
             <separator/>
         </group>
-        <!-- 工具窗口Bar -->
+        <!-- 工具窗口ToolBar -->
         <group id="wreader.group.toolWindowBar">
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.ChapterListAction"/>
@@ -216,6 +218,7 @@
             <reference id="wreader.ChapterListAction"/>
             <reference id="wreader.HideTextAction"/>
             <reference id="wreader.AutoReadAction"/>
+            <reference id="wreader.AudioReadingAction"/>
             <separator/>
             <reference id="wreader.PrevChapterAction"/>
             <reference id="wreader.NextChapterAction"/>

@@ -28,7 +28,6 @@ import java.util.List;
  * @author weizhanjie
  */
 public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
-    private static final Logger log = LoggerFactory.getLogger(WReaderStatusBarWidget.class);
     private final Project project;
     private static String WIDGET_ID;
     private ConfigYaml configYaml;

@@ -9,7 +9,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.7"
+version = "0.0.8"
 
 repositories {
     maven {
@@ -51,7 +51,12 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.0")
     implementation("io.documentnode:epub4j-core:4.2.1")
 //    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
-    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
+//    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
+    // 导入本地jar
+    implementation(fileTree("libs") {
+        include("*.jar")
+        exclude("reload4j-1.2.19.jar", "slf4j-api-1.7.36.jar", "slf4j-reload4j-1.7.36.jar")
+    })
 }
 
 buildscript {

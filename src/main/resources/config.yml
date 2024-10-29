@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.7'
+  version: '0.0.8'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -16,6 +16,8 @@ wreader:
     autoReadTime: 5 #自动阅读时间
     voiceRole: 'Xiaoxuan' #音色
     audioTimeout: 3 #有声阅读超时
+    rate: 1.0 #语速
+    volume: 100 #默认音量
   componentIdKey:
     searchBook: 'SearchBookName'
     bookDirectory: 'ChapterListAction'
