@@ -22,6 +22,17 @@ repositories {
 
     mavenCentral()
 
+    exclusiveContent {
+        forRepository {
+            maven {
+                url = uri("https://raw.githubusercontent.com/DFKI-MLT/Maven-Repository/main")
+            }
+        }
+        filter {
+            includeGroup("de.dfki.lt.jtok")
+        }
+    }
+
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
     intellijPlatform {
         defaultRepositories()
@@ -50,13 +61,17 @@ dependencies {
 
     implementation("org.yaml:snakeyaml:2.0")
     implementation("io.documentnode:epub4j-core:4.2.1")
+    implementation("com.googlecode.soundlibs:jlayer:1.0.1.4")
+    implementation("org.java-websocket:Java-WebSocket:1.5.7")
+//    implementation("de.dfki.mary:voice-cmu-slt-hsmm:5.2.1")
 //    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
 //    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
+//    implementation("io.github.ikfly:java-tts:1.0.2")
     // 导入本地jar
-    implementation(fileTree("libs") {
-        include("*.jar")
-        exclude("reload4j-1.2.19.jar", "slf4j-api-1.7.36.jar", "slf4j-reload4j-1.7.36.jar")
-    })
+//    implementation(fileTree("libs") {
+//        include("*.jar")
+//        exclude("reload4j-1.2.19.jar", "slf4j-api-1.7.36.jar", "slf4j-reload4j-1.7.36.jar")
+//    })
 }
 
 buildscript {

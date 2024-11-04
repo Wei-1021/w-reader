@@ -1139,7 +1139,7 @@ public class OperateActionUtil {
             return;
         }
 
-        tts = new TTS();
+        tts = new TTS(true);
 
         // 音色
         String voiceRole = settings.getVoiceRole();
@@ -1179,10 +1179,26 @@ public class OperateActionUtil {
         });
 
         // 处理本文，将文本按标点符号分割成数组
-        String[] chapterContentSplit = chapterContent.split("[。？！；]");
-        for (String text : chapterContentSplit) {
-            tts.synthesis(text);
+//        String[] chapterContentSplit = chapterContent.split("[。？！；]");
+//        for (String text : chapterContentSplit) {
+//            tts.synthesis(text);
+//        }
+
+        tts.synthesis(chapterContent);
+
+    }
+
+    /**
+     * 小说内容文本转语音
+     */
+    public void ttsChapterContent2() throws Exception  {
+        // 获取所选择的小说内容
+        String chapterContent = currentChapterInfo.getChapterContentStr();
+        if (StringUtils.isBlank(chapterContent)) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, MessageDialogUtil.TITLE_INFO);
+            return;
         }
+
 
     }
 
