@@ -1184,7 +1184,7 @@ public class OperateActionUtil {
 //            tts.synthesis(text);
 //        }
 
-        tts.synthesis(chapterContent);
+        tts.splitTextIntoQueue(chapterContent);
 
     }
 

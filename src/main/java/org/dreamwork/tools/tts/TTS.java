@@ -111,8 +111,10 @@ public class TTS {
     private boolean isDebug = false;
 
     private static int currentClientSendCount = 0;
+    private static final int MAX_TEXT_LENGTH = 500;
 
     private static final int MAX_SEND_COUNT = 5;
+    private static final int RECONNECT_INTERVAL = 3000; // 重连间隔时间（毫秒）
 
     public TTS() throws IOException {
         pos = new PipedOutputStream();
@@ -173,6 +175,45 @@ public class TTS {
             }
         }
         throw new RuntimeException("cannot synthesis the text: " + text);
+    }
+
+    /**
+     * 将给定的文本分割成多个部分，并将这些部分加入到队列中
+     *
+     * @param text 要分割的文本
+     */
+    public void splitTextIntoQueue(String text) {
+        int start = 0;
+        while (start < text.length()) {
+            int end = Math.min(start + MAX_TEXT_LENGTH, text.length());
+            // 尝试在标点或空格处断句
+            if (end < text.length()) {
+                int lastPunctuation = findLastPunctuation(text.substring(start, end));
+                if (lastPunctuation != -1) {
+                    end = start + lastPunctuation + 1;
+                }
+            }
+            queue.offer(text.substring(start, end));
+            start = end;
+        }
+    }
+
+    /**
+     * 在给定的字符串中找到最后一个标点符号的位置
+     *
+     * @param text 要搜索的字符串
+     * @return 最后一个标点符号的位置，如果没有找到标点符号，则返回-1
+     */
+    private int findLastPunctuation(String text) {
+        int lastIndex = -1;
+        for (int i = text.length() - 1; i >= 0; i--) {
+            char c = text.charAt(i);
+            if (c == '.' || c == '。' || c == '!' || c == '！' || c == '?' || c == '？' || c == ',' || c == '，' || c == ' ') {
+                lastIndex = i;
+                break;
+            }
+        }
+        return lastIndex;
     }
 
     public void setListener(ITTSListener listener) {
@@ -263,13 +304,13 @@ public class TTS {
     }
 
     private synchronized WebSocketClient getOrCreateWebsocketClient() {
-        boolean isRelink = false;
-        currentClientSendCount++;
-        if (currentClientSendCount > MAX_SEND_COUNT && client != null) {
-            closeWebsocket();
-            currentClientSendCount = 0;
-            isRelink = true;
-        }
+//        boolean isRelink = false;
+//        currentClientSendCount++;
+//        if (currentClientSendCount > MAX_SEND_COUNT && client != null) {
+//            closeWebsocket();
+//            currentClientSendCount = 0;
+//            isRelink = true;
+//        }
 
         if (client == null) {
             isIdle = false;
@@ -300,6 +341,7 @@ public class TTS {
                                 logger.warn(ex.getMessage(), ex);
                             }
                         }
+                        System.out.println("websocket opened.");
                         logger.info("websocket opened.");
                     }
 
@@ -362,7 +404,7 @@ public class TTS {
 
                     @Override
                     public void onMessage(ByteBuffer bytes) {
-                        System.out.printf("received a message - bytes: %s\n", bytes);
+//                        System.out.printf("received a message - bytes: %s\n", bytes);
                         timestamp = System.currentTimeMillis();
                         // 至少一个模式被激活了
                         if (config.mode != 0) {
@@ -395,18 +437,22 @@ public class TTS {
                     public void onClose(int code, String reason, boolean remote) {
                         logger.info("websocket closed, code = {}, reason = {}", code, reason);
                         System.out.println("websocket closed, code = " + code + ", reason = " + reason);
-                        // reset the timestamp
-                        timestamp = -1;
-                        // close and clean file stream
-                        closeStream();
+                        if (queue != null && !queue.isEmpty()) {
+                            System.out.println("reconnect  queue size: " + queue.size());
+//                            client.reconnect();
+                            thisReconnect();
+                        } else {
+                            // reset the timestamp
+                            timestamp = -1;
+                            // close and clean file stream
+                            closeStream();
 
-                        if (code != 1000) {
-                            // something happened
-                            dispose();
-                            throw new RuntimeException("websocket closed unexpected: code = " + code + ", reason = " + reason);
+                            if (code != 1000) {
+                                // something happened
+                                dispose();
+                                throw new RuntimeException("websocket closed unexpected: code = " + code + ", reason = " + reason);
+                            }
                         }
-
-                        client.reconnect();
                     }
 
                     @Override
@@ -424,6 +470,17 @@ public class TTS {
                             }
                         }
                     }
+
+                    private void thisReconnect() {
+                        new Thread(() -> {
+                            try {
+                                Thread.sleep(RECONNECT_INTERVAL);
+                                reconnect();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
+                    }
                 };
                 client.connectBlocking();
                 // When the websocket connection is complete,
@@ -434,9 +491,9 @@ public class TTS {
             }
         }
 
-        if (isRelink && client != null) {
-            setVoiceFormat();
-        }
+//        if (isRelink && client != null) {
+//            setVoiceFormat();
+//        }
 
         return client;
     }
