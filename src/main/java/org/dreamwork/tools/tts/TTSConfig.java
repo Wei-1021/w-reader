@@ -9,7 +9,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.dreamwork.tools.tts.VoiceFormat.audio_24khz_48kbitrate_mono_mp3;
@@ -295,5 +298,23 @@ public class TTSConfig {
         }
         this.dir = dir;
         return this;
+    }
+
+    private static final DateTimeFormatter dtf = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+    @Override
+    public String toString() {
+        String uuid = UUID.randomUUID().toString().replace("-", "").toUpperCase();
+        String json = """
+                Path: speech.config
+                X-RequestId: %s
+                X-Timestamp: %sZ
+                Content-Type: application/json
+                                
+                {"context":{"system":{"name":"SpeechSDK","version":"1.34.0","build":"JavaScript","lang":"JavaScript"},
+                "os":{"platform":"Browser/Win32",
+                "name":"%s"}}}
+                """;
+        return String.format(json, uuid, dtf.format(ZonedDateTime.now()), UA);
     }
 }

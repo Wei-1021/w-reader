@@ -22,6 +22,7 @@ import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.tts.EdgeTTS;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import io.documentnode.epub4j.domain.Book;
 import io.documentnode.epub4j.domain.Resource;
@@ -1199,6 +1200,34 @@ public class OperateActionUtil {
             return;
         }
 
+        EdgeTTS edgeTTS = EdgeTTS.getInstance();
+
+        // 音色
+        String voiceRole = settings.getVoiceRole();
+        if (StringUtils.isBlank(voiceRole)) {
+            voiceRole = configYaml.getSettings().getVoiceRole();
+        }
+        // 音频超时时间
+        int audioTimeout = settings.getAudioTimeout();
+        if (audioTimeout <= 0) {
+            audioTimeout = configYaml.getSettings().getAudioTimeout();
+        }
+        // 语速
+        Float rate = settings.getRate();
+        if (rate == null || rate <= 0) {
+            rate = configYaml.getSettings().getRate();
+        }
+        // 音量
+        Integer volume = settings.getVolume();
+        if (volume == null || volume < 0) {
+            volume = configYaml.getSettings().getVolume();
+        }
+
+        edgeTTS.setVoiceRole(com.wei.wreader.utils.tts.VoiceRole.valueOf(voiceRole))
+                .setRate(rate.toString())
+                .setVolume(volume.toString());
+
+        edgeTTS.synthesize(chapterContent);
 
     }
 

@@ -18,7 +18,7 @@ public class AudioReadingAction extends BaseAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
         try {
-            OperateActionUtil.getInstance(project).ttsChapterContent();
+            OperateActionUtil.getInstance(project).ttsChapterContent2();
         } catch (Exception ex) {
             Messages.showErrorDialog(ConstUtil.WREADER_AUDIO_READING_ERROR, MessageDialogUtil.TITLE_ERROR);
             throw new RuntimeException(ex);

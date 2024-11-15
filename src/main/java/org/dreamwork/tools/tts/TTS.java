@@ -110,6 +110,8 @@ public class TTS {
 
     private boolean isDebug = false;
 
+    private boolean isSendSuccess = false;
+
     private static int currentClientSendCount = 0;
     private static final int MAX_TEXT_LENGTH = 500;
 
@@ -292,7 +294,8 @@ public class TTS {
             logger.info(VoiceFormat.asJson(format));
         }
 
-        getOrCreateWebsocketClient().send(VoiceFormat.asJson(format));
+//        getOrCreateWebsocketClient().send(VoiceFormat.asJson(format));
+        sendMessage(VoiceFormat.asJson(format));
     }
 
     public String getWSUrl() {
@@ -304,13 +307,13 @@ public class TTS {
     }
 
     private synchronized WebSocketClient getOrCreateWebsocketClient() {
-//        boolean isRelink = false;
-//        currentClientSendCount++;
-//        if (currentClientSendCount > MAX_SEND_COUNT && client != null) {
-//            closeWebsocket();
-//            currentClientSendCount = 0;
-//            isRelink = true;
-//        }
+        final boolean[] isRelink = {false};
+        currentClientSendCount++;
+        if (currentClientSendCount > MAX_SEND_COUNT && client != null) {
+            closeWebsocket();
+            currentClientSendCount = 0;
+            isRelink[0] = true;
+        }
 
         if (client == null) {
             isIdle = false;
@@ -326,6 +329,8 @@ public class TTS {
 
                     @Override
                     public void onOpen(ServerHandshake handshake) {
+                        running = true;
+
                         // update the timestamp
                         timestamp = System.currentTimeMillis();
                         // 检查是否开启了文件保存模式，若是，则准备好待写入的文件
@@ -437,26 +442,33 @@ public class TTS {
                     public void onClose(int code, String reason, boolean remote) {
                         logger.info("websocket closed, code = {}, reason = {}", code, reason);
                         System.out.println("websocket closed, code = " + code + ", reason = " + reason);
-                        if (queue != null && !queue.isEmpty()) {
-                            System.out.println("reconnect  queue size: " + queue.size());
-//                            client.reconnect();
-                            thisReconnect();
-                        } else {
-                            // reset the timestamp
-                            timestamp = -1;
-                            // close and clean file stream
-                            closeStream();
+                        // reset the timestamp
+                        timestamp = -1;
+                        // close and clean file stream
+                        closeStream();
 
-                            if (code != 1000) {
+                        client = null;
+                        currentClientSendCount = 0;
+                        isRelink[0] = true;
+
+                        if (code != 1000) {
+                            isSendSuccess = false;
+                            if (queue == null || queue.isEmpty()) {
                                 // something happened
                                 dispose();
                                 throw new RuntimeException("websocket closed unexpected: code = " + code + ", reason = " + reason);
+                            } else {
+                                getOrCreateWebsocketClient().send(current);
+                                if (current.contains("ssml")) {
+
+                                }
                             }
                         }
                     }
 
                     @Override
                     public void onError(Exception ex) {
+                        isSendSuccess = false;
                     }
 
                     private void closeStream() {
@@ -471,16 +483,6 @@ public class TTS {
                         }
                     }
 
-                    private void thisReconnect() {
-                        new Thread(() -> {
-                            try {
-                                Thread.sleep(RECONNECT_INTERVAL);
-                                reconnect();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }).start();
-                    }
                 };
                 client.connectBlocking();
                 // When the websocket connection is complete,
@@ -491,11 +493,22 @@ public class TTS {
             }
         }
 
-//        if (isRelink && client != null) {
+//        if (isRelink[0] && client != null) {
 //            setVoiceFormat();
 //        }
 
         return client;
+    }
+
+    public void sendMessage(String message) {
+        current = message;
+//        String configString = config.toString();
+//        getOrCreateWebsocketClient().send(configString);
+        isSendSuccess = true;
+        getOrCreateWebsocketClient().send(message);
+//        if (!isSendSuccess) {
+//            getOrCreateWebsocketClient().send(message);
+//        }
     }
 
     private void delay() {
@@ -537,7 +550,8 @@ public class TTS {
                 if (isDebug) {
                     logger.info(payload.toString());
                 }
-                getOrCreateWebsocketClient().send(payload.toString());
+//                getOrCreateWebsocketClient().send(payload.toString());
+                sendMessage(payload.toString());
                 // Waiting for the previous task to complete
                 while (synthesising && running) {
                     try {
