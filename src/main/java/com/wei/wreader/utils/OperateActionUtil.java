@@ -1127,7 +1127,7 @@ public class OperateActionUtil {
     /**
      * 小说内容文本转语音
      */
-    public void ttsChapterContent() throws IOException {
+    public void ttsChapterContent2() throws IOException {
         // 获取所选择的小说内容
         String chapterContent = currentChapterInfo.getChapterContentStr();
         if (StringUtils.isBlank(chapterContent)) {
@@ -1189,10 +1189,13 @@ public class OperateActionUtil {
 
     }
 
+
+    private static EdgeTTS edgeTTS;
+
     /**
      * 小说内容文本转语音
      */
-    public void ttsChapterContent2() throws Exception  {
+    public void ttsChapterContent() throws Exception  {
         // 获取所选择的小说内容
         String chapterContent = currentChapterInfo.getChapterContentStr();
         if (StringUtils.isBlank(chapterContent)) {
@@ -1200,7 +1203,12 @@ public class OperateActionUtil {
             return;
         }
 
-        EdgeTTS edgeTTS = EdgeTTS.getInstance();
+        if (edgeTTS != null) {
+            edgeTTS.dispose();
+            return;
+        }
+
+        edgeTTS = new EdgeTTS();
 
         // 音色
         String voiceRole = settings.getVoiceRole();
@@ -1228,6 +1236,7 @@ public class OperateActionUtil {
                 .setVolume(volume.toString());
 
         edgeTTS.synthesize(chapterContent);
+        edgeTTS.start();
 
     }
 
@@ -1235,8 +1244,8 @@ public class OperateActionUtil {
      * 停止语音
      */
     public void stopTTS() {
-        if (tts != null) {
-            tts.dispose();
+        if (edgeTTS != null) {
+            edgeTTS.dispose();
         }
     }
 
