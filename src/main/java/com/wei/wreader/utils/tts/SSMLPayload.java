@@ -15,8 +15,13 @@ public class SSMLPayload implements Serializable {
                     "X-Timestamp:%sZ\r\n" +
                     "Path:ssml\r\n" +
                     "\r\n" +
-                    "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='%s'>\r\n" +
-                    "<voice name='%s'><prosody pitch='+0Hz' rate='%s' volume='%s'>%s</prosody></voice></speak>";
+                    "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts'  xmlns:emo='http://www.w3.org/2009/10/emotionml' xml:lang='%s'>\r\n" +
+                    "<voice name='%s'>" +
+                    "<prosody pitch='+0Hz' rate='%s' volume='%s'>" +
+                    "<mstts:express-as style='%s'>%s</mstts:express-as>" +
+                    "</prosody>" +
+                    "</voice></speak>";
+
 
     /**
      * 语音角色
@@ -45,6 +50,7 @@ public class SSMLPayload implements Serializable {
      * </ul>
      */
     public String volume = "100.0";
+    public String style = "default";
 
     public String content;
 
@@ -72,6 +78,7 @@ public class SSMLPayload implements Serializable {
                 role.shortName,
                 rate,
                 volume,
+                style,
                 content
         );
     }

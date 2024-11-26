@@ -5,9 +5,9 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.NlsContexts;
+import com.intellij.ui.EnumComboBoxModel;
 import com.intellij.ui.NumberDocument;
 import com.intellij.ui.components.JBRadioButton;
-import com.intellij.ui.components.JBSlider;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBUI;
@@ -16,6 +16,7 @@ import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.tts.VoiceStyle;
 import org.apache.commons.lang3.StringUtils;
 import org.dreamwork.tools.tts.VoiceRole;
 import org.jetbrains.annotations.Nullable;
@@ -58,6 +59,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JLabel volumeLabel;
     private JComboBox rateComboBox;
     private JComboBox volumeComboBox;
+    private JComboBox audioStyleComboBox;
+    private JLabel audioStyleLabel;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -91,6 +94,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 音量
         if (settings.getVolume() == null || settings.getVolume() < 0) {
             settings.setVolume(configYaml.getSettings().getVolume());
+        }
+        // 风格
+        if (StringUtils.isBlank(settings.getAudioStyle())) {
+            settings.setAudioStyle(configYaml.getSettings().getAudioStyle());
         }
 
     }
@@ -216,7 +223,12 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         volumeComboBox.setEditable(true);
         ComboBoxEditor volumeEditor = volumeComboBox.getEditor();
         volumeEditor.setItem(settings.getVolume());
-
+        // 音频风格
+        List<String> names = VoiceStyle.getNames();
+        for (String name : names) {
+            audioStyleComboBox.addItem(name);
+        }
+        audioStyleComboBox.setSelectedItem(settings.getAudioStyle());
 
         return settingPanel;
     }
@@ -269,6 +281,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (!settings.getVolume().equals(volumeComboBox.getSelectedItem())) {
             return true;
         }
+        // 音频风格
+        if (!settings.getAudioStyle().equals(audioStyleComboBox.getSelectedItem())) {
+            return true;
+        }
 
         return settings.getDisplayType() != selectedDisplayType;
     }
@@ -287,6 +303,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setCharset((String) charsetComboBox.getSelectedItem());
         settings.setAutoReadTime(Integer.parseInt(autoReadTimeTextField.getText()));
         settings.setVoiceRole((String) voiceRoleComboBox.getSelectedItem());
+        settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
         settings.setAudioTimeout(Integer.parseInt(timeoutTextField.getText()));
 
         ComboBoxEditor rateEditor = rateComboBox.getEditor();

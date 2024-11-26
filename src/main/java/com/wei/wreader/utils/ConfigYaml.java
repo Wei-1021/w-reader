@@ -174,6 +174,7 @@ public class ConfigYaml {
         settings.setAudioTimeout(Integer.parseInt(settingsMap.get("audioTimeout").toString()));
         settings.setRate(Float.parseFloat(settingsMap.get("rate").toString()));
         settings.setVolume(Integer.parseInt(settingsMap.get("volume").toString()));
+        settings.setAudioStyle(settingsMap.get("audioStyle").toString());
         return settings;
     }
 

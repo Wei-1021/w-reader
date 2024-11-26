@@ -18,6 +18,7 @@ wreader:
     audioTimeout: 3 #有声阅读超时
     rate: 1.0 #语速
     volume: 100 #默认音量
+    audioStyle: 'default' #默认风格
   componentIdKey:
     searchBook: 'SearchBookName'
     bookDirectory: 'ChapterListAction'

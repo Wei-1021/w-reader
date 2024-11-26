@@ -43,6 +43,10 @@ public class EdgeTTS {
      */
     private VoiceRole voiceRole;
     /**
+     * 风格
+     */
+    private String style;
+    /**
      * 音量
      */
     private String volume;
@@ -142,6 +146,15 @@ public class EdgeTTS {
      */
     public EdgeTTS setVoiceRole(VoiceRole voiceRole) {
         this.voiceRole = voiceRole;
+        return this;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public EdgeTTS setStyle(String style) {
+        this.style = style;
         return this;
     }
 
@@ -436,7 +449,7 @@ public class EdgeTTS {
                 client.close(CloseFrame.NORMAL, "bye");
             }
             client = null;
-            player.stop();
+            player.close();
             pis.close();
             pos.close();
         } catch (Exception e) {

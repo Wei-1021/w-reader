@@ -91,6 +91,10 @@ public class Settings {
      * 音量
      */
     private Integer volume;
+    /**
+     * 语音风格
+     */
+    private String audioStyle;
 
 
     public int getSingleLineChars() {
@@ -173,6 +177,14 @@ public class Settings {
         this.volume = volume;
     }
 
+    public String getAudioStyle() {
+        return audioStyle;
+    }
+
+    public void setAudioStyle(String audioStyle) {
+        this.audioStyle = audioStyle;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -186,6 +198,7 @@ public class Settings {
                 ", audioTimeout=" + audioTimeout +
                 ", rate=" + rate +
                 ", volume=" + volume +
+                ", audioStyle='" + audioStyle + '\'' +
                 '}';
     }
 }

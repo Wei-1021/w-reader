@@ -1205,6 +1205,7 @@ public class OperateActionUtil {
 
         if (edgeTTS != null) {
             edgeTTS.dispose();
+            edgeTTS = null;
             return;
         }
 
@@ -1230,8 +1231,12 @@ public class OperateActionUtil {
         if (volume == null || volume < 0) {
             volume = configYaml.getSettings().getVolume();
         }
+        // 风格
+        String audioStyle = settings.getAudioStyle();
+        audioStyle = StringUtils.isBlank(audioStyle) ? configYaml.getSettings().getAudioStyle() : audioStyle;
 
         edgeTTS.setVoiceRole(com.wei.wreader.utils.tts.VoiceRole.valueOf(voiceRole))
+                .setStyle(audioStyle)
                 .setRate(rate.toString())
                 .setVolume(volume.toString());
 

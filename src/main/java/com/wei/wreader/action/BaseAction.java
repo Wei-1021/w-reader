@@ -30,6 +30,21 @@ public abstract class BaseAction extends AnAction {
             cacheService.setSettings(settings);
         }
 
+        if (StringUtils.isBlank(settings.getVoiceRole())) {
+            settings.setVoiceRole(configYaml.getSettings().getVoiceRole());
+            cacheService.setSettings(settings);
+        }
+
+        if (StringUtils.isBlank(settings.getAudioStyle())) {
+            settings.setAudioStyle(configYaml.getSettings().getAudioStyle());
+            cacheService.setSettings(settings);
+        }
+
+        if (settings.getVolume() == null) {
+            settings.setVolume(configYaml.getSettings().getVolume());
+            cacheService.setSettings(settings);
+        }
+
 
         project = anActionEvent.getProject();
 
