@@ -15,11 +15,14 @@ public class SSMLPayload implements Serializable {
                     "X-Timestamp:%sZ\r\n" +
                     "Path:ssml\r\n" +
                     "\r\n" +
-                    "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts'  xmlns:emo='http://www.w3.org/2009/10/emotionml' xml:lang='%s'>\r\n" +
+                    "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' " +
+                    "xmlns:emo='http://www.w3.org/2009/10/emotionml' xml:lang='%s'>\r\n" +
                     "<voice name='%s'>" +
+                    "<mstts:express-as style='%s'>" +
                     "<prosody pitch='+0Hz' rate='%s' volume='%s'>" +
-                    "<mstts:express-as style='%s'>%s</mstts:express-as>" +
+                    "%s" +
                     "</prosody>" +
+                    "</mstts:express-as>" +
                     "</voice></speak>";
 
 
@@ -50,6 +53,9 @@ public class SSMLPayload implements Serializable {
      * </ul>
      */
     public String volume = "100.0";
+    /**
+     * 语音风格
+     */
     public String style = "default";
 
     public String content;
@@ -58,10 +64,11 @@ public class SSMLPayload implements Serializable {
         this.role = role;
     }
 
-    SSMLPayload(VoiceRole role, String rate, String volume) {
+    SSMLPayload(VoiceRole role, String rate, String volume, String style) {
         this.role = role;
         this.rate = rate;
         this.volume = volume;
+        this.style = style;
     }
 
     @Override
@@ -76,9 +83,9 @@ public class SSMLPayload implements Serializable {
                 dtf.format(ZonedDateTime.now()),
                 role.locale,
                 role.shortName,
+                style,
                 rate,
                 volume,
-                style,
                 content
         );
     }

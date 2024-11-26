@@ -91,6 +91,10 @@ public class EdgeTTS {
      * 是否为当前对话的最后一条消息
      */
     private boolean isTempLastMsg = false;
+    /**
+     * 是否销毁
+     */
+    private boolean isDispose = false;
 
 
     private static EdgeTTS instance;
@@ -153,8 +157,13 @@ public class EdgeTTS {
         return style;
     }
 
-    public EdgeTTS setStyle(String style) {
-        this.style = style;
+    public EdgeTTS setStyleName(String style) {
+        this.style = VoiceStyle.getByName(style).value;
+        return this;
+    }
+
+    public EdgeTTS setStyleValue(String style) {
+        this.style = VoiceStyle.getByValue(style).value;
         return this;
     }
 
@@ -251,8 +260,11 @@ public class EdgeTTS {
         client.send(audioConfig);
     }
 
+    /**
+     * 发送SSML消息
+     */
     private void sendSSMLMsg() {
-        while (!textQueue.isEmpty()) {
+        while (!textQueue.isEmpty() && !isDispose) {
             if (isTempLastMsg) {
                 if (isCurrentContentSend || StringUtils.isBlank(currentContent)) {
                     currentContent = textQueue.poll();
@@ -261,7 +273,7 @@ public class EdgeTTS {
 
                 if (StringUtils.isNotBlank(currentContent)) {
                     // 发送SSML消息
-                    SSMLPayload ssmlPayload = new SSMLPayload(voiceRole, rate, volume);
+                    SSMLPayload ssmlPayload = new SSMLPayload(voiceRole, rate, volume, style);
                     System.out.println("currentContent: " + currentContent);
                     ssmlPayload.content = currentContent;
                     String messageSSML = ssmlPayload.toString();
@@ -283,7 +295,11 @@ public class EdgeTTS {
     /**
      * 处理文本队列，通过 WebSocket 连接发送文本到 Microsoft Edge 的 TTS 服务进行语音合成，并将合成的音频数据以字节数组的形式返回
      */
-    private WebSocketClient processQueue() {
+    private void processQueue() {
+        if (isDispose) {
+            return;
+        }
+
         if (connectionCount >= MAX_WS_CONNECTIONS) {
             // 重置连接计数并重新创建WebSocket连接
             connectionCount = 0;
@@ -376,7 +392,6 @@ public class EdgeTTS {
             }
         }
 
-        return client;
     }
 
     private String readLine(ByteBuffer buffer) {
@@ -400,6 +415,9 @@ public class EdgeTTS {
         return new String(target, 0, index, StandardCharsets.UTF_8);
     }
 
+    /**
+     * 线程从音频数据队列中读取数据，并将其写入到输出流中
+     */
     private void copyByteToOut() {
         try {
             while (!allAudioData.isEmpty() || !textQueue.isEmpty()) {
@@ -418,6 +436,10 @@ public class EdgeTTS {
 
     private void play() {
         try {
+            if (isDispose) {
+                return;
+            }
+
             player = new AdvancedPlayer(pis);
             player.setPlayBackListener(new PlaybackListener() {
                 @Override
@@ -445,13 +467,28 @@ public class EdgeTTS {
 
     public void dispose() {
         try {
+            isDispose = true;
+
             if (client != null) {
                 client.close(CloseFrame.NORMAL, "bye");
             }
             client = null;
-            player.close();
+
+            if (player != null) {
+                player.stop();
+            }
+
+            if (!textQueue.isEmpty()) {
+                textQueue.clear();
+            }
+
+            if (!allAudioData.isEmpty()) {
+                allAudioData.clear();
+            }
+
             pis.close();
             pos.close();
+            executor.shutdownNow();
         } catch (Exception e) {
             e.printStackTrace();
         }

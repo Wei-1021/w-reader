@@ -1236,7 +1236,7 @@ public class OperateActionUtil {
         audioStyle = StringUtils.isBlank(audioStyle) ? configYaml.getSettings().getAudioStyle() : audioStyle;
 
         edgeTTS.setVoiceRole(com.wei.wreader.utils.tts.VoiceRole.valueOf(voiceRole))
-                .setStyle(audioStyle)
+                .setStyleName(audioStyle)
                 .setRate(rate.toString())
                 .setVolume(volume.toString());
 
