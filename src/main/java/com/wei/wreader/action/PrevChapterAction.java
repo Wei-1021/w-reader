@@ -14,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+/**
+ * 上一章
+ */
 public class PrevChapterAction extends BaseAction {
 
     @Override
@@ -21,6 +24,8 @@ public class PrevChapterAction extends BaseAction {
         super.actionPerformed(e);
 
         OperateActionUtil.getInstance(project).executorServiceShutdown();
+        // 停止语音
+        OperateActionUtil.getInstance(project).stopTTS();
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:

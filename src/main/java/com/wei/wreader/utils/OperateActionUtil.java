@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -508,8 +509,14 @@ public class OperateActionUtil {
             JBList<String> chapterListJBList = new JBList<>(chapterList);
             // 设置单选模式
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            // 选择监听
             chapterListJBList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
+                    // 停止定时器
+                    executorServiceShutdown();
+                    // 停止语音
+                    stopTTS();
+
                     int selectedIndex = chapterListJBList.getSelectedIndex();
                     currentChapterIndex = selectedIndex;
                     String chapterTitle = chapterList.get(currentChapterIndex);
@@ -553,6 +560,11 @@ public class OperateActionUtil {
         SwingUtilities.invokeLater(() -> {
             JBList<String> chapterListJBList = new JBList<>(chapterList);
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
+            chapterListJBList.setSelectedIndex(currentChapterIndex);
+            chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
+            jScrollPane.setPreferredSize(new Dimension(400, 500));
             chapterListJBList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
                     // 获取数据加载模式
@@ -567,12 +579,8 @@ public class OperateActionUtil {
                     }
                 }
             });
-
-            JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
-            chapterListJBList.setSelectedIndex(currentChapterIndex);
-            chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
-            jScrollPane.setPreferredSize(new Dimension(400, 500));
             MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
+
         });
     }
 
@@ -907,6 +915,9 @@ public class OperateActionUtil {
                 return;
             }
             File file = new File(filePath);
+
+            // 停止语音
+            stopTTS();
 
             // 清空缓存数据
             cacheService.setChapterList(null);
@@ -1251,6 +1262,7 @@ public class OperateActionUtil {
     public void stopTTS() {
         if (edgeTTS != null) {
             edgeTTS.dispose();
+            edgeTTS = null;
         }
     }
 

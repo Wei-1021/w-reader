@@ -29,7 +29,7 @@
     <p>
         0.0.8:
         <ul>
-            <li>1.</li>
+            <li>1.修复 有声阅读失效的问题；</li>
         </ul>
     </p>
     <p>
@@ -160,7 +160,7 @@
         <action id="wreader.AudioReadingAction"
                 class="com.wei.wreader.action.AudioReadingAction"
                 text="有声阅读"
-                icon="com.wei.wreader.utils.WReaderIcons.AUDIO_READING_PLAY" >
+                icon="com.wei.wreader.utils.WReaderIcons.LISTEN_BOOK" >
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
         </action>
         <!--endregion-->

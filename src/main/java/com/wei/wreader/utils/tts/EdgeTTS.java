@@ -153,17 +153,31 @@ public class EdgeTTS {
         return this;
     }
 
+    /**
+     * 获取语音风格
+     * @return
+     */
     public String getStyle() {
         return style;
     }
 
-    public EdgeTTS setStyleName(String style) {
-        this.style = VoiceStyle.getByName(style).value;
+    /**
+     * 根据VoiceStyle的name属性设置语音风格
+     * @param name
+     * @return
+     */
+    public EdgeTTS setStyleName(String name) {
+        this.style = VoiceStyle.getByName(name).value;
         return this;
     }
 
-    public EdgeTTS setStyleValue(String style) {
-        this.style = VoiceStyle.getByValue(style).value;
+    /**
+     * 根据VoiceStyle的value属性设置语音风格
+     * @param value
+     * @return
+     */
+    public EdgeTTS setStyleValue(String value) {
+        this.style = VoiceStyle.getByValue(value).value;
         return this;
     }
 
@@ -206,6 +220,9 @@ public class EdgeTTS {
         isTempLastMsg = true;
     }
 
+    /**
+     * 开始合成
+     */
     public void start() {
         executor.submit(this::sendSSMLMsg);
         executor.submit(this::copyByteToOut);
@@ -264,8 +281,11 @@ public class EdgeTTS {
      * 发送SSML消息
      */
     private void sendSSMLMsg() {
+        // 当文本队列不为空且不为销毁状态，循环发送消息
         while (!textQueue.isEmpty() && !isDispose) {
+            // 如果上一个消息接收完毕，则从队列中取出下一个消息发送，否则等待
             if (isTempLastMsg) {
+                // 上一个消息成功发送或者还未发送过消息，则从队列中取出下一个消息，否则继续发送上条消息
                 if (isCurrentContentSend || StringUtils.isBlank(currentContent)) {
                     currentContent = textQueue.poll();
                     isCurrentContentSend = false;
@@ -274,7 +294,6 @@ public class EdgeTTS {
                 if (StringUtils.isNotBlank(currentContent)) {
                     // 发送SSML消息
                     SSMLPayload ssmlPayload = new SSMLPayload(voiceRole, rate, volume, style);
-                    System.out.println("currentContent: " + currentContent);
                     ssmlPayload.content = currentContent;
                     String messageSSML = ssmlPayload.toString();
                     processQueue();
@@ -284,6 +303,7 @@ public class EdgeTTS {
                 }
             }
 
+            // 循环间隔100ms
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -322,7 +342,6 @@ public class EdgeTTS {
 
                     @Override
                     public void onOpen(ServerHandshake handshake) {
-                        System.out.println("WebSocket opened");
                     }
 
                     @Override
@@ -331,22 +350,20 @@ public class EdgeTTS {
                         if (message.contains(TURN_START)) {
                             // 开始合成一段文本，触发监听器
                             if (listener != null) {
-//                                if (!tasks.offer(() -> listener.started(current))) {
-//                                    logger.warn("cannot offer the listener when start");
-//                                }
+                                listener.started(currentContent);
                             }
                         }
                         // 当接收到文本数据中包含turn.end时，代表音频流传输结束
                         else if (message.contains(TURN_END)) {
                             // 一段文本合成完成
                             // 一段解码结束
-//                            synthesising = false;
                             isTempLastMsg = true;
                         }
                     }
 
                     @Override
                     public void onMessage(ByteBuffer data) {
+                        // 处理数据
                         String line;
                         while (!(line = readLine(data)).isEmpty()) {
                             if ("Path:audio".equals(line.trim())) {
@@ -364,7 +381,6 @@ public class EdgeTTS {
 
                     @Override
                     public void onClose(int code, String reason, boolean remote) {
-                        System.out.println("WebSocket closed with status code: " + code + ", reason: " + reason);
                         connectionCount = 0;
                         client = null;
                         isTempLastMsg = true;
@@ -394,6 +410,11 @@ public class EdgeTTS {
 
     }
 
+    /**
+     * 从 ByteBuffer 中读取一行数据
+     * @param buffer
+     * @return
+     */
     private String readLine(ByteBuffer buffer) {
         byte[] target = new byte[128];
 
@@ -434,6 +455,9 @@ public class EdgeTTS {
         }
     }
 
+    /**
+     * 播放音频
+     */
     private void play() {
         try {
             if (isDispose) {
@@ -464,7 +488,6 @@ public class EdgeTTS {
         isPlaying = false;
     }
 
-
     public void dispose() {
         try {
             isDispose = true;
@@ -492,12 +515,5 @@ public class EdgeTTS {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    // 示例用法
-    public static void main(String[] args) throws Exception {
-        EdgeTTS tts = EdgeTTS.getInstance();
-        tts.setVoiceRole(VoiceRole.Xiaoxiao).setVolume("50.0").setRate("1.0").synthesize("她是我国陆军首批女飞行员之一，毕业考核时获满分成绩，入列就飞最新型的直-20，又美又飒的她，是众多网友心中“新青年的榜样”，她就是徐枫灿。");
-
     }
 }

@@ -27,7 +27,10 @@ public class NextChapterAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
+        // 停止定时器
         OperateActionUtil.getInstance(project).executorServiceShutdown();
+        // 停止语音
+        OperateActionUtil.getInstance(project).stopTTS();
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:

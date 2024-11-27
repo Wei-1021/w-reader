@@ -21,6 +21,9 @@ import org.jsoup.nodes.Element;
 import javax.swing.*;
 import java.util.List;
 
+/**
+ * 章节目录
+ */
 public class ChapterListAction extends BaseAction {
 
     @Override
@@ -29,9 +32,20 @@ public class ChapterListAction extends BaseAction {
 
         OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
         operateAction.showBookDirectory(new BookDirectoryListener() {
+            /**
+             * 点击章节目录选项
+             * @param position 下标
+             * @param chapterList 章节列表
+             * @param chapterInfo 章节内容
+             */
             @Override
             public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo) {
                 super.onClickItem(position, chapterList, chapterInfo);
+
+                // 停止定时器
+                OperateActionUtil.getInstance(project).executorServiceShutdown();
+                // 停止语音
+                OperateActionUtil.getInstance(project).stopTTS();
 
                 switch (settings.getDisplayType()) {
                     case Settings.DISPLAY_TYPE_SIDEBAR:
