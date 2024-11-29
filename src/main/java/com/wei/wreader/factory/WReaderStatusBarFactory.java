@@ -142,7 +142,7 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
                 }
             }
 
-            // 状态栏组件不存在，则创建，反正则不创建，防止重复创建出现视图重叠
+            // 状态栏组件不存在，则创建，反之则不创建，防止重复创建出现视图重叠
             if (!isExistStatusBarWidget) {
                 StatusBarWidgetsManager statusBarWidgetsManager = project.getService(StatusBarWidgetsManager.class);
                 statusBarWidgetsManager.updateWidget(this);

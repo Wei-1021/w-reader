@@ -43,6 +43,10 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * 是否隐藏文字
      */
     private boolean isHideText;
+    /**
+     * 是否隐藏
+     */
+    private static boolean isHide = false;
 
     public WReaderStatusBarWidget(@NotNull Project project) {
         super(project, false);
@@ -64,6 +68,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         toolWindow = configYaml.getToolWindow();
 
         isHideText = cacheService.isHideText();
+        isHide = false;
     }
 
     public String getTooltipText() {
@@ -98,7 +103,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         initData();
 
         boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
-        if (!isVisible) {
+        if (!isVisible || isHide) {
             // 隐藏状态栏
             return WidgetState.HIDDEN;
         }
@@ -188,6 +193,12 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         }
     }
 
+    public static void hide(@NotNull Project project) {
+        isHide = true;
+        update(project, "");
+        isHide = false;
+    }
+
     public static String getWidgetId() {
         return ConstUtil.WREADER_STATUS_BAR_WIDGET_ID;
     }
@@ -197,6 +208,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      */
     public static void hideText(@NotNull Project project) {
         showContentStr = "";
+        hide(project);
         update(project, showContentStr);
     }
 
@@ -205,6 +217,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      */
     public static void showText(@NotNull Project project) {
         showContentStr = currentContentStr;
+        hide(project);
         update(project, showContentStr);
     }
 
@@ -231,6 +244,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
                     chapterContentList.size() : lastReadLineNum + 1);
             String chapterContent = chapterContentList.get(lastReadLineNum);
+            hide(project);
             update(project, chapterContent);
         }
     }
@@ -258,6 +272,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
                     chapterContentList.size() : lastReadLineNum + 1);
             String chapterContent = chapterContentList.get(lastReadLineNum);
+            hide(project);
             update(project, chapterContent);
         }
     }
@@ -292,6 +307,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         selectedChapterInfoTemp.setPrevReadLineNum(1);
         selectedChapterInfoTemp.setNextReadLineNum(1);
         selectedChapterInfoTemp.setChapterContentList(null);
+        hide(project);
         update(project, "");
     }
 
@@ -323,6 +339,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         selectedChapterInfoTemp.setPrevReadLineNum(1);
         selectedChapterInfoTemp.setNextReadLineNum(1);
         selectedChapterInfoTemp.setChapterContentList(null);
+        hide(project);
         update(project, "");
 
     }

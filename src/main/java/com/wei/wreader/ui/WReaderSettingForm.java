@@ -16,6 +16,7 @@ import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.NumberUtil;
 import com.wei.wreader.utils.tts.VoiceStyle;
 import org.apache.commons.lang3.StringUtils;
 import org.dreamwork.tools.tts.VoiceRole;
@@ -248,7 +249,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         // 单行最大字数
         String lineMaxNums = lineMaxNumsTextField.getText();
-        if (settings.getSingleLineChars() != Integer.parseInt(lineMaxNums)) {
+        if (settings.getSingleLineChars() != NumberUtil.parseInt(lineMaxNums)) {
             return true;
         }
         // 是否显示行号
@@ -262,7 +263,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         // 自动阅读
         String autoReadTime = autoReadTimeTextField.getText();
-        if (settings.getAutoReadTime() != Integer.parseInt(autoReadTime)) {
+        if (settings.getAutoReadTime() != NumberUtil.parseInt(autoReadTime)) {
             return true;
         }
         // 音色
@@ -270,7 +271,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 音频超时
-        if (settings.getAudioTimeout() != Integer.parseInt(timeoutTextField.getText())) {
+        if (settings.getAudioTimeout() != NumberUtil.parseInt(timeoutTextField.getText())) {
             return true;
         }
         // 语速
@@ -297,14 +298,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     @Override
     public void apply() throws ConfigurationException {
-        settings.setSingleLineChars(Integer.parseInt(lineMaxNumsTextField.getText()));
+        settings.setSingleLineChars(NumberUtil.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
         settings.setCharset((String) charsetComboBox.getSelectedItem());
-        settings.setAutoReadTime(Integer.parseInt(autoReadTimeTextField.getText()));
+        settings.setAutoReadTime(NumberUtil.parseInt(autoReadTimeTextField.getText()));
         settings.setVoiceRole((String) voiceRoleComboBox.getSelectedItem());
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
-        settings.setAudioTimeout(Integer.parseInt(timeoutTextField.getText()));
+        settings.setAudioTimeout(NumberUtil.parseInt(timeoutTextField.getText()));
 
         ComboBoxEditor rateEditor = rateComboBox.getEditor();
         settings.setRate((Float) rateEditor.getItem());
