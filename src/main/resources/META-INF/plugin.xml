@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -26,6 +26,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.9:
+        <ul>
+            <li>1.修复 状态栏视图问题；</li>
+        </ul>
+    </p>
     <p>
         0.0.8:
         <ul>

@@ -100,7 +100,7 @@ public enum VoiceStyle {
     /**
      * 为内容阅读表达一种舒缓而悦耳的语气
      */
-    narration_relaxed("narration-relaxed", "放松"),
+    narration_relaxed("narration-relaxed", "旁白 - 放松"),
     /**
      * 以正式专业的语气叙述新闻
      */

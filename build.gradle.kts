@@ -1,5 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import proguard.gradle.ProGuardTask
 
 plugins {
     id("java")
@@ -9,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.8"
+version = "0.0.9"
 
 repositories {
     maven {
@@ -87,7 +89,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.3.0")
+        classpath("com.guardsquare:proguard-gradle:7.4.2")
     }
 }
 
@@ -107,7 +109,6 @@ intellijPlatform {
     }
 }
 
-val buildDir = layout.buildDirectory
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
@@ -142,7 +143,8 @@ tasks {
         token.set(providers.gradleProperty("publicToken"))
     }
 
-//    // 获取构建目录
+
+    // 获取构建目录
 //    val buildDir = layout.buildDirectory
 //    val printMappingFile = buildDir.file("mapping.txt").get()
 //    val inJarsFile = buildDir.file("libs/$pluginName-$version.jar").get()
@@ -171,3 +173,28 @@ tasks {
     }
 
 }
+
+//val buildDir = layout.buildDirectory
+//val proguardJar = buildDir.file("libs/$pluginName-$version-proguard.jar").get()
+//val inJarsFile = buildDir.file("libs/$pluginName-$version.jar").get()
+//
+//tasks.register<ProGuardTask>("proguard") {
+//    printmapping(buildDir.file("mapping.txt").get())
+//    configuration("proguard-rules.pro")
+//
+//    injars(inJarsFile)
+//    outjars(proguardJar)
+//
+//    // 设置库文件
+//    val javaHome = System.getProperty("java.home")
+//    val rtJar = "$javaHome/lib/rt.jar"
+//    libraryjars(files(rtJar))
+//    libraryjars(configurations.runtimeClasspath.get().files)
+//
+//    dependsOn(tasks.named("jar"))
+//}
+//
+//tasks.named("prepareSandbox") {
+//    dependsOn("proguard")
+//    (this as PrepareSandboxTask).pluginJar = proguardJar
+//}

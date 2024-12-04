@@ -246,9 +246,29 @@ public class EdgeTTS {
                     end = start + lastPunctuation + 1;
                 }
             }
-            textQueue.offer(text.substring(start, end));
+            String handlerText = textSSMLHandler(text.substring(start, end));
+            textQueue.offer(handlerText);
             start = end;
         }
+    }
+
+    /**
+     * 文本处理，对文本进行特殊处理；如：省略号后增加停顿，以实现更自然的播放
+     *
+     * @param text
+     */
+    private String textSSMLHandler(String text) {
+        return replaceEllipsis(text);
+    }
+
+    /**
+     * 替换中文省略号或至少三个英文句号为停顿
+     * @param input
+     * @return
+     */
+    private static String replaceEllipsis(String input) {
+        // 使用正则表达式匹配中文省略号或至少三个英文句号
+        return input.replaceAll("[…]{1,}|\\.{3,}", "<break time=\"800ms\"/>");
     }
 
     /**
