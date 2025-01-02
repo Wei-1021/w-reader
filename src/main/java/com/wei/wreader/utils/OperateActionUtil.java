@@ -1227,6 +1227,7 @@ public class OperateActionUtil {
         if (StringUtils.isBlank(voiceRole)) {
             voiceRole = configYaml.getSettings().getVoiceRole();
         }
+        com.wei.wreader.utils.tts.VoiceRole voiceRoleEnum = com.wei.wreader.utils.tts.VoiceRole.getByNickName(voiceRole);
         // 音频超时时间
         int audioTimeout = settings.getAudioTimeout();
         if (audioTimeout <= 0) {
@@ -1246,7 +1247,7 @@ public class OperateActionUtil {
         String audioStyle = settings.getAudioStyle();
         audioStyle = StringUtils.isBlank(audioStyle) ? configYaml.getSettings().getAudioStyle() : audioStyle;
 
-        edgeTTS.setVoiceRole(com.wei.wreader.utils.tts.VoiceRole.valueOf(voiceRole))
+        edgeTTS.setVoiceRole(voiceRoleEnum)
                 .setStyleName(audioStyle)
                 .setRate(rate.toString())
                 .setVolume(volume.toString());

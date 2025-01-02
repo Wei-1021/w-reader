@@ -4,9 +4,10 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.popup.ListSeparator;
 import com.intellij.openapi.util.NlsContexts;
-import com.intellij.ui.EnumComboBoxModel;
-import com.intellij.ui.NumberDocument;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBRadioButton;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -19,14 +20,17 @@ import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.NumberUtil;
 import com.wei.wreader.utils.tts.VoiceStyle;
 import org.apache.commons.lang3.StringUtils;
-import org.dreamwork.tools.tts.VoiceRole;
+import com.wei.wreader.utils.tts.VoiceRole;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.List;
 
 /**
  * 设置窗口
@@ -62,6 +66,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JComboBox volumeComboBox;
     private JComboBox audioStyleComboBox;
     private JLabel audioStyleLabel;
+    private ComboBox testComboBox;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -166,8 +171,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         // 字符集
         SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
-        for (String key : stringCharsetSortedMap.keySet()) {
-            charsetComboBox.addItem(key);
+        for (Map.Entry<String, Charset> entry : stringCharsetSortedMap.entrySet()) {
+            charsetComboBox.addItem(entry.getKey());
         }
         charsetComboBox.setSelectedItem(settings.getCharset());
 
@@ -204,9 +209,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
         audioManagePanel.setBorder(audioManageTitledBorder);
         // 音色
-        VoiceRole[] VoiceRoles = VoiceRole.values();
-        for (VoiceRole voiceRole : VoiceRoles) {
-            voiceRoleComboBox.addItem(voiceRole.name());
+        List<String> voiceRoleNickNames = VoiceRole.getNickNames();
+        for (String nickName : voiceRoleNickNames) {
+            voiceRoleComboBox.addItem(nickName);
         }
         voiceRoleComboBox.setSelectedItem(settings.getVoiceRole());
         // 音频超时
@@ -230,6 +235,54 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             audioStyleComboBox.addItem(name);
         }
         audioStyleComboBox.setSelectedItem(settings.getAudioStyle());
+
+        VoiceRole[] voiceRoles = VoiceRole.values();
+        Map<String, Map<String, List<VoiceRole>>> group = VoiceRole.group();
+        testComboBox.setModel(new DefaultComboBoxModel<>(voiceRoles));
+        testComboBox.setRenderer(new GroupedComboBoxRenderer<>() {
+
+            /**
+             * 用于决定在哪些元素之间插入分隔符
+             *
+             * @param value
+             * @return
+             */
+            @Override
+            public @Nullable ListSeparator separatorFor(Object value) {
+                System.out.println(value);
+                if (value instanceof VoiceRole voiceRole) {
+                    if (voiceRole.locale.startsWith("zh-")) {
+                        return new ListSeparator("中文");
+                    } else {
+                        return new ListSeparator("其它");
+                    }
+                }
+
+                return null;
+            }
+
+            /**
+             * 自定义每个列表项的显示
+             * @param item
+             * @param value
+             * @param index
+             * @param isSelected
+             * @param cellHasFocus
+             */
+            @Override
+            public void customize(@NotNull SimpleColoredComponent item, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof VoiceRole voiceRole) {
+                    item.append(voiceRole.nickname);
+                }
+            }
+        });
+
+        testComboBox.addActionListener(e -> {
+            Object selectedItem = testComboBox.getSelectedItem();
+            System.out.println(selectedItem);
+        });
+
+
 
         return settingPanel;
     }

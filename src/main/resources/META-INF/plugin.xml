@@ -100,7 +100,7 @@
                                 order="first"/>
     </extensions>
 
-    <extensionPoints >
+    <extensionPoints>
 
     </extensionPoints>
 
@@ -139,13 +139,15 @@
                 icon="com.wei.wreader.utils.WReaderIcons.FONT_SIZE_SUB"/>
         <action id="wreader.FontSizeAddAction" class="com.wei.wreader.action.FontSizeAddAction" text="字体放大"
                 icon="com.wei.wreader.utils.WReaderIcons.FONT_SIZE_ADD"/>
-        <action id="wreader.ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction" text="改变字体颜色"
+        <action id="wreader.ChangeFontColorAction" class="com.wei.wreader.action.ChangeFontColorAction"
+                text="改变字体颜色"
                 icon="AllIcons.Actions.Colors"/>
         <action id="wreader.LoadLocalFileAction" class="com.wei.wreader.action.LoadLocalFileAction" text="加载本地文件"
                 icon="AllIcons.Nodes.Folder">
             <keyboard-shortcut keymap="$default" first-keystroke="alt ADD"/>
         </action>
-        <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction" text="编辑器提示消息"
+        <action id="wreader.EditorMessageAction" class="com.wei.wreader.action.EditorMessageAction"
+                text="编辑器提示消息"
                 icon="AllIcons.General.Balloon">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD0"/>
         </action>
@@ -166,7 +168,7 @@
         <action id="wreader.AudioReadingAction"
                 class="com.wei.wreader.action.AudioReadingAction"
                 text="有声阅读"
-                icon="com.wei.wreader.utils.WReaderIcons.LISTEN_BOOK" >
+                icon="com.wei.wreader.utils.WReaderIcons.LISTEN_BOOK">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
         </action>
         <!--endregion-->
@@ -177,7 +179,8 @@
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </group>
         <!-- 编辑器右键 -->
-        <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true" icon="/icon/mainIcon.svg">
+        <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true"
+               icon="/icon/mainIcon.svg">
             <reference id="wreader.EditorMessageAction"/>
             <reference id="wreader.CommentBlockAction"/>
             <reference id="wreader.AudioReadingAction"/>

@@ -16,7 +16,6 @@ public class SettingAction extends BaseAction {
         super.actionPerformed(e);
 
         SwingUtilities.invokeLater(() -> {
-            Project project = e.getProject();
             ShowSettingsUtil showSettingsUtil = ShowSettingsUtil.getInstance();
             showSettingsUtil.showSettingsDialog(project, WReaderSettingForm.class);
         });

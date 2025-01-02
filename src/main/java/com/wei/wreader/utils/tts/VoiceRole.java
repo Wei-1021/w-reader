@@ -401,6 +401,38 @@ public enum VoiceRole {
     }
 
     /**
+     * 获取所有音色的shortName
+     */
+    public static List<String> getShortNames() {
+        return Arrays.stream(values()).map(v -> v.shortName).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据shortName获取音色
+     * @param shortName
+     * @return
+     */
+    public static VoiceRole getByShortName(String shortName) {
+        return Arrays.stream(values()).filter(v -> v.shortName.equals(shortName)).findFirst().orElse(null);
+    }
+
+    /**
+     * 获取所有音色的nickname
+     */
+    public static List<String> getNickNames() {
+        return Arrays.stream(values()).map(v -> v.nickname).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据nickname获取音色
+     * @param nickname
+     * @return
+     */
+    public static VoiceRole getByNickName(String nickname) {
+        return Arrays.stream(values()).filter(v -> v.nickname.equals(nickname)).findFirst().orElse(null);
+    }
+
+    /**
      * 根据指定的语言过滤
      *
      * @param locale 指定的语言

@@ -268,7 +268,7 @@ public class EdgeTTS {
      */
     private static String replaceEllipsis(String input) {
         // 使用正则表达式匹配中文省略号或至少三个英文句号
-        return input.replaceAll("[…]{1,}|\\.{3,}", "<break time=\"700ms\"/>");
+        return input.replaceAll("[…]{1,}|\\.{3,}", "<break time=\"600ms\"/>");
     }
 
     /**
