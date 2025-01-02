@@ -205,11 +205,14 @@ public class ConfigYaml {
             bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
             bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
             bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
+            bookSiteInfo.setListMainUrlDataKeys(objMap.get("listMainUrlDataKeys").toString());
             bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
             bookSiteInfo.setListMainElementType(objMap.get("listMainElementType").toString());
             bookSiteInfo.setChapterContentUrl(objMap.get("chapterContentUrl").toString());
+            bookSiteInfo.setIsChapterContentHtml(Boolean.parseBoolean(objMap.get("isChapterContentHtml").toString()));
             bookSiteInfo.setChapterContentElementName(objMap.get("chapterContentElementName").toString());
             bookSiteInfo.setChapterContentElementType(objMap.get("chapterContentElementType").toString());
+            bookSiteInfo.setBookIdField(objMap.get("bookIdField").toString());
             bookSiteInfo.setBookNameField(objMap.get("bookNameField").toString());
             bookSiteInfo.setBookUrlField(objMap.get("bookUrlField").toString());
             bookSiteInfo.setBookAuthorField(objMap.get("bookAuthorField").toString());

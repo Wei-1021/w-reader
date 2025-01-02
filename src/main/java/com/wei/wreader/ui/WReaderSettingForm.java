@@ -237,7 +237,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         audioStyleComboBox.setSelectedItem(settings.getAudioStyle());
 
         VoiceRole[] voiceRoles = VoiceRole.values();
-        Map<String, Map<String, List<VoiceRole>>> group = VoiceRole.group();
         testComboBox.setModel(new DefaultComboBoxModel<>(voiceRoles));
         testComboBox.setRenderer(new GroupedComboBoxRenderer<>() {
 
@@ -251,9 +250,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             public @Nullable ListSeparator separatorFor(Object value) {
                 System.out.println(value);
                 if (value instanceof VoiceRole voiceRole) {
-                    if (voiceRole.locale.startsWith("zh-")) {
+                    if (voiceRole.shortName.equals("zh-CN-liaoning-XiaobeiNeural")) {
                         return new ListSeparator("中文");
-                    } else {
+                    } if (voiceRole.shortName.equals("af-ZA-AdriNeural")) {
                         return new ListSeparator("其它");
                     }
                 }
@@ -276,7 +275,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 }
             }
         });
-
         testComboBox.addActionListener(e -> {
             Object selectedItem = testComboBox.getSelectedItem();
             System.out.println(selectedItem);

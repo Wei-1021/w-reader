@@ -2,6 +2,7 @@ package com.wei.wreader.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -74,11 +75,11 @@ public class OperateActionUtil {
     /**
      * 书本名称列表
      */
-    private final List<String> bookNameList = new ArrayList<>();
+    private List<String> bookNameList = new ArrayList<>();
     /**
      * 书本信息列表
      */
-    private final List<BookInfo> bookInfoList = new ArrayList<>();
+    private List<BookInfo> bookInfoList = new ArrayList<>();
     /**
      * 章节名称列表
      */
@@ -272,7 +273,7 @@ public class OperateActionUtil {
                 return;
             }
 
-            searchUrl = searchUrl.replace("{bookName}", bookName);
+            searchUrl = searchUrl.replace("{key}", bookName);
             searchBookUrl = baseUrl + searchUrl;
         } else {
             searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
@@ -290,12 +291,21 @@ public class OperateActionUtil {
         settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
         cacheService.setSettings(settings);
 
+        // 初始化数据
+        bookInfoList = new ArrayList<>();
+        bookNameList = new ArrayList<>();
+
+        // 处理并展示搜索结果
         handleBookList(searchBookResult);
         if (searchBookDialogBuilder != null) {
             searchBookDialogBuilder.dispose();
         }
     }
 
+    /**
+     * 构建站点选择下拉框
+     * @return
+     */
     private @NotNull ComboBox<String> getStringComboBox() {
         ComboBox<String> comboBox = new ComboBox<>();
         for (BookSiteInfo bookName : siteList) {
@@ -387,7 +397,7 @@ public class OperateActionUtil {
     }
 
     /**
-     * 处理搜索目录结果
+     * 处理搜索小说结果
      *
      * @param result
      */
@@ -408,6 +418,7 @@ public class OperateActionUtil {
                 for (int i = 0, len = jsonArray.size(); i < len; i++) {
                     JsonObject asJsonObject = jsonArray.get(i).getAsJsonObject();
                     // 获取信息
+                    String bookId = asJsonObject.get(selectedBookSiteInfo.getBookIdField()).getAsString();
                     String articleName = asJsonObject.get(selectedBookSiteInfo.getBookNameField()).getAsString();
                     String author = asJsonObject.get(selectedBookSiteInfo.getBookAuthorField()).getAsString();
                     String intro = asJsonObject.get(selectedBookSiteInfo.getBookDescField()).getAsString();
@@ -416,6 +427,7 @@ public class OperateActionUtil {
 
                     // 设置bookInfo
                     BookInfo bookInfo = new BookInfo();
+                    bookInfo.setBookId(bookId);
                     bookInfo.setBookName(articleName);
                     bookInfo.setBookAuthor(author);
                     bookInfo.setBookDesc(intro);
@@ -436,10 +448,19 @@ public class OperateActionUtil {
                         int selectedIndex = searchBookList.getSelectedIndex();
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         cacheService.setSelectedBookInfo(selectBookInfo);
-                        String bookUrl = selectBookInfo.getBookUrl();
-                        if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
-                                !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
-                            bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                        // 小说目录链接
+                        String listMainUrl = selectedBookSiteInfo.getListMainUrl();
+                        // 请求链接
+                        String bookUrl = "";
+                        // 判断获取小说目录的方式：调用api接口或者html页面获取
+                        if (StringUtils.isNotBlank(listMainUrl) && !selectedBookSiteInfo.isHtml()) {
+                            bookUrl = listMainUrl.replace("{bookId}", selectBookInfo.getBookId());
+                        } else {
+                            bookUrl = selectBookInfo.getBookUrl();
+                            if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
+                                    !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME)) {
+                                bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                            }
                         }
 
                         // 搜索小说目录
@@ -452,6 +473,7 @@ public class OperateActionUtil {
 
                 // 使用滚动面板来添加滚动条
                 JBScrollPane jScrollPane = new JBScrollPane(searchBookList);
+                jScrollPane.setPreferredSize(new Dimension(350, 500));
                 MessageDialogUtil.showMessage(mProject, "搜索结果", jScrollPane);
             }
         }
@@ -475,82 +497,120 @@ public class OperateActionUtil {
         }
 
         // 获取目录列表元素
-        Element listMainElement = null;
         if (selectedBookSiteInfo.isHtml()) {
             String listMainElementType = selectedBookSiteInfo.getListMainElementType();
+            Element listMainElement = null;
             if (ConstUtil.ELEMENT_CLASS_STR.equals(listMainElementType)) {
                 listMainElement = document.getElementsByClass(selectedBookSiteInfo.getListMainElementName()).first();
             } else if (ConstUtil.ELEMENT_ID_STR.equals(listMainElementType)) {
                 listMainElement = document.getElementById(selectedBookSiteInfo.getListMainElementName());
             }
-        }
 
-        if (listMainElement != null) {
-            // 获取页面的地址
-            String location = document.location();
-            // 获取目录列表元素下所有的a标签元素
-            listMainElement.getElementsByTag("a").forEach(element -> {
-                // 提取链接和章节名称
-                String href = element.attr("href");
-                String text = element.text();
-                chapterList.add(text);
-                try {
-                    // 转化url路径，将相对路径转化成绝对路径
-                    href = UrlUtil.buildFullURL(location, href);
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-                chapterUrlList.add(href);
-            });
-            cacheService.setChapterList(chapterList);
-            cacheService.setChapterUrlList(chapterUrlList);
-
-            // 构建目录列表组件
-            JBList<String> chapterListJBList = new JBList<>(chapterList);
-            // 设置单选模式
-            chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            // 选择监听
-            chapterListJBList.addListSelectionListener(e -> {
-                if (!e.getValueIsAdjusting()) {
-                    // 停止定时器
-                    executorServiceShutdown();
-                    // 停止语音
-                    stopTTS();
-
-                    int selectedIndex = chapterListJBList.getSelectedIndex();
-                    currentChapterIndex = selectedIndex;
-                    String chapterTitle = chapterList.get(currentChapterIndex);
-                    String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
-                    String chapterUrl = chapterSuffixUrl;
-                    if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
-                        chapterUrl = baseUrl + chapterSuffixUrl;
-                    }
-                    currentChapterInfo.setChapterTitle(chapterTitle);
-                    currentChapterInfo.setChapterUrl(chapterUrl);
+            if (listMainElement != null) {
+                // 获取页面的地址
+                String location = document.location();
+                // 获取目录列表元素下所有的a标签元素
+                listMainElement.getElementsByTag("a").forEach(element -> {
+                    // 提取链接和章节名称
+                    String href = element.attr("href");
+                    String text = element.text();
+                    chapterList.add(text);
                     try {
-                        searchBookContentRemote(chapterUrl);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                        // 转化url路径，将相对路径转化成绝对路径
+                        href = UrlUtil.buildFullURL(location, href);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
                     }
-                    currentChapterInfo.setChapterContent(chapterContentHtml);
-                    currentChapterInfo.setChapterContentStr(chapterContentText);
-                    currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
-                    // 缓存当前章节信息
-                    cacheService.setSelectedChapterInfo(currentChapterInfo);
+                    chapterUrlList.add(href);
+                });
+            }
+        } else {
+            HttpGet httpGet = new HttpGet(url);
+            httpGet.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
+            try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpGet)) {
+                if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                    HttpEntity entity = httpResponse.getEntity();
+                    String result = EntityUtils.toString(entity);
+                    Gson gson = new Gson();
+                    JsonObject memuListJson = gson.fromJson(result, JsonObject.class);
 
-                    // 更新内容
-                    updateContentText();
+                    String listMainUrlDataKeys = selectedBookSiteInfo.getListMainUrlDataKeys();
+                    String[] dataKeys = listMainUrlDataKeys.split("\\.");
+                    JsonArray memuListJsonArray = new JsonArray();
+                    for (String key : dataKeys) {
+                        JsonElement memuListTempJsonElement = memuListJson.get(key);
+                        if (!memuListTempJsonElement.isJsonObject()) {
+                            memuListJson = memuListTempJsonElement.getAsJsonObject();
+                            break;
+                        } if (memuListTempJsonElement.isJsonArray()) {
+                            memuListJsonArray = memuListTempJsonElement.getAsJsonArray();
+                            break;
+                        }
+                    }
+
+                    for (JsonElement jsonElement : memuListJsonArray) {
+                        JsonObject jsonObject = jsonElement.getAsJsonObject();
+                        String title = jsonObject.get("title").getAsString();
+                        String itemId = jsonObject.get("itemId").getAsString();
+                        String chapterUrl = selectedBookSiteInfo.getChapterContentUrl().replace("{itemId}", itemId);
+                        chapterList.add(title);
+                        chapterUrlList.add(chapterUrl);
+                    }
                 }
-            });
-
-            JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
-            jScrollPane.setPreferredSize(new Dimension(400, 500));
-            MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
-
-            // 设置数据加载模式
-            settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
-            cacheService.setSettings(settings);
+            } catch (IOException e) {
+                Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+                throw new RuntimeException(e);
+            }
         }
+
+        cacheService.setChapterList(chapterList);
+        cacheService.setChapterUrlList(chapterUrlList);
+
+        // 构建目录列表组件
+        JBList<String> chapterListJBList = new JBList<>(chapterList);
+        // 设置单选模式
+        chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // 选择监听
+        chapterListJBList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                // 停止定时器
+                executorServiceShutdown();
+                // 停止语音
+                stopTTS();
+
+                int selectedIndex = chapterListJBList.getSelectedIndex();
+                currentChapterIndex = selectedIndex;
+                String chapterTitle = chapterList.get(currentChapterIndex);
+                String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
+                String chapterUrl = chapterSuffixUrl;
+                if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) && !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
+                    chapterUrl = baseUrl + chapterSuffixUrl;
+                }
+                currentChapterInfo.setChapterTitle(chapterTitle);
+                currentChapterInfo.setChapterUrl(chapterUrl);
+                try {
+                    searchBookContentRemote(chapterUrl);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                currentChapterInfo.setChapterContent(chapterContentHtml);
+                currentChapterInfo.setChapterContentStr(chapterContentText);
+                currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+                // 缓存当前章节信息
+                cacheService.setSelectedChapterInfo(currentChapterInfo);
+
+                // 更新内容
+                updateContentText();
+            }
+        });
+
+        JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
+        jScrollPane.setPreferredSize(new Dimension(400, 500));
+        MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
+
+        // 设置数据加载模式
+        settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
+        cacheService.setSettings(settings);
     }
 
     /**

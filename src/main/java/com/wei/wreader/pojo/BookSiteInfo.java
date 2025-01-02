@@ -46,6 +46,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String listMainUrl;
     /**
+     * 小说目录列表结果对应的键值路径
+     */
+    private String listMainUrlDataKeys;
+    /**
      * 小说目录列表的HTML标签元素名称
      */
     private String listMainElementName;
@@ -58,6 +62,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String chapterContentUrl;
     /**
+     * 小说章节内容获取方式是否为html页面方式
+     */
+    private Boolean isChapterContentHtml;
+    /**
      * 小说内容的HTML标签元素名称
      */
     private String chapterContentElementName;
@@ -65,6 +73,10 @@ public class BookSiteInfo implements Serializable {
      * 小说内容的HTML标签类型（class, id）
      */
     private String chapterContentElementType;
+    /**
+     * 小说id字段名称
+     */
+    private String bookIdField;
     /**
      * 小说名称字段名称
      */
@@ -158,6 +170,14 @@ public class BookSiteInfo implements Serializable {
         this.listMainUrl = listMainUrl;
     }
 
+    public String getListMainUrlDataKeys() {
+        return listMainUrlDataKeys;
+    }
+
+    public void setListMainUrlDataKeys(String listMainUrlDataKeys) {
+        this.listMainUrlDataKeys = listMainUrlDataKeys;
+    }
+
     public String getListMainElementName() {
         return listMainElementName;
     }
@@ -190,6 +210,14 @@ public class BookSiteInfo implements Serializable {
         this.chapterContentUrl = chapterContentUrl;
     }
 
+    public Boolean getIsChapterContentHtml() {
+        return isChapterContentHtml;
+    }
+
+    public void setIsChapterContentHtml(Boolean isChapterContentHtml) {
+        this.isChapterContentHtml = isChapterContentHtml;
+    }
+
     public String getChapterContentElementName() {
         return chapterContentElementName;
     }
@@ -204,6 +232,14 @@ public class BookSiteInfo implements Serializable {
 
     public void setChapterContentElementType(String chapterContentElementType) {
         this.chapterContentElementType = chapterContentElementType;
+    }
+
+    public String getBookIdField() {
+        return bookIdField;
+    }
+
+    public void setBookIdField(String bookIdField) {
+        this.bookIdField = bookIdField;
     }
 
     public String getBookNameField() {

@@ -8,11 +8,20 @@ import java.io.Serializable;
  */
 public class BookInfo implements Serializable {
     private static final long serialVersionUID = 8952225148502135L;
+    private String bookId;
     private String bookName;
     private String bookUrl;
     private String bookAuthor;
     private String bookDesc;
     private String bookImgUrl;
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
+    }
 
     public String getBookName() {
         return bookName;
