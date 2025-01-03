@@ -67,6 +67,7 @@ dependencies {
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.mozilla:rhino:1.7.14")
+    implementation("org.apache.pdfbox:fontbox:2.0.26")
 //    implementation("de.dfki.mary:voice-cmu-slt-hsmm:5.2.1")
 //    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
 //    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
