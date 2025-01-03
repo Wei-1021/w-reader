@@ -65,6 +65,8 @@ dependencies {
     implementation("io.documentnode:epub4j-core:4.2.1")
     implementation("com.googlecode.soundlibs:jlayer:1.0.1.4")
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
+    implementation("com.jayway.jsonpath:json-path:2.9.0")
+    implementation("org.mozilla:rhino:1.7.14")
 //    implementation("de.dfki.mary:voice-cmu-slt-hsmm:5.2.1")
 //    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
 //    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")

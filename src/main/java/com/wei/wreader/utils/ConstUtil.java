@@ -117,7 +117,8 @@ public class ConstUtil {
     public static final String WREADER_AUDIO_READING_ERROR = "音频播放异常！";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";
-    public static final String DEFAULT_FONT_FAMILY = "JetBrains Mono";
+    public static final String DEFAULT_FONT_FAMILY = "DNMrHsV173Pd4pgy, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+
     public static final int DEFAULT_FONT_SIZE = 14;
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
     public static final String ELEMENT_CLASS_STR = "class";

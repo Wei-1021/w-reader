@@ -30,6 +30,14 @@ public class BookSiteInfo implements Serializable {
      */
     private String searchBookNameParam;
     /**
+     * 获取小说列表的JSONPath规则
+     */
+    private String searchDataBookListRule;
+    /**
+     * 获取小说列表每一列中书本信息的JSONPath规则（因为有些会将书本信息写入跟深一层的结构中）
+     */
+    private String searchDataBookListInfoDataRule;
+    /**
      * 小说id域
      */
     private String bookDataId;
@@ -45,10 +53,19 @@ public class BookSiteInfo implements Serializable {
      * 小说目录列表URL
      */
     private String listMainUrl;
+
     /**
-     * 小说目录列表结果对应的键值路径
+     * 小说目录列表JSONPath规则
      */
-    private String listMainUrlDataKeys;
+    private String listMainUrlDataRule;
+    /**
+     * 小说目录列表项id字段名称
+     */
+    private String listMainItemIdField;
+    /**
+     * 小说目录列表项标题字段名称
+     */
+    private String listMainItemTitleField;
     /**
      * 小说目录列表的HTML标签元素名称
      */
@@ -62,9 +79,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String chapterContentUrl;
     /**
-     * 小说章节内容获取方式是否为html页面方式
+     * 小说内容JSONPath规则
      */
-    private Boolean isChapterContentHtml;
+    private String chapterContentUrlDataRule;
+    /**
     /**
      * 小说内容的HTML标签元素名称
      */
@@ -138,6 +156,22 @@ public class BookSiteInfo implements Serializable {
         this.searchBookNameParam = searchBookNameParam;
     }
 
+    public String getSearchDataBookListRule() {
+        return searchDataBookListRule;
+    }
+
+    public void setSearchDataBookListRule(String searchDataBookListRule) {
+        this.searchDataBookListRule = searchDataBookListRule;
+    }
+
+    public String getSearchDataBookListInfoDataRule() {
+        return searchDataBookListInfoDataRule;
+    }
+
+    public void setSearchDataBookListInfoDataRule(String searchDataBookListInfoDataRule) {
+        this.searchDataBookListInfoDataRule = searchDataBookListInfoDataRule;
+    }
+
     public String getSearchUrl() {
         return searchUrl;
     }
@@ -170,12 +204,20 @@ public class BookSiteInfo implements Serializable {
         this.listMainUrl = listMainUrl;
     }
 
-    public String getListMainUrlDataKeys() {
-        return listMainUrlDataKeys;
+    public String getListMainUrlDataRule() {
+        return listMainUrlDataRule;
     }
 
-    public void setListMainUrlDataKeys(String listMainUrlDataKeys) {
-        this.listMainUrlDataKeys = listMainUrlDataKeys;
+    public void setListMainUrlDataRule(String listMainUrlDataRule) {
+        this.listMainUrlDataRule = listMainUrlDataRule;
+    }
+
+    public String getChapterContentUrlDataRule() {
+        return chapterContentUrlDataRule;
+    }
+
+    public void setChapterContentUrlDataRule(String chapterContentUrlDataRule) {
+        this.chapterContentUrlDataRule = chapterContentUrlDataRule;
     }
 
     public String getListMainElementName() {
@@ -184,6 +226,22 @@ public class BookSiteInfo implements Serializable {
 
     public void setListMainElementName(String listMainElementName) {
         this.listMainElementName = listMainElementName;
+    }
+
+    public String getListMainItemIdField() {
+        return listMainItemIdField;
+    }
+
+    public void setListMainItemIdField(String listMainItemIdField) {
+        this.listMainItemIdField = listMainItemIdField;
+    }
+
+    public String getListMainItemTitleField() {
+        return listMainItemTitleField;
+    }
+
+    public void setListMainItemTitleField(String listMainItemTitleField) {
+        this.listMainItemTitleField = listMainItemTitleField;
     }
 
     public String getListMainElementType() {
@@ -208,14 +266,6 @@ public class BookSiteInfo implements Serializable {
 
     public void setChapterContentUrl(String chapterContentUrl) {
         this.chapterContentUrl = chapterContentUrl;
-    }
-
-    public Boolean getIsChapterContentHtml() {
-        return isChapterContentHtml;
-    }
-
-    public void setIsChapterContentHtml(Boolean isChapterContentHtml) {
-        this.isChapterContentHtml = isChapterContentHtml;
     }
 
     public String getChapterContentElementName() {
@@ -306,14 +356,22 @@ public class BookSiteInfo implements Serializable {
                 ", baseUrl='" + baseUrl + '\'' +
                 ", searchUrl='" + searchUrl + '\'' +
                 ", searchBookNameParam='" + searchBookNameParam + '\'' +
+                ", searchDataBookListRule='" + searchDataBookListRule + '\'' +
+                ", searchDataBookListInfoDataRule='" + searchDataBookListInfoDataRule + '\'' +
+                ", bookDataId='" + bookDataId + '\'' +
                 ", bookListElementName='" + bookListElementName + '\'' +
                 ", bookListElementType='" + bookListElementType + '\'' +
                 ", listMainUrl='" + listMainUrl + '\'' +
+                ", listMainUrlDataRule='" + listMainUrlDataRule + '\'' +
+                ", listMainItemIdField='" + listMainItemIdField + '\'' +
+                ", listMainItemTitleField='" + listMainItemTitleField + '\'' +
                 ", listMainElementName='" + listMainElementName + '\'' +
                 ", listMainElementType='" + listMainElementType + '\'' +
                 ", chapterContentUrl='" + chapterContentUrl + '\'' +
+                ", chapterContentUrlDataRule='" + chapterContentUrlDataRule + '\'' +
                 ", chapterContentElementName='" + chapterContentElementName + '\'' +
                 ", chapterContentElementType='" + chapterContentElementType + '\'' +
+                ", bookIdField='" + bookIdField + '\'' +
                 ", bookNameField='" + bookNameField + '\'' +
                 ", bookUrlField='" + bookUrlField + '\'' +
                 ", bookAuthorField='" + bookAuthorField + '\'' +

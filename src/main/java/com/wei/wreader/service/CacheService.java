@@ -46,6 +46,10 @@ public final class CacheService implements PersistentStateComponent<CacheService
      */
     private boolean isHideText;
     /**
+     * 选中的站点信息下标
+     */
+    private Integer selectedBookSiteIndex;
+    /**
      * 选中的站点信息
      */
     private BookSiteInfo selectedBookSiteInfo;
@@ -100,6 +104,14 @@ public final class CacheService implements PersistentStateComponent<CacheService
 
     public void setSelectedBookInfo(BookInfo bookInfo) {
         this.selectedBookInfo = bookInfo;
+    }
+
+    public Integer getSelectedBookSiteIndex() {
+        return selectedBookSiteIndex;
+    }
+
+    public void setSelectedBookSiteIndex(Integer selectedBookSiteIndex) {
+        this.selectedBookSiteIndex = selectedBookSiteIndex;
     }
 
     public BookSiteInfo getSelectedBookSiteInfo() {

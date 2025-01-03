@@ -78,11 +78,11 @@ public class ChangeFontColorAction extends BaseAction {
         int fontSize = cacheService.getFontSize();
         String fontColorHex = cacheService.getFontColorHex();
         String content = selectedChapterInfo.getChapterContent();
+
         // 设置内容
         String style = "font-family: '" + fontFamily + "'; " +
                 "font-size: " + fontSize + "px;" +
                 "color:" + fontColorHex + ";";
-        String text = "<div style=\"" + style + "\">" + content + "</div>";
-        return text;
+        return "<div style=\"" + style + "\">" + content + "</div>";
     }
 }

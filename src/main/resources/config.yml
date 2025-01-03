@@ -106,6 +106,8 @@ wreader:
   # baseUrl: 网站根路径
   # searchUrl: 搜索路径
   # searchBookNameParam: 搜索参数
+  # searchDataBookListRule: 获取小说列表的JSONPath规则
+  # searchDataBookListInfoDataRule: 获取小说列表每一列中书本信息的JSONPath规则
   # bookListElementName: 书本列表元素名
   # bookListElementType: 书本列表元素类型（class、id）
   # listMainUrl: 目录url
@@ -114,6 +116,7 @@ wreader:
   # chapterContentUrl: 章节url
   # chapterContentElementName: 章节内容元素名
   # chapterContentElementType: 章节内容元素类型（class、id）
+  # bookIdField: 书籍id字段名
   # bookNameField: 书籍名字段名
   # bookUrlField: 书籍url字段名
   # bookAuthorField: 书籍作者字段名
@@ -122,20 +125,57 @@ wreader:
   # isHtml: 是否为html文件
   # isPathParam: 是否为路径参数
   site_list:
+    - id: 'fanqienovel.com'
+      name: '番茄小说'
+      baseUrl: 'https://api5-normal-lf.fqnovel.com'
+      searchUrl: 'https://api5-normal-lf.fqnovel.com/reading/bookapi/search/page/v/?query={key}&aid=1967&channel=0&os_version=0&device_type=0&device_platform=0&iid=466614321180296&passback={(page-1)*10}&version_code=999'
+      searchBookNameParam: ''
+      searchDataBookListRule: '$.data[*]'
+      searchDataBookListInfoDataRule: '$.book_data[0]'
+      bookDataId: ''
+      bookListElementName: ''
+      bookListElementType: ''
+      listMainUrl: 'https://fanqienovel.com/api/reader/directory/detail?bookId={bookId}'
+      listMainUrlDataRule: '$..chapterListWithVolume[*].*'
+      listMainItemIdField: 'itemId'
+      listMainItemTitleField: 'title'
+      listMainElementName: ''
+      listMainElementType: ''
+      chapterContentUrl: 'https://fanqienovel.com/reader/{itemId}'
+      chapterContentUrlDataRule: ''
+      chapterContentElementName: 'muye-reader-content'
+      chapterContentElementType: 'class'
+      bookIdField: 'book_id'
+      bookNameField: 'book_name'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'author'
+      bookDescField: 'abstract'
+      bookImgUrlField: 'thumb_url'
+      isHtml: false
+      isPathParam: true
     - id: 'xbiqugu.net'
       name: '笔趣阁-书香小说'
       baseUrl: 'http://www.xbiqugu.net'
       searchUrl: 'http://www.xbiqugu.net/modules/article/waps.php?searchkey={key}'
       searchBookNameParam: 'searchkey'
+      searchDataBookListRule: ''
+      searchDataBookListInfoDataRule: ''
       bookDataId: ''
       bookListElementName: 'grid'
       bookListElementType: 'class'
       listMainUrl: ''
+      listMainUrlDataRule: ''
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainIdField: ''
+      listMainTitleField: ''
       listMainElementName: 'list'
       listMainElementType: 'id'
       chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
       chapterContentElementName: 'content'
       chapterContentElementType: 'id'
+      bookIdField: 'book_id'
       bookNameField: 'even'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'bookAuthor'
@@ -148,15 +188,24 @@ wreader:
       baseUrl: 'http://www.xbiquzw.com'
       searchUrl: 'http://www.xbiquzw.com/modules/article/search.php?searchkey={key}'
       searchBookNameParam: 'searchkey'
+      searchDataBookListRule: ''
+      searchDataBookListInfoDataRule: ''
       bookDataId: ''
       bookListElementName: 'grid'
       bookListElementType: 'class'
       listMainUrl: ''
+      listMainUrlDataRule: ''
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainIdField: ''
+      listMainTitleField: ''
       listMainElementName: 'list'
       listMainElementType: 'id'
       chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
       chapterContentElementName: 'content'
       chapterContentElementType: 'id'
+      bookIdField: 'book_id'
       bookNameField: 'odd'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'bookAuthor'
@@ -169,44 +218,29 @@ wreader:
       baseUrl: 'https://www.3bqg.cc'
       searchUrl: 'https://www.3bqg.cc/user/search.html?q={key}'
       searchBookNameParam: 'q'
+      searchDataBookListRule: ''
+      searchDataBookListInfoDataRule: ''
       bookDataId: ''
       bookListElementName: ''
       bookListElementType: ''
       listMainUrl: ''
+      listMainUrlDataRule: ''
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainIdField: ''
+      listMainTitleField: ''
       listMainElementName: 'listmain'
       listMainElementType: 'class'
       chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
       chapterContentElementName: 'chaptercontent'
       chapterContentElementType: 'id'
+      bookIdField: 'book_id'
       bookNameField: 'articlename'
       bookUrlField: 'url_list'
       bookAuthorField: 'author'
       bookDescField: 'intro'
       bookImgUrlField: 'url_img'
-      isHtml: false
-      isPathParam: true
-    - id: 'https://fanqienovel.com/'
-      name: '番茄小说'
-      baseUrl: 'https://api5-normal-lf.fqnovel.com'
-      searchUrl: 'https://api5-normal-lf.fqnovel.com/reading/bookapi/search/page/v/?query={key}&aid=1967&channel=0&os_version=0&device_type=0&device_platform=0&iid=466614321180296&passback={{(page-1)*10}}&version_code=999'
-      searchBookNameParam: ''
-      bookDataId: ''
-      bookListElementName: ''
-      bookListElementType: ''
-      listMainUrl: 'https://fanqienovel.com/api/reader/directory/detail?bookId={bookId}'
-      listMainUrlDataKeys: 'data.chapterListWithVolume'
-      listMainElementName: ''
-      listMainElementType: ''
-      chapterContentUrl: 'https://fanqienovel.com/reader/{itemId}'
-      isChapterContentHtml: false
-      chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
-      bookNameField: 'book_name'
-      bookUrlField: 'bookUrl'
-      bookAuthorField: 'author'
-      bookDescField: 'abstract'
-      bookImgUrlField: 'thumb_url'
       isHtml: false
       isPathParam: true
 #    - id: 'm.qidian.com'
@@ -230,6 +264,5 @@ wreader:
 #      bookImgUrlField: 'url_img'
 #      isHtml: true
 #      isPathParam: true
-
 
 

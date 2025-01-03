@@ -1,12 +1,14 @@
 package com.wei.wreader.utils;
 
+import com.jayway.jsonpath.JsonPath;
+
 import java.util.List;
 
 public class StringUtil {
     /**
      * 将字符串按照指定的最大字符数分割成多个子字符串
      *
-     * @param str     原始字符串
+     * @param str      原始字符串
      * @param maxChars 单行最大字符数
      * @return 分割后的字符串数组
      */
@@ -17,7 +19,7 @@ public class StringUtil {
     /**
      * 将字符串按照指定的最大字符数分割成多个子字符串
      *
-     * @param str     原始字符串
+     * @param str      原始字符串
      * @param maxChars 单行最大字符数
      * @return 分割后的字符串数组
      */
@@ -44,13 +46,14 @@ public class StringUtil {
     }
 
     public static void main(String[] args) {
-        String longString = "这里是一段非常长的中文字符串，用于测试分割功能，确保它能够按照指定的最大字符数正确地被分割成多个子字符串。";
-        int maxCharsPerLine = 10; // 设定每行最大字符数为10
+        String jsonString = "{\"code\":0,\"message\":\"SUCCESS\"," +
+                "\"data\":[" +
+                    "{\"book_id\": \"123456\",  \"book_data\": [{\"book_name\": \"bk001\"}]}, " +
+                    "{\"book_id\": \"123457\",  \"book_data\": [{\"book_name\": \"bk002\"}]}" +
+                "]}";
 
-        String[] parts = splitStringByMaxChars(longString, maxCharsPerLine);
-
-        for (String part : parts) {
-            System.out.println(part);
-        }
+        // 获取所有 data 项
+        Object read = JsonPath.read(jsonString, "$.data[0].book_data[0]");
+        System.out.println(read);
     }
 }
