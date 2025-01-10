@@ -174,6 +174,10 @@ public class WReaderToolWindow  {
      */
     private BookSiteInfo selectedBookSiteInfo;
     /**
+     * 选中的站点索引(默认第一个)
+     */
+    private int selectedBookSiteIndex;
+    /**
      * 当前小说信息
      */
     private BookInfo selectBookInfo = new BookInfo();
@@ -266,10 +270,17 @@ public class WReaderToolWindow  {
             siteList = configYaml.getSiteList();
 
             // 加载持久化数据--站点信息
-            selectedBookSiteInfo = cacheService.getSelectedBookSiteInfo();
+            Integer selectedBookSiteIndexTemp = cacheService.getSelectedBookSiteIndex();
+            if (selectedBookSiteIndexTemp == null) {
+                selectedBookSiteIndex = 0;
+                cacheService.setSelectedBookSiteIndex(0);
+            } else {
+                selectedBookSiteIndex = selectedBookSiteIndexTemp;
+            }
+            selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
             if (selectedBookSiteInfo == null) {
                 // 选中的站点信息
-                selectedBookSiteInfo = siteList.get(0);
+                selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
                 cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
             }
             // 加载持久化数据--小说信息
@@ -286,20 +297,17 @@ public class WReaderToolWindow  {
 
             // 选择的站点基础网址
             baseUrl = selectedBookSiteInfo.getBaseUrl();
-            setContentText("<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>");
-            if (chapterList != null && !chapterList.isEmpty()) {
-                currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
-                chapterContentHtml = currentChapterInfo.getChapterContent();
-                chapterContentText = currentChapterInfo.getChapterContentStr();
-                String style = String.format("font-family:%s;font-size:%dpx;color:%s;",
-                        fontFamily, fontSize, fontColorHex);
-                chapterContentHtml = String.format("<div style='%s'>%s</div>", style, currentChapterInfo.getChapterContent());
-                setContentText(chapterContentHtml);
-            }
 
+            // 获取当前章节信息
+            currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
+            chapterContentHtml = currentChapterInfo.getChapterContent();
+            chapterContentText = currentChapterInfo.getChapterContentStr();
             if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
                 chapterContentHtml = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
+            } else {
+                operateAction.updateContentText();
             }
+
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
             throw new RuntimeException(e);

@@ -27,14 +27,15 @@ public class NextChapterAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
+        OperateActionUtil operateActionUtil = OperateActionUtil.getInstance(project);
         // 停止定时器
-        OperateActionUtil.getInstance(project).executorServiceShutdown();
+        operateActionUtil.executorServiceShutdown();
         // 停止语音
-        OperateActionUtil.getInstance(project).stopTTS();
+        operateActionUtil.stopTTS();
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                ChapterInfo nextPageChapter = OperateActionUtil.getInstance(project).nextPageChapter();
+                ChapterInfo nextPageChapter = operateActionUtil.nextPageChapter();
 
                 if (nextPageChapter == null) {
                     return;
@@ -46,30 +47,7 @@ public class NextChapterAction extends BaseAction {
                 selectedChapterInfoTemp.setNextReadLineNum(1);
                 selectedChapterInfoTemp.setChapterContentList(null);
 
-                ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-                ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
-                if (toolWindow != null) {
-                    ContentManager contentManager = toolWindow.getContentManager();
-                    Content rootContent = contentManager.getContent(0);
-                    if (rootContent != null) {
-                        // 获取内容面板JTextPane
-                        JTextPane contentTextPanel = OperateActionUtil.ToolWindowUtils.getContentTextPanel(rootContent);
-                        if (contentTextPanel != null) {
-                            String fontColorHex = cacheService.getFontColorHex();
-                            String fontFamily = cacheService.getFontFamily();
-                            int fontSize = cacheService.getFontSize();
-                            String chapterContent = nextPageChapter.getChapterContent();
-                            // 设置内容
-                            String style = "color:" + fontColorHex + ";" +
-                                    "font-family: '" + fontFamily + "';" +
-                                    "font-size: " + fontSize + "px;";
-                            chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
-                            contentTextPanel.setText(chapterContent);
-                            // 设置光标位置
-                            contentTextPanel.setCaretPosition(0);
-                        }
-                    }
-                }
+                operateActionUtil.updateContentText();
                 break;
             case Settings.DISPLAY_TYPE_STATUSBAR:
                 WReaderStatusBarWidget.nextChapter(project);

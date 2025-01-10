@@ -34,10 +34,6 @@ public class BookSiteInfo implements Serializable {
      */
     private String searchDataBookListRule;
     /**
-     * 获取小说列表每一列中书本信息的JSONPath规则（因为有些会将书本信息写入跟深一层的结构中）
-     */
-    private String searchDataBookListInfoDataRule;
-    /**
      * 小说id域
      */
     private String bookDataId;
@@ -82,6 +78,19 @@ public class BookSiteInfo implements Serializable {
      * 小说内容JSONPath规则
      */
     private String chapterContentUrlDataRule;
+    /**
+     * 章节内容处理规则
+     */
+    private String chapterContentHandleRule;
+    /**
+     * 是否使用原网页的css样式
+     */
+    private Boolean isContentOriginalStyle;
+    /**
+    /**
+     * 原网页的css样式字符替换正则
+     */
+    private String replaceContentOriginalRegex;
     /**
     /**
      * 小说内容的HTML标签元素名称
@@ -164,14 +173,6 @@ public class BookSiteInfo implements Serializable {
         this.searchDataBookListRule = searchDataBookListRule;
     }
 
-    public String getSearchDataBookListInfoDataRule() {
-        return searchDataBookListInfoDataRule;
-    }
-
-    public void setSearchDataBookListInfoDataRule(String searchDataBookListInfoDataRule) {
-        this.searchDataBookListInfoDataRule = searchDataBookListInfoDataRule;
-    }
-
     public String getSearchUrl() {
         return searchUrl;
     }
@@ -218,6 +219,38 @@ public class BookSiteInfo implements Serializable {
 
     public void setChapterContentUrlDataRule(String chapterContentUrlDataRule) {
         this.chapterContentUrlDataRule = chapterContentUrlDataRule;
+    }
+
+    public String getChapterContentHandleRule() {
+        return chapterContentHandleRule;
+    }
+
+    public void setChapterContentHandleRule(String chapterContentHandleRule) {
+        this.chapterContentHandleRule = chapterContentHandleRule;
+    }
+
+    public Boolean getContentOriginalStyle() {
+        return isContentOriginalStyle;
+    }
+
+    /**
+     * 是否使用原网页的css样式
+     * @return
+     */
+    public Boolean isContentOriginalStyle() {
+        return isContentOriginalStyle;
+    }
+
+    public void setContentOriginalStyle(Boolean contentOriginalStyle) {
+        isContentOriginalStyle = contentOriginalStyle;
+    }
+
+    public String getReplaceContentOriginalRegex() {
+        return replaceContentOriginalRegex;
+    }
+
+    public void setReplaceContentOriginalRegex(String replaceContentOriginalRegex) {
+        this.replaceContentOriginalRegex = replaceContentOriginalRegex;
     }
 
     public String getListMainElementName() {
@@ -357,7 +390,6 @@ public class BookSiteInfo implements Serializable {
                 ", searchUrl='" + searchUrl + '\'' +
                 ", searchBookNameParam='" + searchBookNameParam + '\'' +
                 ", searchDataBookListRule='" + searchDataBookListRule + '\'' +
-                ", searchDataBookListInfoDataRule='" + searchDataBookListInfoDataRule + '\'' +
                 ", bookDataId='" + bookDataId + '\'' +
                 ", bookListElementName='" + bookListElementName + '\'' +
                 ", bookListElementType='" + bookListElementType + '\'' +
@@ -369,6 +401,9 @@ public class BookSiteInfo implements Serializable {
                 ", listMainElementType='" + listMainElementType + '\'' +
                 ", chapterContentUrl='" + chapterContentUrl + '\'' +
                 ", chapterContentUrlDataRule='" + chapterContentUrlDataRule + '\'' +
+                ", chapterContentHandleRule='" + chapterContentHandleRule + '\'' +
+                ", isContentOriginalStyle=" + isContentOriginalStyle +
+                ", replaceContentOriginalRegex='" + replaceContentOriginalRegex + '\'' +
                 ", chapterContentElementName='" + chapterContentElementName + '\'' +
                 ", chapterContentElementType='" + chapterContentElementType + '\'' +
                 ", bookIdField='" + bookIdField + '\'' +

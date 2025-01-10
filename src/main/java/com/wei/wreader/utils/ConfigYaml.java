@@ -202,7 +202,6 @@ public class ConfigYaml {
             bookSiteInfo.setSearchUrl(objMap.get("searchUrl").toString());
             bookSiteInfo.setSearchBookNameParam(objMap.get("searchBookNameParam").toString());
             bookSiteInfo.setSearchDataBookListRule(objMap.get("searchDataBookListRule").toString());
-            bookSiteInfo.setSearchDataBookListInfoDataRule(objMap.get("searchDataBookListInfoDataRule").toString());
             bookSiteInfo.setBookDataId(objMap.get("bookDataId").toString());
             bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
             bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
@@ -214,6 +213,9 @@ public class ConfigYaml {
             bookSiteInfo.setListMainElementType(objMap.get("listMainElementType").toString());
             bookSiteInfo.setChapterContentUrl(objMap.get("chapterContentUrl").toString());
             bookSiteInfo.setChapterContentUrlDataRule(objMap.get("chapterContentUrlDataRule").toString());
+            bookSiteInfo.setChapterContentHandleRule(objMap.get("chapterContentHandleRule").toString());
+            bookSiteInfo.setContentOriginalStyle(Boolean.parseBoolean(objMap.get("isContentOriginalStyle").toString()));
+            bookSiteInfo.setReplaceContentOriginalRegex(objMap.get("replaceContentOriginalRegex").toString());
             bookSiteInfo.setChapterContentElementName(objMap.get("chapterContentElementName").toString());
             bookSiteInfo.setChapterContentElementType(objMap.get("chapterContentElementType").toString());
             bookSiteInfo.setBookIdField(objMap.get("bookIdField").toString());

@@ -55,5 +55,17 @@ public class StringUtil {
         // 获取所有 data 项
         Object read = JsonPath.read(jsonString, "$.data[0].book_data[0]");
         System.out.println(read);
+
+        String ss = "<java>1111</java>2222{123: 521}";
+        // 提取<java>和</java>之间的内容
+        String extractedContent1 = ss.substring(ss.indexOf("<java>") + "<java>".length(), ss.indexOf("</java>"));
+        System.out.println(extractedContent1);
+        // 提取</java>之后的内容
+        String extractedContent2 = ss.substring(ss.indexOf("</java>") + "</java>".length());
+        System.out.println(extractedContent2);
+
+        // 提取{和}之间的内容
+        String extractedContent3 = ss.substring(ss.indexOf("{") + 1, ss.indexOf("}"));
+        System.out.println(extractedContent3);
     }
 }

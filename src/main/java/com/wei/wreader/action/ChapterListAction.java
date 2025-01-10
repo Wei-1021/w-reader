@@ -42,10 +42,11 @@ public class ChapterListAction extends BaseAction {
             public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo) {
                 super.onClickItem(position, chapterList, chapterInfo);
 
+                OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
                 // 停止定时器
-                OperateActionUtil.getInstance(project).executorServiceShutdown();
+                operateAction.executorServiceShutdown();
                 // 停止语音
-                OperateActionUtil.getInstance(project).stopTTS();
+                operateAction.stopTTS();
 
                 switch (settings.getDisplayType()) {
                     case Settings.DISPLAY_TYPE_SIDEBAR:
@@ -55,31 +56,8 @@ public class ChapterListAction extends BaseAction {
                         selectedChapterInfoTemp.setNextReadLineNum(1);
                         selectedChapterInfoTemp.setChapterContentList(null);
 
-                        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-                        ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
-                        if (toolWindow != null) {
-                            ContentManager contentManager = toolWindow.getContentManager();
-                            Content rootContent = contentManager.getContent(0);
-                            if (rootContent != null) {
-                                // 获取内容面板JTextPane
-                                JTextPane contentTextPanel = OperateActionUtil.ToolWindowUtils.getContentTextPanel(rootContent);
-                                if (contentTextPanel != null) {
-                                    // 设置内容
-                                    String fontColorHex = cacheService.getFontColorHex();
-                                    String fontFamily = cacheService.getFontFamily();
-                                    int fontSize = cacheService.getFontSize();
-                                    String chapterContent = chapterInfo.getChapterContent();
-                                    // 设置内容
-                                    String style = "color:" + fontColorHex + ";" +
-                                            "font-family: '" + fontFamily + "';" +
-                                            "font-size: " + fontSize + "px;";
-                                    chapterContent = "<div style=\"" + style + "\">" + chapterContent + "</div>";
-                                    contentTextPanel.setText(chapterContent);
-                                    // 设置光标位置
-                                    contentTextPanel.setCaretPosition(0);
-                                }
-                            }
-                        }
+                        operateAction.updateContentText();
+
                     case Settings.DISPLAY_TYPE_STATUSBAR:
                         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
                         selectedChapterInfo.setLastReadLineNum(1);

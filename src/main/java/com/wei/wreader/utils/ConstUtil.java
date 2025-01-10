@@ -96,6 +96,7 @@ public class ConstUtil {
 
     public static final String HTTP_SCHEME = "http://";
     public static final String HTTPS_SCHEME = "https://";
+    public static final String HTTP_CONFIG_URL = "url=";
     public static final String WREADER_SEARCH_BOOK_TITLE = "搜索小说";
     public static final String WREADER_SEARCH_BOOK_TIP_TEXT = "请输入书名进行搜索";
     public static final String WREADER_LOAD_SUCCESS = "加载成功";
@@ -103,6 +104,7 @@ public class ConstUtil {
     public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
+    public static final String WREADER_LOAD_CONTENT_ERROR = "加载书本内容，请重试！";
     public static final String WREADER_ERROR = "出现异常，请重试！";
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
@@ -123,6 +125,8 @@ public class ConstUtil {
     public static final String DEFAULT_FONT_COLOR_HEX = "#FFFFFF";
     public static final String ELEMENT_CLASS_STR = "class";
     public static final String ELEMENT_ID_STR = "id";
+    public static final String NEW_FONT_CLASS_CSS_NAME = ".font-wreader";
+    public static final String NEW_FONT_CLASS_NAME = "font-wreader";
     /**
      * 正则表达式--文本文件内容小说目录匹配
      */
