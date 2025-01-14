@@ -196,6 +196,7 @@ public class ConfigYaml {
         List<BookSiteInfo> siteList = new ArrayList<>();
         siteListList.forEach(objMap -> {
             BookSiteInfo bookSiteInfo = new BookSiteInfo();
+            bookSiteInfo.setEnabled(Boolean.parseBoolean(objMap.get("isEnabled").toString()));
             bookSiteInfo.setId(objMap.get("id").toString());
             bookSiteInfo.setName(objMap.get("name").toString());
             bookSiteInfo.setBaseUrl(objMap.get("baseUrl").toString());
@@ -227,6 +228,55 @@ public class ConfigYaml {
             bookSiteInfo.setHtml(Boolean.parseBoolean(objMap.get("isHtml").toString()));
             bookSiteInfo.setPathParam(Boolean.parseBoolean(objMap.get("isPathParam").toString()));
             siteList.add(bookSiteInfo);
+        });
+        return siteList;
+    }
+
+    /**
+     * 获取所有启用的站点
+     * @return
+     */
+    public List<BookSiteInfo> getEnableSiteList() {
+        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object> >) getObject("wreader.site_list");
+
+        List<BookSiteInfo> siteList = new ArrayList<>();
+        siteListList.forEach(objMap -> {
+            boolean isEnabled = Boolean.parseBoolean(objMap.get("isEnabled").toString());
+            if (isEnabled) {
+                BookSiteInfo bookSiteInfo = new BookSiteInfo();
+                bookSiteInfo.setEnabled(isEnabled);
+                bookSiteInfo.setId(objMap.get("id").toString());
+                bookSiteInfo.setName(objMap.get("name").toString());
+                bookSiteInfo.setBaseUrl(objMap.get("baseUrl").toString());
+                bookSiteInfo.setSearchUrl(objMap.get("searchUrl").toString());
+                bookSiteInfo.setSearchBookNameParam(objMap.get("searchBookNameParam").toString());
+                bookSiteInfo.setSearchDataBookListRule(objMap.get("searchDataBookListRule").toString());
+                bookSiteInfo.setBookDataId(objMap.get("bookDataId").toString());
+                bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
+                bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
+                bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
+                bookSiteInfo.setListMainUrlDataRule(objMap.get("listMainUrlDataRule").toString());
+                bookSiteInfo.setListMainItemIdField(objMap.get("listMainItemIdField").toString());
+                bookSiteInfo.setListMainItemTitleField(objMap.get("listMainItemTitleField").toString());
+                bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
+                bookSiteInfo.setListMainElementType(objMap.get("listMainElementType").toString());
+                bookSiteInfo.setChapterContentUrl(objMap.get("chapterContentUrl").toString());
+                bookSiteInfo.setChapterContentUrlDataRule(objMap.get("chapterContentUrlDataRule").toString());
+                bookSiteInfo.setChapterContentHandleRule(objMap.get("chapterContentHandleRule").toString());
+                bookSiteInfo.setContentOriginalStyle(Boolean.parseBoolean(objMap.get("isContentOriginalStyle").toString()));
+                bookSiteInfo.setReplaceContentOriginalRegex(objMap.get("replaceContentOriginalRegex").toString());
+                bookSiteInfo.setChapterContentElementName(objMap.get("chapterContentElementName").toString());
+                bookSiteInfo.setChapterContentElementType(objMap.get("chapterContentElementType").toString());
+                bookSiteInfo.setBookIdField(objMap.get("bookIdField").toString());
+                bookSiteInfo.setBookNameField(objMap.get("bookNameField").toString());
+                bookSiteInfo.setBookUrlField(objMap.get("bookUrlField").toString());
+                bookSiteInfo.setBookAuthorField(objMap.get("bookAuthorField").toString());
+                bookSiteInfo.setBookDescField(objMap.get("bookDescField").toString());
+                bookSiteInfo.setBookImgUrlField(objMap.get("bookImgUrlField").toString());
+                bookSiteInfo.setHtml(Boolean.parseBoolean(objMap.get("isHtml").toString()));
+                bookSiteInfo.setPathParam(Boolean.parseBoolean(objMap.get("isPathParam").toString()));
+                siteList.add(bookSiteInfo);
+            }
         });
         return siteList;
     }

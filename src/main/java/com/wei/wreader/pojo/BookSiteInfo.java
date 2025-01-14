@@ -10,6 +10,10 @@ import java.io.Serializable;
 public class BookSiteInfo implements Serializable {
     private static final long serialVersionUID = -95175826485100254L;
     /**
+     * 是否启用
+     */
+    private Boolean isEnabled;
+    /**
      * 站点ID
      */
     private String id;
@@ -132,6 +136,14 @@ public class BookSiteInfo implements Serializable {
      * 是否路径参数
      */
     private boolean isPathParam;
+
+    public Boolean getEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        isEnabled = enabled;
+    }
 
     public String getId() {
         return id;

@@ -206,7 +206,7 @@ public class OperateActionUtil {
             }
 
             // 站点列表信息
-            siteList = configYaml.getSiteList();
+            siteList = configYaml.getEnableSiteList();
 
             // 加载持久化数据--站点信息
             Integer selectedBookSiteIndexTemp = cacheService.getSelectedBookSiteIndex();
