@@ -140,6 +140,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: ''
       listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '#list'
@@ -171,6 +172,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: ''
       listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '#list'
@@ -202,6 +204,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: ''
       listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '.listmain'
@@ -233,6 +236,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: 'https://fanqienovel.com/api/reader/directory/detail?bookId={bookId}'
       listMainUrlDataRule: '$..chapterListWithVolume[*].*'
+      isSavelistMainUrlData: false
       listMainItemIdField: 'itemId'
       listMainItemTitleField: 'title'
       listMainElementName: ''
@@ -264,6 +268,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: 'http://appi.kuwo.cn/novels/api/book/${bookId}/chapters?paging=0'
       listMainUrlDataRule: '$.data[*]'
+      isSavelistMainUrlData: false
       listMainItemIdField: 'chapter_id'
       listMainItemTitleField: 'chapter_title'
       listMainElementName: ''
@@ -295,6 +300,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: 'http://www.lianjianxsw.com/getCataLogs?bookid=${bookId}&page=1&limit=99999'
       listMainUrlDataRule: '$.data.list[*]'
+      isSavelistMainUrlData: false
       listMainItemIdField: '_id'
       listMainItemTitleField: 'name'
       listMainElementName: ''
@@ -326,6 +332,7 @@ wreader:
       bookListElementType: ''
       listMainUrl: 'https://novelapi-hw.tttxtt.com/h5/book-catalog-id-${bookId}'
       listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '.page'
@@ -344,6 +351,70 @@ wreader:
       bookDescField: 'description'
       bookImgUrlField: 'icon'
       isHtml: false
+      isPathParam: true
+    - isEnabled: true
+      id: 'www.shuqi.com'
+      name: '书旗小说(不推荐)'
+      baseUrl: 'https://www.shuqi.com'
+      searchUrl: 'https://read.xiaoshuo1-sm.com/novel/i.php?q=${key}&page=1&size=100&do=is_search&isNewBind=0&tk=&imei=&sn=&channelId=&clientPatch=&clientVersion=&device=&deviceId=&utdid=&model=&osName=&osVersion=&umidToken=&appVersion=&app=&platform=3&ykToken=&ykuid=&shuqi_h5=&token=&user_id=8000000&uid=8000000&filterMigu=1&ver=&p=3'
+      searchBookNameParam: ''
+      searchDataBookListRule: '$.data[*]'
+      bookDataId: ''
+      bookListElementName: ''
+      bookListElementType: ''
+      listMainUrl: '<java><package_import>import java.util.*;import com.wei.wreader.utils.*;</package_import><code>public String execute(String bookId){String encryptKey = "37e81a9d8f02596e1b895d07c171d5c9";String user_id="8000000";long timestamp=System.currentTimeMillis()/1000;String param=bookId+timestamp+user_id+encryptKey;String md5 = EncryptUtils.md5(param);String url = "https://ocean.shuqireader.com/api/bcspub/qswebapi/book/chapterlist?_=&bookId=" + bookId + "&user_id=8000000&sign=" + md5 + "&timestamp=" + timestamp;return url;} </code></java>'
+      listMainUrlDataRule: '$.data.chapterList[*].volumeList[*]'
+      isSavelistMainUrlData: true
+      listMainItemIdField: 'chapterId'
+      listMainItemTitleField: 'chapterName'
+      listMainElementName: ''
+      listMainElementType: ''
+      chapterContentUrl: '<java><package_import>import java.util.*;import com.wei.wreader.utils.*;import com.jayway.jsonpath.*;</package_import><code>public String execute(Map<String,Object>paramMap,Integer index,String bookId,String itemId){String dataJsonStr=(String)paramMap.get("dataJsonStr");String memuListJsonStr=(String)paramMap.get("memuListJsonStr");String contUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].contUrlSuffix");if(!contUrlSuffix.contains("reqEncryptParam")){String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.freeContUrlPrefix");return freeContUrlPrefix+contUrlSuffix;}else{String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.shortContUrlPrefix");String shortContUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].shortContUrlSuffix");return shortContUrlPrefix+shortContUrlSuffix;}}</code></java>'
+      chapterContentUrlDataRule: '$.ChapterContent'
+      chapterContentHandleRule: '<java>com.wei.wreader.utils.StringUtil.base64Decode(${content}, true)</java>'
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: ''
+      chapterContentElementType: ''
+      bookIdField: 'bid'
+      bookNameField: 'title'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'author'
+      bookDescField: 'desc'
+      bookImgUrlField: 'cover'
+      isHtml: false
+      isPathParam: true
+    - isEnabled: true
+      id: 'www.wtzw.com'
+      name: '梧桐文学(不推荐)'
+      baseUrl: 'https://www.wtzw.com'
+      searchUrl: 'https://www.wtzw.com/search-${key}.html?p=${page}'
+      searchBookNameParam: ''
+      searchDataBookListRule: ''
+      bookDataId: ''
+      bookListElementName: '.searchList ul .w_txt a'
+      bookListElementType: ''
+      listMainUrl: ''
+      listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainElementName: '.w_mod ul li a'
+      listMainElementType: ''
+      chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
+      chapterContentHandleRule: ''
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: '#read_page'
+      chapterContentElementType: ''
+      bookIdField: 'bookId'
+      bookNameField: 'bookName'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'bookAuthor'
+      bookDescField: 'bookDesc'
+      bookImgUrlField: 'bookImgUrl'
+      isHtml: true
       isPathParam: true
 #    - id: 'm.qidian.com'
 #      name: '起点'
@@ -366,5 +437,4 @@ wreader:
 #      bookImgUrlField: 'url_img'
 #      isHtml: true
 #      isPathParam: true
-
 

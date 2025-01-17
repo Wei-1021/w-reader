@@ -284,17 +284,31 @@ public class OperateActionUtil {
                 return;
             }
 
-            // 使用模板引擎匹配参数
-            searchUrl = StringTemplateEngine.render(searchUrl, new HashMap<>() {{
-                put("key", bookName);
-                put("page", 1);
-            }});
+            if (searchUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) && searchUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+                try {
+                    searchBookUrl = (String) DynamicCodeExecutor.executeMethod(
+                            searchUrl,
+                            "execute",
+                            new Class<?>[]{String.class, String.class},
+                            new Object[]{bookName, "1"}
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
+                }
+            } else {
+                // 使用模板引擎匹配参数
+                searchUrl = StringTemplateEngine.render(searchUrl, new HashMap<>() {{
+                    put("key", bookName);
+                    put("page", 1);
+                }});
 
-            searchBookUrl = searchUrl;
-            if (!searchUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
-                    !searchUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
-                    !searchUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                searchBookUrl = baseUrl + searchUrl;
+                searchBookUrl = searchUrl;
+                if (!searchUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
+                        !searchUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
+                        !searchUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
+                    searchBookUrl = baseUrl + searchUrl;
+                }
             }
         } else {
             searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
@@ -469,17 +483,32 @@ public class OperateActionUtil {
                         String listMainUrl = selectedBookSiteInfo.getListMainUrl();
                         // 请求链接
                         String bookUrl = "";
-                        // 判断获取小说目录的方式：调用api接口或者html页面获取
-                        if (StringUtils.isNotBlank(listMainUrl) && !selectedBookSiteInfo.isHtml()) {
-                            bookUrl = StringTemplateEngine.render(listMainUrl, new HashMap<>() {{
-                                put("bookId", selectBookInfo.getBookId());
-                            }});
+
+                        // 判断是否是动态代码配置
+                        if (listMainUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                                listMainUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+                            try {
+                                bookUrl = (String) DynamicCodeExecutor.executeMethod(listMainUrl,
+                                        "execute",
+                                        new Class[]{String.class},
+                                        new Object[]{selectBookInfo.getBookId()});
+                            } catch (Exception e1) {
+                                e1.printStackTrace();
+                                Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
+                            }
                         } else {
-                            bookUrl = selectBookInfo.getBookUrl();
-                            if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
-                                    !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME) &&
-                                    !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                                bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                            // 判断获取小说目录的方式：调用api接口或者html页面获取
+                            if (StringUtils.isNotBlank(listMainUrl) && !selectedBookSiteInfo.isHtml()) {
+                                bookUrl = StringTemplateEngine.render(listMainUrl, new HashMap<>() {{
+                                    put("bookId", selectBookInfo.getBookId());
+                                }});
+                            } else {
+                                bookUrl = selectBookInfo.getBookUrl();
+                                if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
+                                        !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME) &&
+                                        !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_CONFIG_URL)) {
+                                    bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                                }
                             }
                         }
 
@@ -517,25 +546,45 @@ public class OperateActionUtil {
                 if (httpResponse.getStatusLine().getStatusCode() == 200) {
                     HttpEntity entity = httpResponse.getEntity();
                     String result = EntityUtils.toString(entity);
-                    Gson gson = new Gson();
-                    JsonObject memuListJson = gson.fromJson(result, JsonObject.class);
+                    if (selectedBookSiteInfo.getIsSavelistMainUrlData()) {
+                        selectedBookSiteInfo.setListMainUrlData(result);
+                    }
 
                     // 使用jsonpath获取目录列表
                     String listMainUrlDataRule = selectedBookSiteInfo.getListMainUrlDataRule();
-                    Object readJson = JsonPath.read(memuListJson.toString(), listMainUrlDataRule);
-                    JsonArray listMainJsonArray = gson.fromJson(gson.toJson(readJson), JsonArray.class);
+                    Object readJson = JsonPath.read(result, listMainUrlDataRule);
+                    Gson gson = new Gson();
+                    String itemListStr = gson.toJson(readJson);
+                    JsonArray listMainJsonArray = gson.fromJson(itemListStr, JsonArray.class);
+
+                    Map<String, String> paramMap = new HashMap<>();
+                    paramMap.put("dataJsonStr", result);
+                    paramMap.put("memuListJsonStr", itemListStr);
 
                     String listMainItemIdField = selectedBookSiteInfo.getListMainItemIdField();
                     String listMainItemTitleField = selectedBookSiteInfo.getListMainItemTitleField();
-                    for (JsonElement jsonElement : listMainJsonArray) {
-                        JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    for (int i = 0, len = listMainJsonArray.size(); i < len; i++) {
+                        JsonObject jsonObject = listMainJsonArray.get(i).getAsJsonObject();
                         String itemId = jsonObject.get(listMainItemIdField).getAsString();
                         String title = jsonObject.get(listMainItemTitleField).getAsString();
                         String chapterUrl = selectedBookSiteInfo.getChapterContentUrl();
-                        chapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
-                            put("bookId", selectBookInfo.getBookId());
-                            put("itemId", itemId);
-                        }});
+                        if (chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                                chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+                            try {
+                                chapterUrl = (String) DynamicCodeExecutor.executeMethod(chapterUrl,
+                                        "execute",
+                                        new Class[]{Map.class, Integer.class, String.class, String.class},
+                                        new Object[]{paramMap, i, selectBookInfo.getBookId(), itemId});
+                            } catch (Exception e1) {
+                                Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
+                                throw new RuntimeException(e1);
+                            }
+                        } else {
+                            chapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
+                                put("bookId", selectBookInfo.getBookId());
+                                put("itemId", itemId);
+                            }});
+                        }
                         chapterList.add(title);
                         chapterUrlList.add(chapterUrl);
                     }

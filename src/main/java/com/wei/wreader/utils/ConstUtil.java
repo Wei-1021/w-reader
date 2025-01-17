@@ -147,5 +147,13 @@ public class ConstUtil {
      * 注释文字颜色
      */
     public static final String LINE_COMMENT_COLOR = "#7A7E85";
+    /**
+     * 代码配置--开始标签
+     */
+    public static final String CODE_CONFIG_START_LABEL = "<java>";
+    /**
+     * 代码配置--结束标签
+     */
+    public static final String CODE_CONFIG_END_LABEL = "</java>";
 
 }

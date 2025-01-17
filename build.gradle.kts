@@ -66,6 +66,8 @@ dependencies {
     implementation("com.googlecode.soundlibs:jlayer:1.0.1.4")
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
+    implementation("org.codehaus.janino:janino:3.1.9")
+//    implementation("org.noear:liquor:1.3.7")
 //    implementation("org.mozilla:rhino:1.7.14")
 //    implementation("org.apache.pdfbox:fontbox:3.0.3")
 //    implementation("com.jaredrummler:sfntly:1.0.1")

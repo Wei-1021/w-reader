@@ -257,6 +257,9 @@ public class MethodExecutor {
 
         String configStr = "<java>com.wei.wreader.utils.AESDecryption.aesBase64DecodeToTransStr(" + encryptedBase64Str +
                 ",6CE93717FBEA3E4F,AES/CBC/NoPadding,6CE93717FBEA3E4F,{\"###$$$\": \"<br>\"})</java>";
+
+        String conf2 = "<java>String s1 = \"123456\";</java>";
+
         try {
             Object result = MethodExecutor.executeMethod(configStr);
             System.out.println("执行结果: " + result);

@@ -53,11 +53,18 @@ public class BookSiteInfo implements Serializable {
      * 小说目录列表URL
      */
     private String listMainUrl;
-
     /**
      * 小说目录列表JSONPath规则
      */
     private String listMainUrlDataRule;
+    /**
+     * 是否保存接口返回的小说目录列表结果
+     */
+    private Boolean isSavelistMainUrlData;
+    /**
+     * 是否保存接口返回的小说目录列表结果
+     */
+    private String listMainUrlData;
     /**
      * 小说目录列表项id字段名称
      */
@@ -279,6 +286,22 @@ public class BookSiteInfo implements Serializable {
 
     public void setListMainItemIdField(String listMainItemIdField) {
         this.listMainItemIdField = listMainItemIdField;
+    }
+
+    public Boolean getIsSavelistMainUrlData() {
+        return isSavelistMainUrlData;
+    }
+
+    public void setIsSavelistMainUrlData(Boolean isSavelistMainUrlData) {
+        this.isSavelistMainUrlData = isSavelistMainUrlData;
+    }
+
+    public String getListMainUrlData() {
+        return listMainUrlData;
+    }
+
+    public void setListMainUrlData(String listMainUrlData) {
+        this.listMainUrlData = listMainUrlData;
     }
 
     public String getListMainItemTitleField() {

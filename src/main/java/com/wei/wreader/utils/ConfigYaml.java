@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * yaml 配置文件解析器
+ *
  * @author weizhanjie"
  */
 public class ConfigYaml {
@@ -24,6 +25,7 @@ public class ConfigYaml {
 
     /**
      * 获取单例
+     *
      * @return
      */
     public static ConfigYaml getInstance() {
@@ -47,6 +49,7 @@ public class ConfigYaml {
 
     /**
      * 获取对应的字符串结果
+     *
      * @param name
      * @return
      */
@@ -64,6 +67,7 @@ public class ConfigYaml {
 
     /**
      * 获取对应的结果
+     *
      * @param name
      * @return
      */
@@ -119,11 +123,13 @@ public class ConfigYaml {
 
     /**
      * 获取配置文件名称
+     *
      * @return
      */
     public String getName() {
         return (String) getObject("wreader.name");
     }
+
     public String getNameHump() {
         return (String) getObject("wreader.nameHump");
     }
@@ -191,7 +197,7 @@ public class ConfigYaml {
     }
 
     public List<BookSiteInfo> getSiteList() {
-        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object> >) getObject("wreader.site_list");
+        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object>>) getObject("wreader.site_list");
 
         List<BookSiteInfo> siteList = new ArrayList<>();
         siteListList.forEach(objMap -> {
@@ -208,6 +214,7 @@ public class ConfigYaml {
             bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
             bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
             bookSiteInfo.setListMainUrlDataRule(objMap.get("listMainUrlDataRule").toString());
+            bookSiteInfo.setIsSavelistMainUrlData(Boolean.parseBoolean(objMap.get("isSavelistMainUrlData").toString()));
             bookSiteInfo.setListMainItemIdField(objMap.get("listMainItemIdField").toString());
             bookSiteInfo.setListMainItemTitleField(objMap.get("listMainItemTitleField").toString());
             bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
@@ -234,10 +241,11 @@ public class ConfigYaml {
 
     /**
      * 获取所有启用的站点
+     *
      * @return
      */
     public List<BookSiteInfo> getEnableSiteList() {
-        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object> >) getObject("wreader.site_list");
+        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object>>) getObject("wreader.site_list");
 
         List<BookSiteInfo> siteList = new ArrayList<>();
         siteListList.forEach(objMap -> {
@@ -256,6 +264,7 @@ public class ConfigYaml {
                 bookSiteInfo.setBookListElementType(objMap.get("bookListElementType").toString());
                 bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
                 bookSiteInfo.setListMainUrlDataRule(objMap.get("listMainUrlDataRule").toString());
+                bookSiteInfo.setIsSavelistMainUrlData(Boolean.parseBoolean(objMap.get("isSavelistMainUrlData").toString()));
                 bookSiteInfo.setListMainItemIdField(objMap.get("listMainItemIdField").toString());
                 bookSiteInfo.setListMainItemTitleField(objMap.get("listMainItemTitleField").toString());
                 bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
