@@ -194,7 +194,7 @@ wreader:
       isPathParam: true
     - isEnabled: true
       id: '3bqg.cc'
-      name: '笔趣阁'
+      name: '笔趣阁(不推荐)'
       baseUrl: 'https://www.3bqg.cc'
       searchUrl: 'https://www.3bqg.cc/user/search.html?q=${key}'
       searchBookNameParam: 'q'
