@@ -8,7 +8,7 @@ import com.wei.wreader.utils.OperateActionUtil;
 
 
 /**
- * 有声阅读
+ * 听书
  *
  * @author weizhanjie
  */

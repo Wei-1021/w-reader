@@ -80,7 +80,7 @@ public class Settings {
      */
     private String voiceRole;
     /**
-     * 有声阅读超时(秒)
+     * 听书超时(秒)
      */
     private int audioTimeout;
     /**

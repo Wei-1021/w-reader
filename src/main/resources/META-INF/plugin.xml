@@ -15,16 +15,19 @@
         功能特性：
         </p>
         <ul>
-            <li>&nbsp;&nbsp;支持多个站点之间的切换搜索。</li>
-            <li>&nbsp;&nbsp;支持在线通过书名搜索小说、点击目录快速跳转章节。</li>
+            <li>&nbsp;&nbsp;支持在线搜索小说、点击目录快速跳转章节。</li>
+            <li>&nbsp;&nbsp;支持多个书源的切换。</li>
             <li>&nbsp;&nbsp;支持本地加载小说，支持txt 和 epub 格式。</li>
             <li>&nbsp;&nbsp;支持侧边栏、状态栏模式之间切换。</li>
             <li>&nbsp;&nbsp;支持编辑器提示消息、代码注释块模式阅读。</li>
             <li>&nbsp;&nbsp;支持自动阅读功能。</li>
-            <li>&nbsp;&nbsp;支持有声阅读，不同语音音色任意选择。</li>
+            <li>&nbsp;&nbsp;支持听书，不同语音音色任意选择。</li>
         </ul>
         <p>
-
+         书源后续会不定期更新，若有疑问或建议，欢迎反馈，联系方式：1075542448@qq.com。
+        </p>
+        <p>
+         每次更新后请仔细阅读的更新日志(插件页面"What's New"标签页，或打开W-Reader-->帮助-->更新日志)，以免出现问题；
         </p>
     ]]></description>
 
@@ -33,6 +36,9 @@
         0.0.10:
         <ul>
             <li>1.新增 书源；</li>
+            <li>2.调整 书源配置；</li>
+            <li>3.调整 “有声阅读”更名为“听书”；</li>
+            <li>PS：本次更新可能会导致章节切换失败，需重新搜索小说并打开任一章节；</li>
         </ul>
     </p>
     <p>
@@ -176,7 +182,7 @@
                 icon="com.wei.wreader.utils.WReaderIcons.AUTO_READ_PLAY"/>
         <action id="wreader.AudioReadingAction"
                 class="com.wei.wreader.action.AudioReadingAction"
-                text="有声阅读"
+                text="听书"
                 icon="com.wei.wreader.utils.WReaderIcons.LISTEN_BOOK">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
         </action>

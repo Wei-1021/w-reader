@@ -15,7 +15,7 @@ wreader:
     charset: 'GBK' #字符集
     autoReadTime: 5 #自动阅读时间
     voiceRole: 'Xiaoxuan' #音色
-    audioTimeout: 3 #有声阅读超时
+    audioTimeout: 3 #听书超时
     rate: 1.0 #语速
     volume: 100 #默认音量
     audioStyle: '默认' #默认风格
