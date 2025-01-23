@@ -1,28 +1,34 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.10</version>
+    <version>0.0.11</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
+        <h3>
+        W-Reader: An Immersive Novel Reading Tool on Intellij IDEA.<br>
+        </h3>
+        <h3>
+        W-Reader：Intellij IDEA 上的沉浸式小说阅读利器。
+        </h3>
         <p>
-        W-Reader is a lightweight novel reading plugin based on Intellij IDEA, providing developers with an immersive experience for reading novels.<br>
+        W-Reader，一款专为开发者量身打造，基于 Intellij IDEA 平台的轻量级小说阅读插件。它为忙碌于代码世界的开发者们，带来沉浸式的小说阅读体验，让阅读不再受场景束缚。
         </p>
-        <p>
-        W-Reader是一款基于Intellij IDEA的轻量级小说阅读插件，为开发者提供了沉浸式阅读小说的体验。<br>
-        </p>
-        <p>
-        功能特性：
-        </p>
+        <h4>
+        强大功能，阅读无忧
+        </h4>
         <ul>
-            <li>&nbsp;&nbsp;支持在线搜索小说、点击目录快速跳转章节。</li>
-            <li>&nbsp;&nbsp;支持多个书源的切换。</li>
-            <li>&nbsp;&nbsp;支持本地加载小说，支持txt 和 epub 格式。</li>
-            <li>&nbsp;&nbsp;支持侧边栏、状态栏模式之间切换。</li>
-            <li>&nbsp;&nbsp;支持编辑器提示消息、代码注释块模式阅读。</li>
-            <li>&nbsp;&nbsp;支持自动阅读功能。</li>
-            <li>&nbsp;&nbsp;支持听书，不同语音音色任意选择。</li>
+            <li>&nbsp;&nbsp;<b>便捷检索与快速定位：</b>支持在线搜索海量小说资源，只需轻松点击，即可精准定位到心仪作品。目录导航功能，更能让你一键快速跳转至任意章节，阅读节奏尽在掌握。</li>
+            <li>&nbsp;&nbsp;<b>多元书源，随心切换：</b>整合多个优质书源，满足你多样化的阅读需求，无论是热门网文，还是经典名著，都能轻松获取。</li>
+            <li>&nbsp;&nbsp;<b>本地加载，兼容并蓄：</b>无缝支持 txt 和 epub 格式的本地小说加载，让你珍藏的本地书籍也能在 Intellij IDEA 中便捷阅读。</li>
+            <li>&nbsp;&nbsp;<b>模式切换，自由随心：</b>可在侧边栏和状态栏模式间自由切换，适应不同的使用习惯和屏幕布局，打造个性化的阅读界面。</li>
+            <li>&nbsp;&nbsp;<b>独特阅读，专属体验：</b>支持在编辑器提示消息、代码注释块模式下阅读，专为开发者设计，让你在熟悉的编程环境中享受阅读的乐趣。</li>
+            <li>&nbsp;&nbsp;<b>自动阅读，解放双手：</b>开启自动阅读功能，无需手动翻页，小说内容自动切换播放，让你全身心沉浸在精彩的故事中。</li>
+            <li>&nbsp;&nbsp;<b>听书功能，声色俱全：</b>支持听书模式，多种语音音色供你自由选择，无论何时何地，都能享受一场听觉盛宴。</li>
+            <li>&nbsp;&nbsp;<b>快捷键控，高效阅读：</b>预设丰富的快捷键，实现快速翻页、切换章节、一键听书等常用操作，大幅提升阅读效率。</li>
         </ul>
+        <br>
+        <br>
         <p>
          书源后续会不定期更新，若有疑问或建议，欢迎反馈，联系方式：1075542448@qq.com。
         </p>
@@ -32,6 +38,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>
+        0.0.11:
+        <ul>
+            <li>1.新增 书源；</li>
+            <li>2.修复 解决在打开或切换新项目时，插件侧边栏加载失败，并弹出 “W-Reader 加载失败！” 提示的问题。</li>
+        </ul>
+    </p>
     <p>
         0.0.10:
         <ul>

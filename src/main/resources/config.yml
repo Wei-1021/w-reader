@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.10'
+  version: '0.0.11'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -14,7 +14,7 @@ wreader:
     dataLoadType: 1 #数据加载模式。1-网络加载，2-本地加载
     charset: 'GBK' #字符集
     autoReadTime: 5 #自动阅读时间
-    voiceRole: 'Xiaoxuan' #音色
+    voiceRole: '晓晓' #音色
     audioTimeout: 3 #听书超时
     rate: 1.0 #语速
     volume: 100 #默认音量
@@ -415,6 +415,70 @@ wreader:
       bookDescField: 'bookDesc'
       bookImgUrlField: 'bookImgUrl'
       isHtml: true
+      isPathParam: true
+    - isEnabled: true
+      id: 'www.jjwxc.net'
+      name: '晋江文学'
+      baseUrl: 'http://app.jjwxc.org'
+      searchUrl: 'http://app.jjwxc.org/androidapi/search?keyword=${key}&type=1&page=${page}&token=null&searchType=1&sortMode=DESC&versionCode=173'
+      searchBookNameParam: ''
+      searchDataBookListRule: '$.items[*]'
+      bookDataId: ''
+      bookListElementName: ''
+      bookListElementType: ''
+      listMainUrl: 'http://app-cdn.jjwxc.net/androidapi/chapterList?novelId=${bookId}&more=0&whole=1'
+      listMainUrlDataRule: '$.chapterlist[*]'
+      isSavelistMainUrlData: false
+      listMainItemIdField: 'chapterid'
+      listMainItemTitleField: 'chaptername'
+      listMainElementName: ''
+      listMainElementType: ''
+      chapterContentUrl: 'http://app-cdn.jjwxc.net:80/androidapi/chapterContent?novelId=${bookId}&chapterId=${itemId}'
+      chapterContentUrlDataRule: '$.content'
+      chapterContentHandleRule: ''
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: ''
+      chapterContentElementType: ''
+      bookIdField: 'novelid'
+      bookNameField: 'novelname'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'authorname'
+      bookDescField: 'novelintroshort'
+      bookImgUrlField: 'cover'
+      isHtml: false
+      isPathParam: true
+    - isEnabled: true
+      id: 'www.ihuaben.com'
+      name: '话本小说'
+      baseUrl: 'https://www.ihuaben.com'
+      searchUrl: 'https://www.ihuaben.com/app/search?indexName=book&keyword=${key}&page=${page}&pageSize=50'
+      searchBookNameParam: ''
+      searchDataBookListRule: '$.pageUtil.pageList[*]'
+      bookDataId: ''
+      bookListElementName: ''
+      bookListElementType: ''
+      listMainUrl: 'https://cdncn.ihuaben.com/cdn/chapters/${bookId}/000'
+      listMainUrlDataRule: '$.modelData.chapters[*]'
+      isSavelistMainUrlData: false
+      listMainItemIdField: 'chapterId'
+      listMainItemTitleField: 'title'
+      listMainElementName: ''
+      listMainElementType: ''
+      chapterContentUrl: 'https://cdncn.ihuaben.com/cdn/chapter/${bookId}/${itemId}/000'
+      chapterContentUrlDataRule: '$.modelData.content'
+      chapterContentHandleRule: ''
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: ''
+      chapterContentElementType: ''
+      bookIdField: 'bookid'
+      bookNameField: 'bookname'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'authorname'
+      bookDescField: 'bookinfo'
+      bookImgUrlField: 'bookpic'
+      isHtml: false
       isPathParam: true
 #    - id: 'm.qidian.com'
 #      name: '起点'

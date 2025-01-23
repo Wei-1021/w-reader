@@ -1,53 +1,27 @@
 package com.wei.wreader.ui;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
-import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.components.JBList;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.OperateActionUtil;
-import com.wei.wreader.utils.UrlUtil;
 import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 
 /**
@@ -189,7 +163,6 @@ public class WReaderToolWindow  {
 
     private CacheService cacheService;
     private Settings settings;
-    private OperateActionUtil operateAction;
     //endregion
     //endregion
 
@@ -233,7 +206,6 @@ public class WReaderToolWindow  {
      */
     public void initData(ToolWindow toolWindow) {
         try {
-            operateAction = OperateActionUtil.getInstance(toolWindow.getProject());
             // settings
             settings = cacheService.getSettings();
             if (settings == null) {
@@ -305,7 +277,7 @@ public class WReaderToolWindow  {
             if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
                 chapterContentHtml = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
             } else {
-                operateAction.updateContentText();
+                updateContentText();
             }
 
         } catch (Exception e) {
@@ -353,6 +325,27 @@ public class WReaderToolWindow  {
         contentTextPane.setCaretPosition(0);
     }
 
+
+    /**
+     * 更新内容
+     */
+    public void updateContentText() {
+        // 设置内容
+        String fontColorHex = cacheService.getFontColorHex();
+        String fontFamily = cacheService.getFontFamily();
+        int fontSize = cacheService.getFontSize();
+        String chapterContent = currentChapterInfo.getChapterContent();
+        // 设置内容
+        chapterContent = String.format(
+                """
+                <div style="color:%s;font-family:'%s';font-size:%dpx;">%s</div>
+                """,
+                fontColorHex, fontFamily, fontSize, chapterContent);
+        contentTextPane.setText(chapterContent);
+        // 设置光标位置
+        contentTextPane.setCaretPosition(0);
+    }
+
     /**
      * 主题切换监听器
      */
@@ -374,7 +367,7 @@ public class WReaderToolWindow  {
                         "font-family: '" + fontFamily + "';" +
                         "font-size: " + fontSize + "px;";
                 chapterContentHtml = String.format("<div style='%s'>%s</div>", style, currentChapterInfo.getChapterContent());
-                setContentText(chapterContentHtml);
+                updateContentText();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

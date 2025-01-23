@@ -340,6 +340,7 @@ public class EdgeTTS {
             return;
         }
 
+        // 当连接数达到最大值时，重置连接计数并重新创建WebSocket连接
         if (connectionCount >= MAX_WS_CONNECTIONS) {
             // 重置连接计数并重新创建WebSocket连接
             connectionCount = 0;

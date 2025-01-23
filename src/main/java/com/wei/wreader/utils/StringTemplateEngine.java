@@ -6,6 +6,10 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 字符串模板引擎，用于渲染模板字符串，将模板中的占位符替换为实际值或计算结果
+ * @author weizhanjie
+ */
 public class StringTemplateEngine {
 
     /**
@@ -194,7 +198,6 @@ public class StringTemplateEngine {
      * @param a        第一个操作数
      * @return 运算后的结果，类型为 double，会根据具体运算进行相应的计算返回
      */
-    @SuppressWarnings("unchecked")
     private static Object applyOperator(char operator, Object b, Object a) {
         // 首先判断操作数是否都为 Number 类型（Number 是 Integer、Double 等数值类型的父类），只有是数值类型才能进行运算
         if (a instanceof Number && b instanceof Number) {

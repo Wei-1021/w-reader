@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -125,6 +126,10 @@ public class OperateActionUtil {
      */
     private String baseUrl;
     /**
+     * 基础网址--搜索临时
+     */
+    private String tempBaseUrl;
+    /**
      * 站点信息列表
      */
     private List<BookSiteInfo> siteList;
@@ -133,9 +138,17 @@ public class OperateActionUtil {
      */
     private int selectedBookSiteIndex = 0;
     /**
+     * 选中的站点信息下标--搜索临时
+     */
+    private int tempSelectedBookSiteIndex = 0;
+    /**
      * 选中的站点信息(默认第一个)
      */
     private BookSiteInfo selectedBookSiteInfo;
+    /**
+     * 选中的站点信息--搜索临时
+     */
+    private BookSiteInfo tempSelectedBookSiteInfo;
     /**
      * 当前小说信息
      */
@@ -148,6 +161,7 @@ public class OperateActionUtil {
      * 搜索小说对话框
      */
     private DialogBuilder searchBookDialogBuilder;
+
     //endregion
 
     /**
@@ -156,7 +170,7 @@ public class OperateActionUtil {
      * @return
      */
     public static OperateActionUtil getInstance(Project project) {
-        if (instance == null && !project.equals(mProject)) {
+        if (instance == null || !project.equals(mProject) || mProject.isDisposed()) {
             instance = new OperateActionUtil(project);
         }
         return instance;
@@ -307,11 +321,11 @@ public class OperateActionUtil {
                 if (!searchUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !searchUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !searchUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                    searchBookUrl = baseUrl + searchUrl;
+                    searchBookUrl = tempBaseUrl + searchUrl;
                 }
             }
         } else {
-            searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
+            searchBookUrl = tempBaseUrl + selectedBookSiteInfo.getSearchUrl() +
                     "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
         }
 
@@ -350,9 +364,9 @@ public class OperateActionUtil {
         comboBox.setSelectedIndex(selectedBookSiteIndex);
         comboBox.addActionListener(e -> {
             int selectedIndex = comboBox.getSelectedIndex();
-            this.selectedBookSiteIndex = selectedIndex;
-            selectedBookSiteInfo = siteList.get(selectedIndex);
-            baseUrl = selectedBookSiteInfo.getBaseUrl();
+            this.tempSelectedBookSiteIndex = selectedIndex;
+            this.tempSelectedBookSiteInfo = siteList.get(selectedIndex);
+            this.tempBaseUrl = this.tempSelectedBookSiteInfo.getBaseUrl();
         });
         return comboBox;
     }
@@ -507,7 +521,7 @@ public class OperateActionUtil {
                                 if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
                                         !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME) &&
                                         !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                                    bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                                    bookUrl = tempBaseUrl + selectBookInfo.getBookUrl();
                                 }
                             }
                         }
@@ -646,7 +660,7 @@ public class OperateActionUtil {
                 if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                    chapterUrl = baseUrl + chapterSuffixUrl;
+                    chapterUrl = tempBaseUrl + chapterSuffixUrl;
                 }
                 currentChapterInfo.setChapterTitle(chapterTitle);
                 currentChapterInfo.setChapterUrl(chapterUrl);
@@ -1499,6 +1513,10 @@ public class OperateActionUtil {
      * 处理缓存
      */
     private void handleCache() {
+        baseUrl = tempBaseUrl;
+        selectedBookSiteIndex = tempSelectedBookSiteIndex;
+        selectedBookSiteInfo = tempSelectedBookSiteInfo;
+
         // 选择的站点信息缓存
         cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
         cacheService.setSelectedBookSiteIndex(selectedBookSiteIndex);
