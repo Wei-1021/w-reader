@@ -7,16 +7,6 @@ public enum VoiceRole {
     ///////////////////////////////  中文    ///////////////////////////////////
     ///////////////////////////////  妹子们  ////////////////////////////////////
     /**
-     * 晓北 辽宁 东北大妹子
-     */
-    Xiaobei("zh-CN-liaoning-XiaobeiNeural", "female", "zh-CN-liaoning", "晓北"),
-
-    /**
-     * 晓妮 陕西妹子
-     */
-    Xiaoni("zh-CN-shaanxi-XiaoniNeural", "female", "zh-CN-shaanxi", "晓妮"),
-
-    /**
      * 晓晓 活泼、温暖的声音，具有多种场景风格和情感
      */
     Xiaoxiao("zh-CN-XiaoxiaoNeural", "female", "zh-CN", "晓晓"),
@@ -30,6 +20,16 @@ public enum VoiceRole {
      * 晓伊
      */ // <-- default
     Xiaoyi("zh-CN-XiaoyiNeural", "female", "zh-CN", "晓伊"),
+
+    /**
+     * 晓北 辽宁 东北大妹子
+     */
+    Xiaobei("zh-CN-liaoning-XiaobeiNeural", "female", "zh-CN-liaoning", "晓北"),
+
+    /**
+     * 晓妮 陕西妹子
+     */
+    Xiaoni("zh-CN-shaanxi-XiaoniNeural", "female", "zh-CN-shaanxi", "晓妮"),
 
     /**
      * 曉佳(HiuGaai),粤语female声
@@ -408,7 +408,60 @@ public enum VoiceRole {
     }
 
     /**
+     * 按语言分组获取音色，非中文语言归为other分组
+     */
+    public static Map<String, List<String>> getNicknameByLocale() {
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        // 遍历 VoiceRole 数组
+        Arrays.stream(values()).forEach(v -> {
+            String locale = v.locale;
+            // 获取指定 locale 对应的列表，如果不存在则创建新列表
+            map.computeIfAbsent(locale, k -> new ArrayList<>()).add(v.nickname);
+        });
+
+        Map<String, List<String>> resMap = new LinkedHashMap<>();
+        List<String> other = new ArrayList<>();
+        map.forEach((k, v) -> {
+            if (k.startsWith("zh")) {
+                resMap.put(k, v);
+            } else {
+                other.addAll(v);
+            }
+        });
+        resMap.put("other", other);
+
+        return resMap;
+    }
+
+    /**
+     * 按语言分组获取音色，非中文语言归为other分组
+     */
+    public static Map<String, List<VoiceRole>> getByLocale() {
+        Map<String, List<VoiceRole>> map = new LinkedHashMap<>();
+        // 遍历 VoiceRole 数组
+        Arrays.stream(values()).forEach(v -> {
+            String locale = v.locale;
+            // 获取指定 locale 对应的列表，如果不存在则创建新列表
+            map.computeIfAbsent(locale, k -> new ArrayList<>()).add(v);
+        });
+
+        Map<String, List<VoiceRole>> resMap = new LinkedHashMap<>();
+        List<VoiceRole> other = new ArrayList<>();
+        map.forEach((k, v) -> {
+            if (k.startsWith("zh")) {
+                resMap.put(k, v);
+            } else {
+                other.addAll(v);
+            }
+        });
+        resMap.put("other", other);
+
+        return resMap;
+    }
+
+    /**
      * 根据shortName获取音色
+     *
      * @param shortName
      * @return
      */
@@ -425,6 +478,7 @@ public enum VoiceRole {
 
     /**
      * 根据nickname获取音色
+     *
      * @param nickname
      * @return
      */

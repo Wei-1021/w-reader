@@ -17,6 +17,7 @@ import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.GroupedComboBox;
 import com.wei.wreader.utils.NumberUtil;
 import com.wei.wreader.utils.tts.VoiceStyle;
 import org.apache.commons.lang3.StringUtils;
@@ -59,13 +60,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JLabel voiceRoleLabel;
     private JTextField timeoutTextField;
     private JLabel timeoutLabel;
-    private JComboBox voiceRoleComboBox;
+    private ComboBox<Object> voiceRoleGroupComboBox;
     private JLabel rateLabel;
     private JLabel volumeLabel;
     private JComboBox rateComboBox;
     private JComboBox volumeComboBox;
     private JComboBox audioStyleComboBox;
     private JLabel audioStyleLabel;
+    private JPanel voiceRoleJPanel;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
@@ -191,9 +193,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             case Settings.DISPLAY_TYPE_STATUSBAR:
                 statusBarRadioButton.setSelected(true);
                 break;
-            case Settings.DISPLAY_TYPE_EDITOR_BANNER:
-//                editorBannerRadioButton.setSelected(true);
-                break;
             default:
                 sideBarRadioButton.setSelected(true);
                 break;
@@ -202,17 +201,20 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         displayTypeRadioGroup = new ButtonGroup();
         displayTypeRadioGroup.add(sideBarRadioButton);
         displayTypeRadioGroup.add(statusBarRadioButton);
-//        displayTypeRadioGroup.add(editorBannerRadioButton);
 
         // 音频管理
         TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
         audioManagePanel.setBorder(audioManageTitledBorder);
         // 音色
-        List<String> voiceRoleNickNames = VoiceRole.getNickNames();
-        for (String nickName : voiceRoleNickNames) {
-            voiceRoleComboBox.addItem(nickName);
-        }
-        voiceRoleComboBox.setSelectedItem(settings.getVoiceRole());
+        Map<String, List<String>> nicknameByLocale = VoiceRole.getNicknameByLocale();
+        GroupedComboBox voiceRoleGroupedComboBox = new GroupedComboBox();
+        voiceRoleGroupComboBox = voiceRoleGroupedComboBox.buildGroupedComboBox(nicknameByLocale);
+        voiceRoleGroupComboBox.setSelectedItem(settings.getVoiceRole());
+        GridConstraints voiceRoleGridConstraints = new GridConstraints();
+        voiceRoleGridConstraints.setRow(0);
+        voiceRoleGridConstraints.setColumn(0);
+        voiceRoleJPanel.add(voiceRoleGroupComboBox, voiceRoleGridConstraints);
+
         // 音频超时
         timeoutTextField.setDocument(new NumberDocument());
         timeoutTextField.setText(String.valueOf(settings.getAudioTimeout()));
@@ -271,7 +273,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 音色
-        if (!settings.getVoiceRole().equals(voiceRoleComboBox.getSelectedItem())) {
+        if (!settings.getVoiceRole().equals(voiceRoleGroupComboBox.getSelectedItem())) {
             return true;
         }
         // 音频超时
@@ -307,7 +309,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setDisplayType(selectedDisplayType);
         settings.setCharset((String) charsetComboBox.getSelectedItem());
         settings.setAutoReadTime(NumberUtil.parseInt(autoReadTimeTextField.getText()));
-        settings.setVoiceRole((String) voiceRoleComboBox.getSelectedItem());
+        settings.setVoiceRole((String) voiceRoleGroupComboBox.getSelectedItem());
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
         settings.setAudioTimeout(NumberUtil.parseInt(timeoutTextField.getText()));
 

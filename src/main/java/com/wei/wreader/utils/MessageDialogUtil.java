@@ -134,14 +134,14 @@ public class MessageDialogUtil {
                                                   Runnable okRunnable,
                                                   Runnable cancelOperation) {
         JPanel centerPanel = new JPanel();
-        GridLayoutManager layout = new GridLayoutManager(1, objs.length);
+        GridLayoutManager layout = new GridLayoutManager(objs.length, 1);
         centerPanel.setLayout(layout);
         centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         for (int i = 0, len = objs.length; i < len; i++) {
             Object obj = objs[i];
             GridConstraints gridConstraints = new GridConstraints();
-            gridConstraints.setRow(0);
-            gridConstraints.setColumn(i);
+            gridConstraints.setRow(i);
+            gridConstraints.setColumn(0);
             if (obj instanceof JComponent) {
                 centerPanel.add((JComponent) obj, gridConstraints);
             } else {

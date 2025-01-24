@@ -126,10 +126,6 @@ public class OperateActionUtil {
      */
     private String baseUrl;
     /**
-     * 基础网址--搜索临时
-     */
-    private String tempBaseUrl;
-    /**
      * 站点信息列表
      */
     private List<BookSiteInfo> siteList;
@@ -138,17 +134,18 @@ public class OperateActionUtil {
      */
     private int selectedBookSiteIndex = 0;
     /**
-     * 选中的站点信息下标--搜索临时
-     */
-    private int tempSelectedBookSiteIndex = 0;
-    /**
      * 选中的站点信息(默认第一个)
      */
     private BookSiteInfo selectedBookSiteInfo;
     /**
-     * 选中的站点信息--搜索临时
+     * 选中的站点信息--临时缓存搜索前的站点信息
      */
     private BookSiteInfo tempSelectedBookSiteInfo;
+    /**
+     * 选中的站点信息下标--临时缓存搜索前的站点信息下标
+     */
+    private int tempSelectedBookSiteIndex = 0;
+
     /**
      * 当前小说信息
      */
@@ -274,8 +271,20 @@ public class OperateActionUtil {
             JTextField searchBookTextField = new JTextField(20);
             Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, comboBox, searchBookTextField};
             searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
-                    () -> searchBook(searchBookTextField));
+                    () ->searchBookDialogOk(comboBox, searchBookTextField),
+                    this::commCancelOperationHandle);
         });
+    }
+
+    private void searchBookDialogOk(ComboBox<String> comboBox, JTextField searchBookTextField) {
+        this.tempSelectedBookSiteIndex = this.selectedBookSiteIndex;
+        this.tempSelectedBookSiteInfo = this.selectedBookSiteInfo;
+
+        int selectedIndex = comboBox.getSelectedIndex();
+        this.selectedBookSiteIndex = selectedIndex;
+        this.selectedBookSiteInfo = siteList.get(selectedIndex);
+        this.baseUrl = this.selectedBookSiteInfo.getBaseUrl();
+        searchBook(searchBookTextField);
     }
 
     /**
@@ -291,6 +300,7 @@ public class OperateActionUtil {
         }
 
         String searchBookUrl = "";
+        // 请求路径是否需要通过拼接（isPathParam=true为不需要）
         if (selectedBookSiteInfo.isPathParam()) {
             String searchUrl = selectedBookSiteInfo.getSearchUrl();
             if (StringUtils.isBlank(searchUrl)) {
@@ -321,11 +331,11 @@ public class OperateActionUtil {
                 if (!searchUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !searchUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !searchUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                    searchBookUrl = tempBaseUrl + searchUrl;
+                    searchBookUrl = baseUrl + searchUrl;
                 }
             }
         } else {
-            searchBookUrl = tempBaseUrl + selectedBookSiteInfo.getSearchUrl() +
+            searchBookUrl = baseUrl + selectedBookSiteInfo.getSearchUrl() +
                     "?" + selectedBookSiteInfo.getSearchBookNameParam() + "=" + bookName;
         }
 
@@ -362,12 +372,6 @@ public class OperateActionUtil {
             comboBox.addItem(bookSiteInfo.getName() + "(" + bookSiteInfo.getId() + ")");
         }
         comboBox.setSelectedIndex(selectedBookSiteIndex);
-        comboBox.addActionListener(e -> {
-            int selectedIndex = comboBox.getSelectedIndex();
-            this.tempSelectedBookSiteIndex = selectedIndex;
-            this.tempSelectedBookSiteInfo = siteList.get(selectedIndex);
-            this.tempBaseUrl = this.tempSelectedBookSiteInfo.getBaseUrl();
-        });
         return comboBox;
     }
 
@@ -521,7 +525,7 @@ public class OperateActionUtil {
                                 if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
                                         !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME) &&
                                         !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                                    bookUrl = tempBaseUrl + selectBookInfo.getBookUrl();
+                                    bookUrl = baseUrl + selectBookInfo.getBookUrl();
                                 }
                             }
                         }
@@ -537,7 +541,8 @@ public class OperateActionUtil {
                 // 使用滚动面板来添加滚动条
                 JBScrollPane jScrollPane = new JBScrollPane(searchBookList);
                 jScrollPane.setPreferredSize(new Dimension(350, 500));
-                MessageDialogUtil.showMessage(mProject, "搜索结果", jScrollPane);
+                MessageDialogUtil.showMessageDialog(mProject, "搜索结果", jScrollPane,
+                        null, this::commCancelOperationHandle);
             }
         }
     }
@@ -660,7 +665,7 @@ public class OperateActionUtil {
                 if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTP_CONFIG_URL)) {
-                    chapterUrl = tempBaseUrl + chapterSuffixUrl;
+                    chapterUrl = baseUrl + chapterSuffixUrl;
                 }
                 currentChapterInfo.setChapterTitle(chapterTitle);
                 currentChapterInfo.setChapterUrl(chapterUrl);
@@ -681,7 +686,8 @@ public class OperateActionUtil {
 
         JBScrollPane jScrollPane = new JBScrollPane(chapterListJBList);
         jScrollPane.setPreferredSize(new Dimension(400, 500));
-        MessageDialogUtil.showMessage(mProject, "目录", jScrollPane);
+        MessageDialogUtil.showMessageDialog(mProject, "目录", jScrollPane,
+                null, this::commCancelOperationHandle);
 
         // 设置数据加载模式
         settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
@@ -1513,10 +1519,6 @@ public class OperateActionUtil {
      * 处理缓存
      */
     private void handleCache() {
-        baseUrl = tempBaseUrl;
-        selectedBookSiteIndex = tempSelectedBookSiteIndex;
-        selectedBookSiteInfo = tempSelectedBookSiteInfo;
-
         // 选择的站点信息缓存
         cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
         cacheService.setSelectedBookSiteIndex(selectedBookSiteIndex);
@@ -1527,6 +1529,13 @@ public class OperateActionUtil {
         cacheService.setChapterUrlList(chapterUrlList);
         // 选择的小说章节缓存
         cacheService.setSelectedChapterInfo(currentChapterInfo);
+    }
+
+    /**
+     * 取消操作时的通用操作
+     */
+    private void commCancelOperationHandle() {
+        initData();
     }
 
     /**

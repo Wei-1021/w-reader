@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 /**
  * 字符串模板引擎，用于渲染模板字符串，将模板中的占位符替换为实际值或计算结果
+ *
  * @author weizhanjie
  */
 public class StringTemplateEngine {
@@ -42,7 +43,7 @@ public class StringTemplateEngine {
                 // 如果不是计算表达式，尝试从变量映射表中获取对应变量的值
                 value = variables.get(expression);
             }
-            if (value!= null) {
+            if (value != null) {
                 // 如果获取到的值不为空，将匹配到的占位符替换为该值的字符串表示形式
                 matcher.appendReplacement(result, value.toString());
             } else {
@@ -121,7 +122,7 @@ public class StringTemplateEngine {
             }
             // 如果字符是右括号 )，按照运算规则，从运算符栈和操作数栈中弹出相应的运算符和操作数进行计算，直到遇到左括号
             else if (ch == ')') {
-                while (operators.peek()!= '(') {
+                while (operators.peek() != '(') {
                     operands.push(applyOperator(operators.pop(), operands.pop(), operands.pop()));
                 }
                 operators.pop();
