@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 字符串模板引擎，用于渲染模板字符串，将模板中的占位符替换为实际值或计算结果
+ * 字符串模板引擎，用于渲染模板字符串，将模板中的占位符{@code ${表达式}}替换为实际值或计算结果
  *
  * @author weizhanjie
  */

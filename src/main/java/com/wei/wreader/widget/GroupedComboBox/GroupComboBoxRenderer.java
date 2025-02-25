@@ -1,0 +1,37 @@
+package com.wei.wreader.widget.GroupedComboBox;
+
+import com.intellij.ui.SimpleTextAttributes;
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * ComboBox分组渲染器
+ *
+ * @author weizhanjie
+ */
+public class GroupComboBoxRenderer implements ListCellRenderer<Object> {
+    private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+    @Override
+    public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                  boolean isSelected, boolean cellHasFocus) {
+        if (value instanceof GroupTitle groupTitle) {
+            // 创建带分隔线的标题组件
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(new JSeparator(), BorderLayout.NORTH);
+            JLabel label = new JLabel(groupTitle.getTitle());
+            label.setFont(label.getFont().deriveFont(Font.BOLD));
+            label.setOpaque(true);
+            label.setBackground(UIManager.getColor("Panel.background"));
+            label.setForeground(SimpleTextAttributes.GRAYED_ATTRIBUTES.getFgColor());
+            panel.add(label, BorderLayout.CENTER);
+            return panel;
+        }
+
+        // 普通项使用默认渲染，但禁用选中状态
+        Component comp = defaultRenderer.getListCellRendererComponent(list, value, index, false, false);
+        comp.setEnabled(true);
+        return comp;
+    }
+}

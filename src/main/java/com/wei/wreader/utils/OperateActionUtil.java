@@ -556,7 +556,7 @@ public class OperateActionUtil {
     public void searchBookDirectory(String url) {
         // 获取目录列表元素
         // 当使用api接口获取目录列表，且小说目录列表JSONPath规则不为空时，则使用api接口获取，
-        // 反正使用html页面获取
+        // 反之使用html页面获取
         if (StringUtils.isNotBlank(selectedBookSiteInfo.getListMainUrl()) &&
                 StringUtils.isNotBlank(selectedBookSiteInfo.getListMainUrlDataRule())) {
             HttpRequestBase requestBase = HttpUtil.commonRequest(url);
@@ -582,30 +582,55 @@ public class OperateActionUtil {
 
                     String listMainItemIdField = selectedBookSiteInfo.getListMainItemIdField();
                     String listMainItemTitleField = selectedBookSiteInfo.getListMainItemTitleField();
+                    String chapterUrl = selectedBookSiteInfo.getChapterContentUrl();
+                    boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                            chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
+
+                    List<String> itemIdList = new ArrayList<>();
+                    List<Integer> itemIndexList = new ArrayList<>();
                     for (int i = 0, len = listMainJsonArray.size(); i < len; i++) {
                         JsonObject jsonObject = listMainJsonArray.get(i).getAsJsonObject();
                         String itemId = jsonObject.get(listMainItemIdField).getAsString();
                         String title = jsonObject.get(listMainItemTitleField).getAsString();
-                        String chapterUrl = selectedBookSiteInfo.getChapterContentUrl();
-                        if (chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
-                                chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
-                            try {
-                                chapterUrl = (String) DynamicCodeExecutor.executeMethod(chapterUrl,
-                                        "execute",
-                                        new Class[]{Map.class, Integer.class, String.class, String.class},
-                                        new Object[]{paramMap, i, selectBookInfo.getBookId(), itemId});
-                            } catch (Exception e1) {
-                                Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
-                                throw new RuntimeException(e1);
-                            }
+                        String itemChapterUrl = "";
+                        // 当chapterUrl符合规则时，则将itemId和index加入集合中，反正视为普通的API请求地址
+                        if (isCodeConfig) {
+                            itemIdList.add(itemId);
+                            itemIndexList.add(i);
+
+//                            try {
+//                                // 执行动态代码
+//                                itemChapterUrl = (String) DynamicCodeExecutor.executeMethod(chapterUrl,
+//                                        "execute",
+//                                        new Class[]{Map.class, Integer.class, String.class, String.class},
+//                                        new Object[]{paramMap, i, selectBookInfo.getBookId(), itemId});
+//                            } catch (Exception e1) {
+//                                Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
+//                                throw new RuntimeException(e1);
+//                            }
                         } else {
-                            chapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
+                            itemChapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
                                 put("bookId", selectBookInfo.getBookId());
                                 put("itemId", itemId);
                             }});
+
+                            chapterList.add(title);
+                            chapterUrlList.add(itemChapterUrl);
                         }
-                        chapterList.add(title);
-                        chapterUrlList.add(chapterUrl);
+                    }
+
+                    // 当chapterUrl符合规则时，视为Java代码，并执行动态代码
+                    if (isCodeConfig) {
+                        try {
+                            // 执行动态代码
+                            chapterUrlList = (List<String>) DynamicCodeExecutor.executeMethod(chapterUrl,
+                                    "execute",
+                                    new Class[]{Map.class, List.class, String.class, List.class},
+                                    new Object[]{paramMap, itemIndexList, selectBookInfo.getBookId(), itemIdList});
+                        } catch (Exception e1) {
+                            Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
+                            throw new RuntimeException(e1);
+                        }
                     }
                 }
             } catch (IOException e) {

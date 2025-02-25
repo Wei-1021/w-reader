@@ -7,12 +7,12 @@ import java.lang.reflect.Method;
 
 /**
  * <strong>动态代码执行器</strong>
- * <p>格式: {@code
- * <java>
- * <package_import>导入的包</package_import>
- * <code>要执行的代码</code>
- * </java>
- * }</p>
+ * <p>格式: <br>
+ * {@code <java> } <br>
+ * {@code <package_import>导入的包</package_import> }<br>
+ * {@code <code>要执行的代码</code> }<br>
+ * {@code </java> }
+ * </p>
  *
  * @author weizhanjie
  */

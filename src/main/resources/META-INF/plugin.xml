@@ -18,7 +18,7 @@
         强大功能，阅读无忧
         </h4>
         <ul>
-            <li>&nbsp;&nbsp;<b>便捷检索与快速定位：</b>支持在线搜索海量小说资源，只需轻松点击，即可精准定位到心仪作品。目录导航功能，更能让你一键快速跳转至任意章节，阅读节奏尽在掌握。</li>
+            <li>&nbsp;&nbsp;<b>便捷检索，快速定位：</b>支持在线搜索海量小说资源，只需轻松点击，即可精准定位到心仪作品。目录导航功能，更能让你一键快速跳转至任意章节，阅读节奏尽在掌握。</li>
             <li>&nbsp;&nbsp;<b>多元书源，随心切换：</b>整合多个优质书源，满足你多样化的阅读需求，无论是热门网文，还是经典名著，都能轻松获取。</li>
             <li>&nbsp;&nbsp;<b>本地加载，兼容并蓄：</b>无缝支持 txt 和 epub 格式的本地小说加载，让你珍藏的本地书籍也能在 Intellij IDEA 中便捷阅读。</li>
             <li>&nbsp;&nbsp;<b>模式切换，自由随心：</b>可在侧边栏和状态栏模式间自由切换，适应不同的使用习惯和屏幕布局，打造个性化的阅读界面。</li>
@@ -199,6 +199,11 @@
                 icon="com.wei.wreader.utils.WReaderIcons.LISTEN_BOOK">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
         </action>
+        <action id="wreader.ShowBookInfoAction"
+                class="com.wei.wreader.action.ShowBookInfoAction"
+                text="书籍信息"
+                icon="com.wei.wreader.utils.WReaderIcons.BOOK_INFO">
+        </action>
         <!--endregion-->
 
         <!--region Group-->
@@ -218,6 +223,8 @@
         <group id="wreader.group.toolMenu">
             <reference id="wreader.WReaderSetting"/>
             <reference id="wreader.HelpAction"/>
+            <reference id="wreader.ShowBookInfoAction"/>
+            <separator/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.EditorMessageAction"/>
             <reference id="wreader.CommentBlockAction"/>
@@ -245,11 +252,13 @@
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.WReaderSetting"/>
             <reference id="wreader.HelpAction"/>
+            <reference id="wreader.ShowBookInfoAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
             <reference id="wreader.WReaderSetting"/>
             <reference id="wreader.HelpAction"/>
+            <reference id="wreader.ShowBookInfoAction"/>
             <separator/>
             <reference id="wreader.SearchBookName"/>
             <reference id="wreader.LoadLocalFileAction"/>
