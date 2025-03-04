@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.11'
+  version: '0.0.12'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀

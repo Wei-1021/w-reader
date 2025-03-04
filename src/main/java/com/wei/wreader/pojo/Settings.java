@@ -72,6 +72,10 @@ public class Settings {
      * 自动阅读时间(秒)
      */
     private int autoReadTime;
+    /**
+     * 本地加载时是否显示图片
+     */
+    private boolean isShowLocalImg;
     //--------------------------------------------
     //----------------  语音TTS  ------------------
     //--------------------------------------------
@@ -145,6 +149,14 @@ public class Settings {
         this.autoReadTime = autoReadTime;
     }
 
+    public boolean isShowLocalImg() {
+        return isShowLocalImg;
+    }
+
+    public void setShowLocalImg(boolean showLocalImg) {
+        isShowLocalImg = showLocalImg;
+    }
+
     public String getVoiceRole() {
         return voiceRole;
     }
@@ -194,6 +206,7 @@ public class Settings {
                 ", dataLoadType=" + dataLoadType +
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
+                ", isShowLocalImg=" + isShowLocalImg +
                 ", voiceRole='" + voiceRole + '\'' +
                 ", audioTimeout=" + audioTimeout +
                 ", rate=" + rate +

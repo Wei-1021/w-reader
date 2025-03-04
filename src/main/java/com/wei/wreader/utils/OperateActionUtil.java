@@ -27,11 +27,10 @@ import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.tts.EdgeTTS;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
-import io.documentnode.epub4j.domain.Book;
-import io.documentnode.epub4j.domain.Resource;
-import io.documentnode.epub4j.domain.TOCReference;
-import io.documentnode.epub4j.domain.TableOfContents;
+import io.documentnode.epub4j.domain.*;
 import io.documentnode.epub4j.epub.EpubReader;
+import io.documentnode.epub4j.util.IOUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -47,6 +46,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -271,7 +271,7 @@ public class OperateActionUtil {
             JTextField searchBookTextField = new JTextField(20);
             Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, comboBox, searchBookTextField};
             searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
-                    () ->searchBookDialogOk(comboBox, searchBookTextField),
+                    () -> searchBookDialogOk(comboBox, searchBookTextField),
                     this::commCancelOperationHandle);
         });
     }
@@ -642,7 +642,7 @@ public class OperateActionUtil {
             try {
                 document = Jsoup.connect(url)
                         .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                        .   get();
+                        .get();
             } catch (IOException e) {
                 Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
                 throw new RuntimeException(e);
@@ -790,18 +790,18 @@ public class OperateActionUtil {
 
                                 // 构建完整html结构
                                 chapterContent = String.format(
-                                           "<!DOCTYPE html>" +
-                                           "<html lang=\"zh-CN\">" +
-                                           "<head>" +
-                                           "    <meta charset=\"UTF-8\">" +
-                                           "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
-                                           "    <title>%s</title>" +
-                                           "    %s" +
-                                           "</head>" +
-                                           "<body>" +
-                                           "%s" +
-                                           "</body>" +
-                                           "</html>",
+                                        "<!DOCTYPE html>" +
+                                                "<html lang=\"zh-CN\">" +
+                                                "<head>" +
+                                                "    <meta charset=\"UTF-8\">" +
+                                                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                                                "    <title>%s</title>" +
+                                                "    %s" +
+                                                "</head>" +
+                                                "<body>" +
+                                                "%s" +
+                                                "</body>" +
+                                                "</html>",
                                         selectBookInfo.getBookName(), contentOriginalStyle, chapterContent
                                 );
                             } else {
@@ -1258,29 +1258,95 @@ public class OperateActionUtil {
     public void loadFileTypeEpub(File file) {
         // 读取文件内容
         String charset = settings.getCharset();
+        boolean isShowLocalImg = settings.isShowLocalImg();
         try (FileInputStream fis = new FileInputStream(file)) {
+            // 获取临时目录
+            String tempDir = System.getProperty("java.io.tmpdir");
+            File tempDirFile = new File(tempDir);
+            String tempDirPath = tempDirFile.getAbsolutePath() + File.separator + ConstUtil.WREADER_ID + File.separator +
+                    "images" + File.separator;
+            // 清空临时目录中的图片文件
+            FileUtils.deleteDirectory(new File(tempDirPath));
+
             // 创建一个EpubReader对象，用于解析EPUB文件
             EpubReader epubReader = new EpubReader();
             // 使用EpubReader对象读取EPUB文件，并获取一个Book对象
             Book book = epubReader.readEpub(fis, charset);
+            // 存储图片临时路径
+            Map<String, String> imgTempPathMap = new HashMap<>();
+            // 获取图片是否显示标志
+            if (isShowLocalImg) {
+                // 获取Epub中所有资源(包括章节信息以及各种静态资源)
+                Map<String, Resource> resourceMap = book.getResources().getResourceMap();
+                // 遍历资源列表，将图片保存至本地临时文件中
+                for (Map.Entry<String, Resource> entry : resourceMap.entrySet()) {
+                    Resource resource = entry.getValue();
+                    if ((resource.getMediaType() != null && resource.getMediaType().getName().startsWith("image/")) ||
+                            entry.getKey().toLowerCase().endsWith(".bmp") || entry.getKey().toLowerCase().endsWith(".webp") ||
+                            entry.getKey().toLowerCase().endsWith(".ico") || entry.getKey().toLowerCase().endsWith(".tiff") ||
+                            entry.getKey().toLowerCase().endsWith(".avif")) {
+                        try (InputStream inputStream = resource.getInputStream()) {
+                            byte[] data = IOUtil.toByteArray(inputStream);
+                            String filePath = tempDirPath + entry.getKey();
+                            if (entry.getKey().toLowerCase().endsWith(".bmp") || entry.getKey().toLowerCase().endsWith(".webp") ||
+                                    entry.getKey().toLowerCase().endsWith(".ico") || entry.getKey().toLowerCase().endsWith(".tiff") ||
+                                    entry.getKey().toLowerCase().endsWith(".avif")) {
+                                filePath = FileUtil.convertBMPToJPG(data, filePath);
+                            } else {
+                                FileUtils.writeByteArrayToFile(new File(filePath), data);
+                            }
+                            imgTempPathMap.put(entry.getKey(), "file:///" + filePath.replace("\\", "/"));
+                        }
+                    }
+                }
+            }
+
+            // 获取书籍内容列表
+            List<Resource> contentList = book.getContents();
+            // 获取书籍的阅读顺序
+            List<SpineReference> spineReferenceList = book.getSpine().getSpineReferences();
             // 获取书籍的章节列表
             TableOfContents tableOfContents = book.getTableOfContents();
+            List<TOCReference> tocReferences = tableOfContents.getTocReferences();
             // 创建两个列表，分别存储章节标题和章节内容
             List<String> chapterList = new ArrayList<>();
             List<String> chapterContentList = new ArrayList<>();
-            // 遍历章节列表，获取章节内容
-            List<TOCReference> tocReferences = tableOfContents.getTocReferences();
-            for (TOCReference tocReference : tocReferences) {
-                Resource resource = tocReference.getResource();
-                byte[] content = resource.getData();
-                // 获取输入编码
-                String inputEncoding = resource.getInputEncoding();
-                // 将章节内容byte转换为字符串
-                String contentStr = new String(content, inputEncoding);
-                // 获取<body>标签中的内容
-                String contentStrBody = contentStr.substring(contentStr.indexOf("<body>") + 6, contentStr.indexOf("</body>"));
-                chapterList.add(tocReference.getTitle());
-                chapterContentList.add(contentStrBody);
+            for (SpineReference spineReference : spineReferenceList) {
+                Resource resource = spineReference.getResource();
+
+                // 标题匹配
+                String resourceTitle = resource.getTitle();
+                for (TOCReference tocReference : tocReferences) {
+                    Resource tocReferenceRes = tocReference.getResource();
+                    if (resource.getId().equals(tocReferenceRes.getId())) {
+                        resourceTitle = tocReference.getTitle();
+                    }
+                }
+                if (resourceTitle != null) {
+                    resource.setTitle(resourceTitle);
+                } else {
+                    resourceTitle = resource.getId();
+                }
+
+                // 内容匹配
+                String contentText = "";
+                for (Resource contentRes : contentList) {
+                    if (resource.getId().equals(contentRes.getId())) {
+                        byte[] content = contentRes.getData();
+                        // 获取输入编码
+                        String inputEncoding = contentRes.getInputEncoding();
+                        // 将章节内容byte转换为字符串
+                        String contentStr = new String(content, inputEncoding);
+                        // 获取<body>标签中的内容
+                        contentText = StringUtil.extractBodyContent(contentStr);
+                        if (isShowLocalImg) {
+                            contentText = StringUtil.replaceImageLinks(contentText, imgTempPathMap);
+                        }
+                    }
+                }
+
+                chapterList.add(resourceTitle);
+                chapterContentList.add(contentText);
             }
             cacheService.setChapterList(chapterList);
             cacheService.setChapterContentList(chapterContentList);
@@ -1293,6 +1359,7 @@ public class OperateActionUtil {
     }
 
     //region auto read next line
+
     /**
      * 分割章节内容
      */
@@ -1369,8 +1436,10 @@ public class OperateActionUtil {
     //endregion
 
     //region TTS
+
     /**
      * 获取小说内容原始样式
+     *
      * @return
      */
     public String getContentOriginalStyle() {

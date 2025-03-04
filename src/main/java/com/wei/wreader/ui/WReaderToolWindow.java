@@ -17,6 +17,7 @@ import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -298,22 +299,8 @@ public class WReaderToolWindow  {
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
         contentTextPane.setAlignmentY(Component.TOP_ALIGNMENT);
+        contentTextPane.setEditorKit(new HTMLEditorKit());
         contentTextPane.setPreferredSize(new Dimension(toolWindowComponent.getWidth(), toolWindowComponent.getHeight()));
-        contentTextPane.addMouseListener(new MouseAdapter() {
-            /**
-             * {@inheritDoc}
-             *
-             * @param e
-             */
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                if (e.getClickCount() == 2) {
-                    // 双击事件，显示/隐藏工具菜单
-//                    menuToolPanel.setVisible(!menuToolPanel.isVisible());
-                }
-            }
-        });
         contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);
         contentScrollPane.setBorder(JBUI.Borders.empty(2, 5));
