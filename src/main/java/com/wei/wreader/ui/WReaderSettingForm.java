@@ -16,9 +16,11 @@ import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.widget.GroupedComboBox.CharsetGroupComboBox;
 import com.wei.wreader.widget.GroupedComboBox.GroupedComboBox;
 import com.wei.wreader.utils.NumberUtil;
 import com.wei.wreader.utils.tts.VoiceStyle;
+import com.wei.wreader.widget.GroupedComboBox.OptionItem;
 import org.apache.commons.lang3.StringUtils;
 import com.wei.wreader.utils.tts.VoiceRole;
 import org.jetbrains.annotations.Nullable;
@@ -44,8 +46,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JBRadioButton sideBarRadioButton;
     private JBRadioButton statusBarRadioButton;
     private JBRadioButton editorBannerRadioButton;
-    private JComboBox charsetComboBox;
+    private ComboBox charsetComboBox;
     private JLabel charsetLabel;
+    private JPanel charsetPanel;
     /**
      * 显示类型Panel
      */
@@ -168,11 +171,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
 
         // 字符集
-        SortedMap<String, Charset> stringCharsetSortedMap = Charset.availableCharsets();
-        for (Map.Entry<String, Charset> entry : stringCharsetSortedMap.entrySet()) {
-            charsetComboBox.addItem(entry.getKey());
-        }
-        charsetComboBox.setSelectedItem(settings.getCharset());
+        CharsetGroupComboBox charsetGroupComboBox = new CharsetGroupComboBox();
+        charsetComboBox = charsetGroupComboBox.buildComboBox();
+        charsetGroupComboBox.setSelectedItem(settings.getCharset());
+        GridConstraints charsetGridConstraints = new GridConstraints();
+        charsetGridConstraints.setRow(0);
+        charsetGridConstraints.setColumn(0);
+        charsetPanel.add(charsetComboBox, charsetGridConstraints);
 
         // 自动阅读
         autoReadTimeTextField.setDocument(new NumberDocument());
@@ -261,7 +266,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 字符集
-        if (!settings.getCharset().equals(charsetComboBox.getSelectedItem())) {
+        OptionItem charsetSelectedItem = (OptionItem) charsetComboBox.getSelectedItem();
+        if (charsetSelectedItem != null && !settings.getCharset().equals(charsetSelectedItem.getText())) {
             return true;
         }
         // 自动阅读
@@ -270,7 +276,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 音色
-        if (!settings.getVoiceRole().equals(voiceRoleGroupComboBox.getSelectedItem())) {
+        OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
+        if (voiceRoleSelectedItem != null && !settings.getVoiceRole().equals(voiceRoleSelectedItem.getText())) {
             return true;
         }
         // 音频超时
@@ -304,9 +311,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setSingleLineChars(NumberUtil.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
         settings.setDisplayType(selectedDisplayType);
-        settings.setCharset((String) charsetComboBox.getSelectedItem());
+        OptionItem charsetSelectedItem = (OptionItem) charsetComboBox.getSelectedItem();
+        settings.setCharset(charsetSelectedItem == null ? settings.getCharset() : charsetSelectedItem.getText());
         settings.setAutoReadTime(NumberUtil.parseInt(autoReadTimeTextField.getText()));
-        settings.setVoiceRole((String) voiceRoleGroupComboBox.getSelectedItem());
+        OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
+        settings.setVoiceRole(voiceRoleSelectedItem == null ? settings.getVoiceRole() : voiceRoleSelectedItem.getText());
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
         settings.setAudioTimeout(NumberUtil.parseInt(timeoutTextField.getText()));
 

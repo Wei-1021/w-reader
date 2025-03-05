@@ -15,10 +15,31 @@ import java.util.regex.Pattern;
 
 public class StringUtil {
 
+    /** 全角空格符号 */
+    public static final String FULL_WIDTH_SPACE = "　";
+
     /**
      * 匹配 <body> 标签内容的正则表达式
      */
     public static final String PATTERN = "<body[^>]*>(.*?)</body>";
+
+    /**
+     * 去除字符按两端的空格（全角和半角）
+     * @param str
+     * @return
+     */
+    public static String trim(String str) {
+        str = str.trim();
+        // 这里判断是不是全角空格
+        while (str.startsWith(FULL_WIDTH_SPACE)) {
+            str = str.substring(1).trim();
+        }
+        while (str.endsWith(FULL_WIDTH_SPACE)) {
+            str = str.substring(0, str.length() - 1).trim();
+        }
+
+        return str;
+    }
 
     /**
      * 将字符串按照指定的最大字符数分割成多个子字符串

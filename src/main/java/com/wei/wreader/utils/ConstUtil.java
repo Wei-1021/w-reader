@@ -104,7 +104,7 @@ public class ConstUtil {
     public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
-    public static final String WREADER_LOAD_CONTENT_ERROR = "加载书本内容，请重试！";
+    public static final String WREADER_LOAD_CONTENT_ERROR = "加载内容失败，请重新加载书本！";
     public static final String WREADER_ERROR = "出现异常，请重试！";
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";

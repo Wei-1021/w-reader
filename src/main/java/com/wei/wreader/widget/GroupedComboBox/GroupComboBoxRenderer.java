@@ -17,9 +17,12 @@ public class GroupComboBoxRenderer implements ListCellRenderer<Object> {
     public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                   boolean isSelected, boolean cellHasFocus) {
         if (value instanceof GroupTitle groupTitle) {
-            // 创建带分隔线的标题组件
+            // 标题组件
             JPanel panel = new JPanel(new BorderLayout());
-            panel.add(new JSeparator(), BorderLayout.NORTH);
+            if (index != 0) {
+                // 创建分隔线
+                panel.add(new JSeparator(), BorderLayout.NORTH);
+            }
             JLabel label = new JLabel(groupTitle.getTitle());
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setOpaque(true);
@@ -30,7 +33,7 @@ public class GroupComboBoxRenderer implements ListCellRenderer<Object> {
         }
 
         // 普通项使用默认渲染，但禁用选中状态
-        Component comp = defaultRenderer.getListCellRendererComponent(list, value, index, false, false);
+        Component comp = defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         comp.setEnabled(true);
         return comp;
     }

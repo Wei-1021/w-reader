@@ -1,5 +1,6 @@
 package com.wei.wreader.factory;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.*;
@@ -42,11 +43,10 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
             settings = configYaml.getSettings();
         }
 
-        WReaderToolWindow wReaderToolWindow = new WReaderToolWindow(toolWindow);
         ContentFactory contentFactory = ContentFactory.getInstance();
+        WReaderToolWindow wReaderToolWindow = new WReaderToolWindow(toolWindow);
         Content wReader = contentFactory.createContent(wReaderToolWindow.getContent(), ConstUtil.WREADER_TOOL_WINDOW_ID, false);
-        ContentManager contentManager = toolWindow.getContentManager();
-        contentManager.addContent(wReader);
+        toolWindow.getContentManager().addContent(wReader);
     }
 
     /**
@@ -62,7 +62,7 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
 
         toolWindowManager.registerToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID, registerToolWindowTaskBuilder -> {
             registerToolWindowTaskBuilder.anchor = ToolWindowAnchor.RIGHT;
-            registerToolWindowTaskBuilder.canCloseContent = true;
+            registerToolWindowTaskBuilder.canCloseContent = false;
             registerToolWindowTaskBuilder.icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderToolWindowFactory.class);
             // 创建工具窗口内容
             registerToolWindowTaskBuilder.contentFactory = WReaderToolWindowFactory.this;

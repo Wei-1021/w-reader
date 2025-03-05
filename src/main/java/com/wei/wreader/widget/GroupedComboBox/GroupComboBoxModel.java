@@ -1,6 +1,8 @@
 package com.wei.wreader.widget.GroupedComboBox;
 
 
+import com.intellij.openapi.util.Comparing;
+
 import javax.swing.*;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import java.util.Map;
 public class GroupComboBoxModel extends DefaultComboBoxModel<Object> {
 
     private static Map<String, List<String>> itemMap;
+    private Object mySelectedItem;
 
     public GroupComboBoxModel(Map<String, List<String>> map) {
         itemMap = map;
@@ -22,27 +25,20 @@ public class GroupComboBoxModel extends DefaultComboBoxModel<Object> {
     public void setSelectedItem(Object anItem) {
         // 阻止选择组标题
         if (anItem instanceof GroupTitle groupTitle) {
-            OptionItem optionItem = getOptionItem(groupTitle);
-            if (optionItem != null) {
-                super.setSelectedItem(optionItem);
-            }
-            return;
+            anItem = getOptionItem(groupTitle);
+        } else if (anItem instanceof String itemString) {
+            anItem = new OptionItem(itemString);
         }
-        super.setSelectedItem(anItem);
+
+        if (!Comparing.equal(this.mySelectedItem, anItem)) {
+            this.mySelectedItem = anItem;
+            this.fireContentsChanged(this, -1, -1);
+        }
     }
 
     @Override
     public Object getSelectedItem() {
-        Object selectedItem = super.getSelectedItem();
-        if (selectedItem instanceof GroupTitle groupTitle) {
-            OptionItem optionItem = getOptionItem(groupTitle);
-            if (optionItem != null) {
-                selectedItem = optionItem.getText();
-            }
-        } else if (selectedItem instanceof OptionItem optionItem) {
-            selectedItem = optionItem.getText();
-        }
-        return selectedItem;
+        return this.mySelectedItem;
     }
 
 //    @Override

@@ -597,6 +597,7 @@ public class OperateActionUtil {
                         if (isCodeConfig) {
                             itemIdList.add(itemId);
                             itemIndexList.add(i);
+                            chapterList.add(title);
 
 //                            try {
 //                                // 执行动态代码
@@ -670,6 +671,17 @@ public class OperateActionUtil {
             }
         }
 
+        buildBookDirectoryDialog();
+
+        // 设置数据加载模式
+        settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
+        cacheService.setSettings(settings);
+    }
+
+    /**
+     * 构建搜索书籍目录列表窗口
+     */
+    private void buildBookDirectoryDialog() {
         // 构建目录列表组件
         JBList<String> chapterListJBList = new JBList<>(chapterList);
         // 设置单选模式
@@ -713,10 +725,6 @@ public class OperateActionUtil {
         jScrollPane.setPreferredSize(new Dimension(400, 500));
         MessageDialogUtil.showMessageDialog(mProject, "目录", jScrollPane,
                 null, this::commCancelOperationHandle);
-
-        // 设置数据加载模式
-        settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
-        cacheService.setSettings(settings);
     }
 
     /**
@@ -846,6 +854,10 @@ public class OperateActionUtil {
         // 提取章节名称和章节链接
         String chapterTitle = chapterList.get(currentChapterIndex);
         // 提取章节链接
+        if(ListUtil.isEmpty(chapterUrlList)) {
+            Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
+            return;
+        }
         String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
         String chapterUrl = chapterSuffixUrl;
         if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
@@ -995,6 +1007,11 @@ public class OperateActionUtil {
 
             int dataLoadType = settings.getDataLoadType();
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
+                if(ListUtil.isEmpty(chapterUrlList)) {
+                    Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
+                    return null;
+                }
+
                 String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
                 String prevChapterUrl = prevChapterSuffixUrl;
                 if (!prevChapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
@@ -1031,6 +1048,11 @@ public class OperateActionUtil {
         try {
             int dataLoadType = settings.getDataLoadType();
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
+                if(ListUtil.isEmpty(chapterUrlList)) {
+                    Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
+                    return null;
+                }
+
                 if (currentChapterIndex >= chapterUrlList.size() - 1) {
                     return null;
                 }
@@ -1160,18 +1182,18 @@ public class OperateActionUtil {
             // 读取文件内容
             if (ConstUtil.FILE_TYPE_TXT.equalsIgnoreCase(fileExtension)) {
                 loadFileTypeTxt(file);
+
+                // 创建一个BookInfo对象，并设置文件名、文件路径和内容
+                BookInfo bookInfo = new BookInfo();
+                // 分离文件名和后缀
+                int dotIndex = fileName.lastIndexOf('.');
+                String fileNameWithoutExtension = fileName.substring(0, dotIndex);
+                bookInfo.setBookName(fileNameWithoutExtension);
+                bookInfo.setBookDesc(fileNameWithoutExtension);
+                cacheService.setSelectedBookInfo(bookInfo);
             } else if (ConstUtil.FILE_TYPE_EPUB.equalsIgnoreCase(fileExtension)) {
                 loadFileTypeEpub(file);
             }
-
-            // 创建一个BookInfo对象，并设置文件名、文件路径和内容
-            BookInfo bookInfo = new BookInfo();
-            // 分离文件名和后缀
-            int dotIndex = fileName.lastIndexOf('.');
-            String fileNameWithoutExtension = fileName.substring(0, dotIndex);
-            bookInfo.setBookName(fileNameWithoutExtension);
-            bookInfo.setBookDesc(fileNameWithoutExtension);
-            cacheService.setSelectedBookInfo(bookInfo);
 
             // 重置选中章节信息
             ChapterInfo selectedChapterInfoTemp = new ChapterInfo();
@@ -1281,17 +1303,19 @@ public class OperateActionUtil {
                 // 遍历资源列表，将图片保存至本地临时文件中
                 for (Map.Entry<String, Resource> entry : resourceMap.entrySet()) {
                     Resource resource = entry.getValue();
+                    String key = entry.getKey().toLowerCase();
                     if ((resource.getMediaType() != null && resource.getMediaType().getName().startsWith("image/")) ||
-                            entry.getKey().toLowerCase().endsWith(".bmp") || entry.getKey().toLowerCase().endsWith(".webp") ||
-                            entry.getKey().toLowerCase().endsWith(".ico") || entry.getKey().toLowerCase().endsWith(".tiff") ||
-                            entry.getKey().toLowerCase().endsWith(".avif")) {
+                            key.toLowerCase().endsWith(".bmp") || key.toLowerCase().endsWith(".webp") ||
+                            key.toLowerCase().endsWith(".ico") || key.toLowerCase().endsWith(".tiff") ||
+                            key.toLowerCase().endsWith(".avif")) {
                         try (InputStream inputStream = resource.getInputStream()) {
                             byte[] data = IOUtil.toByteArray(inputStream);
                             String filePath = tempDirPath + entry.getKey();
-                            if (entry.getKey().toLowerCase().endsWith(".bmp") || entry.getKey().toLowerCase().endsWith(".webp") ||
-                                    entry.getKey().toLowerCase().endsWith(".ico") || entry.getKey().toLowerCase().endsWith(".tiff") ||
-                                    entry.getKey().toLowerCase().endsWith(".avif")) {
-                                filePath = FileUtil.convertBMPToJPG(data, filePath);
+                            // 如果图片格式为JTextPanel不支持展示的格式，则将其转换为JPG格式，反之则直接保存至本地临时文件内
+                            if (key.toLowerCase().endsWith(".bmp") || key.toLowerCase().endsWith(".webp") ||
+                                    key.toLowerCase().endsWith(".ico") || key.toLowerCase().endsWith(".tiff") ||
+                                    key.toLowerCase().endsWith(".avif")) {
+                                filePath = FileUtil.convertImgToJPG(data, filePath);
                             } else {
                                 FileUtils.writeByteArrayToFile(new File(filePath), data);
                             }
@@ -1352,6 +1376,21 @@ public class OperateActionUtil {
             cacheService.setChapterContentList(chapterContentList);
             this.chapterList = chapterList;
             this.chapterContentList = chapterContentList;
+
+            // 保存书本信息
+            // 创建一个BookInfo对象
+            BookInfo bookInfo = new BookInfo();
+            String bookName = ListUtil.listToString(book.getMetadata().getTitles());
+            bookInfo.setBookName(bookName);
+            List<String> descriptions = book.getMetadata().getDescriptions();
+            String bookDesc = bookName;
+            if (descriptions != null && !descriptions.isEmpty()) {
+                bookDesc = ListUtil.listToString(book.getMetadata().getDescriptions());
+            }
+            bookInfo.setBookDesc(bookDesc);
+            String author = ListUtil.listToString(book.getMetadata().getAuthors());
+            bookInfo.setBookAuthor(author);
+            cacheService.setSelectedBookInfo(bookInfo);
         } catch (IOException e) {
             e.printStackTrace();
             Messages.showMessageDialog(ConstUtil.WREADER_LOAD_FAIL, "提示", Messages.getInformationIcon());

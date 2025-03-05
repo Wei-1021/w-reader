@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.12'
+  version: '0.0.13'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -354,7 +354,7 @@ wreader:
       isPathParam: true
     - isEnabled: true
       id: 'www.shuqi.com'
-      name: '书旗小说'
+      name: '书旗小说（不推荐）'
       baseUrl: 'https://www.shuqi.com'
       searchUrl: 'https://read.xiaoshuo1-sm.com/novel/i.php?q=${key}&page=1&size=100&do=is_search&isNewBind=0&tk=&imei=&sn=&channelId=&clientPatch=&clientVersion=&device=&deviceId=&utdid=&model=&osName=&osVersion=&umidToken=&appVersion=&app=&platform=3&ykToken=&ykuid=&shuqi_h5=&token=&user_id=8000000&uid=8000000&filterMigu=1&ver=&p=3'
       searchBookNameParam: ''
@@ -384,22 +384,21 @@ wreader:
       listMainElementName: ''
       listMainElementType: ''
       chapterContentUrl:
-       <java>
+       '<java>
          <package_import>import java.util.*;import com.wei.wreader.utils.*;import com.jayway.jsonpath.*;</package_import>
          <code>
-           public List<String> execute(Map<String,Object> paramMap, List<Object> indexList, String bookId, List<String> itemIdList){
+           public List<String> execute(Map<String,Object> paramMap, List<Object> indexList, String bookId, List<Object> itemIdList){
              List<String> list = new ArrayList<>();
-             for (int i = 0, len = indexList.size(); i < len; i++) {
-               int index = Integer.parseInt(indexList.get(i).toString());
-               String itemId = itemIdList.get(i);
-               String dataJsonStr=(String)paramMap.get("dataJsonStr");
-               String memuListJsonStr=(String)paramMap.get("memuListJsonStr");
+             String dataJsonStr=(String)paramMap.get("dataJsonStr");
+             String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.freeContUrlPrefix");
+             String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.shortContUrlPrefix");
+             String memuListJsonStr=(String)paramMap.get("memuListJsonStr");
+             for (Object indexObj : indexList) {
+               int index = Integer.parseInt(indexObj.toString());
                String contUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].contUrlSuffix");
                if(!contUrlSuffix.contains("reqEncryptParam")){
-                 String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.freeContUrlPrefix");
                  list.add(freeContUrlPrefix+contUrlSuffix);
                }else{
-                 String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.shortContUrlPrefix");
                  String shortContUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].shortContUrlSuffix");
                  list.add(shortContUrlPrefix+shortContUrlSuffix);
                }
@@ -408,7 +407,7 @@ wreader:
              return list;
            }
          </code>
-       </java>
+       </java>'
       chapterContentUrlDataRule: '$.ChapterContent'
       chapterContentHandleRule: '<java>com.wei.wreader.utils.StringUtil.base64Decode(${content}, true)</java>'
       isContentOriginalStyle: false
