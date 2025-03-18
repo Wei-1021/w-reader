@@ -42,6 +42,10 @@ public final class CacheService implements PersistentStateComponent<CacheService
      */
     private BookInfo selectedBookInfo;
     /**
+     * 编辑器消息垂直滚动条位置
+     */
+    private int editorMessageVerticalScrollValue;
+    /**
      * 是否隐藏文字
      */
     private boolean isHideText;
@@ -184,5 +188,13 @@ public final class CacheService implements PersistentStateComponent<CacheService
 
     public void setHideText(boolean hideText) {
         this.isHideText = hideText;
+    }
+
+    public int getEditorMessageVerticalScrollValue() {
+        return editorMessageVerticalScrollValue;
+    }
+
+    public void setEditorMessageVerticalScrollValue(int editorMessageVerticalScrollValue) {
+        this.editorMessageVerticalScrollValue = editorMessageVerticalScrollValue;
     }
 }

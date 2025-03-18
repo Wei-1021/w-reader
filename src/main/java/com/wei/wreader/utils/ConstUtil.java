@@ -136,6 +136,10 @@ public class ConstUtil {
      */
     public static final String HTML_TAG_REGEX = "<[^>]+>|\\s|\\p{Zs}";
     /**
+     * 正则表达式--匹配HTML标签
+     */
+    public static final String HTML_TAG_REGEX_STR = "<[^>]+>";
+    /**
      * 文件类型--txt
      */
     public static final String FILE_TYPE_TXT = "txt";

@@ -820,6 +820,7 @@ public class OperateActionUtil {
                                         """,
                                         fontColorHex, fontFamily, fontSize, chapterContent);
                             }
+
                             contentTextPanel.setText(chapterContent);
                             // 设置光标位置
                             contentTextPanel.setCaretPosition(0);
@@ -901,8 +902,9 @@ public class OperateActionUtil {
             currentChapterInfo.setChapterTitle(chapterTitle);
             // 提取章节内容
             chapterContentHtml = chapterContentList.get(currentChapterIndex);
-            Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+            Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
             chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+            chapterContentText = StringUtils.normalizeSpace(chapterContentText);
             // 缓存当前章节信息
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             currentChapterInfo.setChapterContent(chapterContentHtml);
@@ -943,8 +945,9 @@ public class OperateActionUtil {
                             currentChapterInfo.getChapterTitle() + "</h3>" + contentStr;
 
                     chapterContentHtml = contentStr;
-                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             } catch (Exception e) {
                 Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
@@ -965,7 +968,7 @@ public class OperateActionUtil {
                     String replacement = selectedBookSiteInfo.getReplaceContentOriginalRegex();
                     styleText = styleText.replaceAll(replacement, ConstUtil.NEW_FONT_CLASS_CSS_NAME);
                     // 去除样式中的HTML标签
-                    styleText = styleText.replaceAll(ConstUtil.HTML_TAG_REGEX, "");
+                    styleText = styleText.replaceAll(ConstUtil.HTML_TAG_REGEX_STR, "");
                     allStyle.append(styleText);
                 }
 
@@ -1026,8 +1029,9 @@ public class OperateActionUtil {
                 if (chapterContentList != null && !chapterContentList.isEmpty()) {
                     // 提取章节内容
                     chapterContentHtml = chapterContentList.get(currentChapterIndex);
-                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             }
 
@@ -1082,8 +1086,9 @@ public class OperateActionUtil {
                     currentChapterInfo.setChapterTitle(chapterTitle);
                     // 提取章节内容
                     chapterContentHtml = chapterContentList.get(currentChapterIndex);
-                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX);
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             }
 

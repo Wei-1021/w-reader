@@ -45,9 +45,6 @@ public class Settings {
      * 数据加载模式--本地加载
      */
     public static final int DATA_LOAD_TYPE_LOCAL = 2;
-
-
-
     /**
      * 最大单行字数
      */
@@ -76,6 +73,10 @@ public class Settings {
      * 本地加载时是否显示图片
      */
     private boolean isShowLocalImg;
+    /**
+     * 主图标风格：1-默认，2-浅色
+     */
+    private int mainIconStyle;
     //--------------------------------------------
     //----------------  语音TTS  ------------------
     //--------------------------------------------
@@ -155,6 +156,14 @@ public class Settings {
 
     public void setShowLocalImg(boolean showLocalImg) {
         isShowLocalImg = showLocalImg;
+    }
+
+    public int getMainIconStyle() {
+        return mainIconStyle;
+    }
+
+    public void setMainIconStyle(int mainIconStyle) {
+        this.mainIconStyle = mainIconStyle;
     }
 
     public String getVoiceRole() {

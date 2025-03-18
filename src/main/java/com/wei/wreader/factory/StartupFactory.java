@@ -11,6 +11,7 @@ import javax.swing.*;
 
 /**
  * 启动工厂
+ *
  * @author weizhanjie
  */
 public class StartupFactory implements StartupActivity {

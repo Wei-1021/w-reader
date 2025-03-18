@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,35 @@ public class StringUtil {
             start = end;
         }
 
+        return result;
+    }
+
+
+    public static List<String> splitCompleteString(String input, int maxLength) {
+        List<String> result = new ArrayList<>();
+        if (input == null || input.isEmpty()) {
+            return result;
+        }
+        String[] words = input.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+        for (String word : words) {
+            if (currentLine.isEmpty()) {
+                // 如果当前行是空的，直接添加单词
+                currentLine.append(word);
+            } else if (currentLine.length() + 1 + word.length() <= maxLength) {
+                // 如果添加当前单词和一个空格后不超过最大长度，添加单词
+                currentLine.append(" ").append(word);
+            } else {
+                // 超过最大长度，将当前行添加到结果列表，并开始新的一行
+                result.add(currentLine.toString());
+                currentLine.setLength(0);
+                currentLine.append(word);
+            }
+        }
+        // 添加最后一行
+        if (!currentLine.isEmpty()) {
+            result.add(currentLine.toString());
+        }
         return result;
     }
 
@@ -222,11 +252,11 @@ public class StringUtil {
     public static String replaceImageLinks(String html, Map<String, String> imageMap) {
         // 匹配 <img> 标签的正则表达式
         String imgRegex = "<img\\s+[^>]*src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
-        html = replaceWithBase64(html, imgRegex, imageMap);
+        html = replaceWithImg(html, imgRegex, imageMap);
 
         // 匹配 SVG 中 <image> 标签的正则表达式
         String svgImageRegex = "<image\\s+[^>]*xlink:href\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
-        html = replaceWithBase64(html, svgImageRegex, imageMap);
+        html = replaceWithImg(html, svgImageRegex, imageMap);// 去除可能存在的 ../ 前缀
         // 将 SVG 中的 <image> 标签转换为 <img> 标签
         html = convertSvgImageToImg(html);
 
@@ -234,13 +264,13 @@ public class StringUtil {
     }
 
     /**
-     * 替换 HTML 或 SVG 中的图片链接为 Base64 编码字符串
+     * 替换 HTML 或 SVG 中的图片链接
      * @param html
      * @param regex
      * @param imageMap
      * @return
      */
-    public static String replaceWithBase64(String html, String regex, Map<String, String> imageMap) {
+    public static String replaceWithImg(String html, String regex, Map<String, String> imageMap) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(html);
         StringBuilder result = new StringBuilder();
@@ -250,8 +280,8 @@ public class StringUtil {
             result.append(html, lastIndex, matcher.start());
             String src = matcher.group(1);
             if (imageMap.containsKey(src)) {
-                String base64Image = imageMap.get(src);
-                String newTag = matcher.group().replaceFirst(Pattern.quote(src), Matcher.quoteReplacement(base64Image));
+                String imgSrc = imageMap.get(src);
+                String newTag = matcher.group().replaceFirst(Pattern.quote(src), Matcher.quoteReplacement(imgSrc));
                 result.append(newTag);
             } else {
                 result.append(matcher.group());
@@ -260,6 +290,18 @@ public class StringUtil {
         }
         result.append(html.substring(lastIndex));
         return result.toString();
+    }
+
+    /**
+     * 去除相对路径前缀
+     * @param path
+     * @return
+     */
+    private static String removeRelativePathPrefix(String path) {
+        while (path.startsWith("../")) {
+            path = path.substring(3);
+        }
+        return path;
     }
 
     /**

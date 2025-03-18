@@ -14,6 +14,7 @@ wreader:
     dataLoadType: 1 #数据加载模式。1-网络加载，2-本地加载
     charset: 'GBK' #字符集
     autoReadTime: 5 #自动阅读时间
+    mainIconStyle: 1 #主图标风格：1-默认，2-浅色
     voiceRole: '晓晓' #音色
     audioTimeout: 3 #听书超时
     rate: 1.0 #语速

@@ -14,7 +14,9 @@ import java.util.regex.Pattern;
  *
  * @author weizhanjie
  * @since 2025-01-03
+ * @deprecated 该类已弃用，请使用 {@link StringTemplateEngine} 代替。
  */
+@Deprecated
 public class StringTemplateEngine2 {
 
     /**

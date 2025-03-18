@@ -12,6 +12,7 @@ import com.wei.wreader.service.CacheService;
 import com.wei.wreader.ui.WReaderToolWindow;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
+import com.wei.wreader.utils.WReaderIcons;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +64,7 @@ public class WReaderToolWindowFactory implements ToolWindowFactory {
         toolWindowManager.registerToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID, registerToolWindowTaskBuilder -> {
             registerToolWindowTaskBuilder.anchor = ToolWindowAnchor.RIGHT;
             registerToolWindowTaskBuilder.canCloseContent = false;
-            registerToolWindowTaskBuilder.icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderToolWindowFactory.class);
+            registerToolWindowTaskBuilder.icon = WReaderIcons.getMainIcon(project);
             // 创建工具窗口内容
             registerToolWindowTaskBuilder.contentFactory = WReaderToolWindowFactory.this;
             return Unit.INSTANCE;

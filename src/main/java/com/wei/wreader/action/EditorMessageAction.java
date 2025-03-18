@@ -18,6 +18,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 /**
  * 编辑器提示信息
@@ -68,11 +70,17 @@ public class EditorMessageAction extends BaseAction {
         scrollPane.setPreferredSize(new Dimension(350, 200));
         scrollPane.setBorder(JBUI.Borders.empty());
 
-        // 滚动到顶部
-        contentTextPane.setCaretPosition(0);
+        // 滚动到上一次阅读的位置
+        SwingUtilities.invokeLater(() -> {
+            int value = cacheService.getEditorMessageVerticalScrollValue();
+            scrollPane.getVerticalScrollBar().setValue(value);
+        });
 
         // 显示提示框
         HintManager hintManager = HintManager.getInstance();
-        hintManager.showInformationHint(editor, scrollPane);
+        hintManager.showInformationHint(editor, scrollPane, () -> {
+            int value = scrollPane.getVerticalScrollBar().getValue();
+            cacheService.setEditorMessageVerticalScrollValue(value);
+        });
     }
 }

@@ -47,6 +47,10 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * 是否隐藏
      */
     private static boolean isHide = false;
+    /**
+     * 章节总行数
+     */
+    private final int totalChapterLineNum = 0;
 
     public WReaderStatusBarWidget(@NotNull Project project) {
         super(project, false);
@@ -120,7 +124,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
                     contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
                 }
                 selectedChapterInfo.setChapterContentList(contentArr);
-                if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum < contentArr.size()) {
+                if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum <= contentArr.size()) {
                     lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
                     currentContentStr = contentArr.get(lastReadLineNum - 1);
 
@@ -139,8 +143,8 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
         EditorBasedStatusBarPopup.WidgetState widgetState = new EditorBasedStatusBarPopup
                 .WidgetState(tooltipText, showContentStr, true);
-        Icon icon = IconLoader.getIcon("/icon/mainIcon.svg", WReaderStatusBarWidget.class);
-        widgetState.setIcon(icon);
+        Icon mainIcon = WReaderIcons.getMainIcon(project);
+        widgetState.setIcon(mainIcon);
 
         return widgetState;
     }
@@ -238,12 +242,11 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (chapterContentList != null &&
                 !chapterContentList.isEmpty() &&
                 lastReadLineNum > 1) {
-            lastReadLineNum--;
-            selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
-            selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
-            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
-                    chapterContentList.size() : lastReadLineNum + 1);
-            String chapterContent = chapterContentList.get(lastReadLineNum);
+            int updateLastReadLineNum = lastReadLineNum - 1;
+            selectedChapterInfoTemp.setLastReadLineNum(updateLastReadLineNum);
+            selectedChapterInfoTemp.setPrevReadLineNum(updateLastReadLineNum <= 1 ? 1 : updateLastReadLineNum - 1);
+            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum);
+            String chapterContent = chapterContentList.get(updateLastReadLineNum - 1);
             hide(project);
             update(project, chapterContent);
         }
@@ -266,12 +269,11 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (chapterContentList != null &&
                 !chapterContentList.isEmpty() &&
                 lastReadLineNum <= chapterContentList.size()) {
-            lastReadLineNum++;
+            lastReadLineNum = lastReadLineNum == chapterContentList.size() ? lastReadLineNum : lastReadLineNum + 1;
             selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
             selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
-            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum >= chapterContentList.size() ?
-                    chapterContentList.size() : lastReadLineNum + 1);
-            String chapterContent = chapterContentList.get(lastReadLineNum);
+            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum);
+            String chapterContent = chapterContentList.get(lastReadLineNum - 1);
             hide(project);
             update(project, chapterContent);
         }

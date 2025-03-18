@@ -28,7 +28,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import java.nio.charset.Charset;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -68,12 +71,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JComboBox audioStyleComboBox;
     private JLabel audioStyleLabel;
     private JPanel voiceRoleJPanel;
+    private JLabel selectIconStyleLabel;
+    private JPanel selectIconStylePanel;
+    private ButtonGroup selectIconStyleRadioButtonGroup;
     private ButtonGroup displayTypeRadioGroup;
 
     private final ConfigYaml configYaml;
     private final CacheService cacheService;
     private Settings settings;
     private int selectedDisplayType;
+    private int selectedIconStyle;
 
     public WReaderSettingForm() {
         configYaml = ConfigYaml.getInstance();
@@ -85,6 +92,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         if (StringUtils.isBlank(settings.getCharset())) {
             settings.setCharset(configYaml.getSettings().getCharset());
+        }
+        // 主图标风格
+        if (settings.getMainIconStyle() <= 0) {
+            settings.setMainIconStyle(configYaml.getSettings().getMainIconStyle());
         }
         // 音色
         if (StringUtils.isBlank(settings.getVoiceRole())) {
@@ -102,7 +113,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (settings.getVolume() == null || settings.getVolume() < 0) {
             settings.setVolume(configYaml.getSettings().getVolume());
         }
-        // 风格
+        // 语音风格
         if (StringUtils.isBlank(settings.getAudioStyle())) {
             settings.setAudioStyle(configYaml.getSettings().getAudioStyle());
         }
@@ -137,6 +148,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     @Override
     public @Nullable JComponent createComponent() {
         Border border = JBUI.Borders.customLine(JBUI.CurrentTheme.Popup.separatorColor(), 1, 0, 0, 0);
+        // *** 通用设置 ***
         TitledBorder generalTitledBorder = new TitledBorder(border, "general");
         generalPanel.setBorder(generalTitledBorder);
 
@@ -149,26 +161,63 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         isShowLineNumCheckBox.setSelected(settings.isShowLineNum());
 
         // 显示类型
-        // 创建单选按钮--侧边栏
-        sideBarRadioButton = new JBRadioButton();
-        sideBarRadioButton.setText(Settings.DISPLAY_TYPE_SIDEBAR_STR);
-        // 创建单选按钮--底部状态栏
-        statusBarRadioButton = new JBRadioButton();
-        statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
-
+        String[] displayTypeStrs = new String[]{Settings.DISPLAY_TYPE_SIDEBAR_STR, Settings.DISPLAY_TYPE_STATUSBAR_STR};
+        int[] displayTypeValues = new int[]{Settings.DISPLAY_TYPE_SIDEBAR, Settings.DISPLAY_TYPE_STATUSBAR};
+        displayTypeRadioGroup = new ButtonGroup();
+        selectedDisplayType = settings.getDisplayType();
         // 设置显示类型Panel布局
         GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
         displayTypeRadioPanel.setLayout(displayTypeRadioPanelLayoutManager);
+        for (int i = 0; i < displayTypeStrs.length; i++) {
+            JBRadioButton radioButton = new JBRadioButton();
+            radioButton.setText(displayTypeStrs[i]);
+            if (selectedDisplayType <= 0 && i == 0) {
+                radioButton.setSelected(true);
+            } else if (selectedDisplayType == displayTypeValues[i]) {
+                radioButton.setSelected(true);
+            }
+            radioButton.setActionCommand(String.valueOf(displayTypeValues[i]));
+            GridConstraints radioGridConstraints = new GridConstraints();
+            radioGridConstraints.setRow(0);
+            radioGridConstraints.setColumn(i);
+            displayTypeRadioPanel.add(radioButton, radioGridConstraints);
+            displayTypeRadioGroup.add(radioButton);
+        }
 
-        // 添加单选按钮至布局中
-        GridConstraints sideBarRadioGridConstraints = new GridConstraints();
-        sideBarRadioGridConstraints.setRow(0);
-        sideBarRadioGridConstraints.setColumn(0);
-        displayTypeRadioPanel.add(sideBarRadioButton, sideBarRadioGridConstraints);
-        GridConstraints statusBarRadioGridConstraints = new GridConstraints();
-        statusBarRadioGridConstraints.setRow(0);
-        statusBarRadioGridConstraints.setColumn(1);
-        displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
+//        // 创建单选按钮--侧边栏
+//        sideBarRadioButton = new JBRadioButton();
+//        sideBarRadioButton.setText(Settings.DISPLAY_TYPE_SIDEBAR_STR);
+//        // 创建单选按钮--底部状态栏
+//        statusBarRadioButton = new JBRadioButton();
+//        statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
+//        // 设置显示类型Panel布局
+//        GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
+//        displayTypeRadioPanel.setLayout(displayTypeRadioPanelLayoutManager);
+//        // 添加单选按钮至布局中
+//        GridConstraints sideBarRadioGridConstraints = new GridConstraints();
+//        sideBarRadioGridConstraints.setRow(0);
+//        sideBarRadioGridConstraints.setColumn(0);
+//        displayTypeRadioPanel.add(sideBarRadioButton, sideBarRadioGridConstraints);
+//        GridConstraints statusBarRadioGridConstraints = new GridConstraints();
+//        statusBarRadioGridConstraints.setRow(0);
+//        statusBarRadioGridConstraints.setColumn(1);
+//        displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
+//        // 设置默认选中
+//        int displayTypeTemp = settings.getDisplayType();
+//        switch (displayTypeTemp) {
+//            case Settings.DISPLAY_TYPE_SIDEBAR:
+//                sideBarRadioButton.setSelected(true);
+//                break;
+//            case Settings.DISPLAY_TYPE_STATUSBAR:
+//                statusBarRadioButton.setSelected(true);
+//                break;
+//            default:
+//                sideBarRadioButton.setSelected(true);
+//                break;
+//        }
+//        displayTypeRadioGroup = new ButtonGroup();
+//        displayTypeRadioGroup.add(sideBarRadioButton);
+//        displayTypeRadioGroup.add(statusBarRadioButton);
 
         // 字符集
         CharsetGroupComboBox charsetGroupComboBox = new CharsetGroupComboBox();
@@ -187,24 +236,30 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         autoReadTimeTextField.setText(String.valueOf(autoReadTime));
 
-        int displayTypeTemp = settings.getDisplayType();
-        switch (displayTypeTemp) {
-            case Settings.DISPLAY_TYPE_SIDEBAR:
-                sideBarRadioButton.setSelected(true);
-                break;
-            case Settings.DISPLAY_TYPE_STATUSBAR:
-                statusBarRadioButton.setSelected(true);
-                break;
-            default:
-                sideBarRadioButton.setSelected(true);
-                break;
+        // 设置主图标风格
+        String[] selectIconStyleRadioButtonTexts = {"默认", "浅色"};
+        int[] mainIconStyleRadioButtonValues = {1, 2};
+        selectIconStyleRadioButtonGroup = new ButtonGroup();
+        GridLayoutManager selectIconStylePanelLayoutManager = new GridLayoutManager(1, 3);
+        selectIconStylePanel.setLayout(selectIconStylePanelLayoutManager);
+        selectedIconStyle = settings.getMainIconStyle();
+        for (int i = 0, len = selectIconStyleRadioButtonTexts.length; i < len; i++) {
+            JBRadioButton radioButtons = new JBRadioButton();
+            radioButtons.setText(selectIconStyleRadioButtonTexts[i]);
+            radioButtons.setActionCommand(String.valueOf(mainIconStyleRadioButtonValues[i]));
+            if (selectedIconStyle <= 0 && i == 0) {
+                radioButtons.setSelected(true);
+            } else if (selectedIconStyle == mainIconStyleRadioButtonValues[i]) {
+                radioButtons.setSelected(true);
+            }
+            GridConstraints mainIconStyleRadioButtonGridConstraints = new GridConstraints();
+            mainIconStyleRadioButtonGridConstraints.setRow(0);
+            mainIconStyleRadioButtonGridConstraints.setColumn(i);
+            selectIconStylePanel.add(radioButtons, mainIconStyleRadioButtonGridConstraints);
+            selectIconStyleRadioButtonGroup.add(radioButtons);
         }
 
-        displayTypeRadioGroup = new ButtonGroup();
-        displayTypeRadioGroup.add(sideBarRadioButton);
-        displayTypeRadioGroup.add(statusBarRadioButton);
-
-        // 音频管理
+        // *** 音频管理 ***
         TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
         audioManagePanel.setBorder(audioManageTitledBorder);
         // 音色
@@ -250,9 +305,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     @Override
     public boolean isModified() {
         // 显示类型
-        selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
-        if (statusBarRadioButton.isSelected()) {
-            selectedDisplayType = Settings.DISPLAY_TYPE_STATUSBAR;
+        int displayTypeTemp = settings.getDisplayType();
+        ButtonModel displayTypeSelection = displayTypeRadioGroup.getSelection();
+        if (displayTypeSelection == null) {
+            return true;
+        }
+        selectedDisplayType = NumberUtil.parseInt(displayTypeSelection.getActionCommand());
+        if (displayTypeTemp != selectedDisplayType) {
+            return true;
         }
 
         // 单行最大字数
@@ -275,6 +335,17 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (settings.getAutoReadTime() != NumberUtil.parseInt(autoReadTime)) {
             return true;
         }
+        // 主图标风格
+        int mainIconStyle = settings.getMainIconStyle();
+        ButtonModel mainIconStyleSelection = selectIconStyleRadioButtonGroup.getSelection();
+        if (mainIconStyleSelection == null) {
+            return true;
+        }
+        selectedIconStyle = NumberUtil.parseInt(mainIconStyleSelection.getActionCommand());
+        if (mainIconStyle != selectedIconStyle) {
+            return true;
+        }
+
         // 音色
         OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
         if (voiceRoleSelectedItem != null && !settings.getVoiceRole().equals(voiceRoleSelectedItem.getText())) {
@@ -297,7 +368,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
 
-        return settings.getDisplayType() != selectedDisplayType;
+        return false;
     }
 
 
@@ -310,6 +381,12 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     public void apply() throws ConfigurationException {
         settings.setSingleLineChars(NumberUtil.parseInt(lineMaxNumsTextField.getText()));
         settings.setShowLineNum(isShowLineNumCheckBox.isSelected());
+        ButtonModel displayTypeSelection = displayTypeRadioGroup.getSelection();
+        if (displayTypeSelection == null) {
+            selectedDisplayType = Settings.DISPLAY_TYPE_SIDEBAR;
+        } else {
+            selectedDisplayType = NumberUtil.parseInt(displayTypeSelection.getActionCommand());
+        }
         settings.setDisplayType(selectedDisplayType);
         OptionItem charsetSelectedItem = (OptionItem) charsetComboBox.getSelectedItem();
         settings.setCharset(charsetSelectedItem == null ? settings.getCharset() : charsetSelectedItem.getText());
@@ -318,6 +395,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setVoiceRole(voiceRoleSelectedItem == null ? settings.getVoiceRole() : voiceRoleSelectedItem.getText());
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
         settings.setAudioTimeout(NumberUtil.parseInt(timeoutTextField.getText()));
+        ButtonModel mainIconStyleSelection = selectIconStyleRadioButtonGroup.getSelection();
+        if (mainIconStyleSelection == null) {
+            selectedIconStyle = 1;
+        } else {
+            selectedIconStyle = NumberUtil.parseInt(mainIconStyleSelection.getActionCommand());
+        }
+        settings.setMainIconStyle(selectedIconStyle);
 
         ComboBoxEditor rateEditor = rateComboBox.getEditor();
         settings.setRate((Float) rateEditor.getItem());
