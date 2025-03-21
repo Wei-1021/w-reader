@@ -48,7 +48,12 @@ import org.jsoup.select.Elements;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -598,17 +603,6 @@ public class OperateActionUtil {
                             itemIdList.add(itemId);
                             itemIndexList.add(i);
                             chapterList.add(title);
-
-//                            try {
-//                                // 执行动态代码
-//                                itemChapterUrl = (String) DynamicCodeExecutor.executeMethod(chapterUrl,
-//                                        "execute",
-//                                        new Class[]{Map.class, Integer.class, String.class, String.class},
-//                                        new Object[]{paramMap, i, selectBookInfo.getBookId(), itemId});
-//                            } catch (Exception e1) {
-//                                Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
-//                                throw new RuntimeException(e1);
-//                            }
                         } else {
                             itemChapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
                                 put("bookId", selectBookInfo.getBookId());
@@ -682,6 +676,8 @@ public class OperateActionUtil {
      * 构建搜索书籍目录列表窗口
      */
     private void buildBookDirectoryDialog() {
+        // 重置编辑器消息垂直滚动条位置
+        cacheService.setEditorMessageVerticalScrollValue(0);
         // 构建目录列表组件
         JBList<String> chapterListJBList = new JBList<>(chapterList);
         // 设置单选模式
@@ -693,6 +689,8 @@ public class OperateActionUtil {
                 executorServiceShutdown();
                 // 停止语音
                 stopTTS();
+                // 重置编辑器消息垂直滚动条位置
+                cacheService.setEditorMessageVerticalScrollValue(0);
 
                 int selectedIndex = chapterListJBList.getSelectedIndex();
                 currentChapterIndex = selectedIndex;
@@ -903,7 +901,7 @@ public class OperateActionUtil {
             // 提取章节内容
             chapterContentHtml = chapterContentList.get(currentChapterIndex);
             Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
-            chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+            chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
             chapterContentText = StringUtils.normalizeSpace(chapterContentText);
             // 缓存当前章节信息
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -946,7 +944,7 @@ public class OperateActionUtil {
 
                     chapterContentHtml = contentStr;
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
-                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             } catch (Exception e) {
@@ -1030,7 +1028,7 @@ public class OperateActionUtil {
                     // 提取章节内容
                     chapterContentHtml = chapterContentList.get(currentChapterIndex);
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
-                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             }
@@ -1087,7 +1085,7 @@ public class OperateActionUtil {
                     // 提取章节内容
                     chapterContentHtml = chapterContentList.get(currentChapterIndex);
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
-                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("");
+                    chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 }
             }
@@ -1176,6 +1174,8 @@ public class OperateActionUtil {
 
             // 停止语音
             stopTTS();
+            // 重置编辑器消息垂直滚动条位置
+            cacheService.setEditorMessageVerticalScrollValue(0);
 
             // 清空缓存数据
             cacheService.setChapterList(null);
@@ -1402,8 +1402,6 @@ public class OperateActionUtil {
         }
     }
 
-    //region auto read next line
-
     /**
      * 分割章节内容
      */
@@ -1419,6 +1417,8 @@ public class OperateActionUtil {
         }
         currentChapterInfo.setChapterContentList(chapterContentSplitList);
     }
+
+    //region auto read next line
 
     /**
      * 自动阅读下一行，如果已执行，再次调用则会停止
@@ -1674,6 +1674,66 @@ public class OperateActionUtil {
      */
     private void commCancelOperationHandle() {
         initData();
+    }
+
+    /**
+     * 获取鼠标点击的文档位置
+     * @param e
+     * @return
+     */
+    public static int getClickedPosition(JTextPane contentTextPane, MouseEvent e) {
+        Point p = e.getPoint();
+        return contentTextPane.viewToModel2D(p);
+    }
+
+    /**
+     * 获取指定位置的HTML标签
+     * @param textPane
+     * @param pos
+     * @return
+     */
+    public static String getHTMLTagAtPosition(JTextPane textPane, int pos) {
+        javax.swing.text.Document doc = textPane.getDocument();
+        if (!(doc instanceof HTMLDocument htmlDoc)) {
+            return null;
+        }
+
+        javax.swing.text.Element element = htmlDoc.getCharacterElement(pos);
+
+        // 收集所有包含该位置的标签
+        List<javax.swing.text.Element> elements = new ArrayList<>();
+        javax.swing.text.Element current = element;
+        while (current != null && current.getName() != null) {
+            elements.add(current);
+            current = current.getParentElement();
+        }
+
+        // 构建HTML标签字符串（从最内层到最外层）
+        StringBuilder sb = new StringBuilder();
+        for (javax.swing.text.Element e : elements) {
+            AttributeSet attrs = e.getAttributes();
+            HTML.Tag tag = (HTML.Tag) attrs.getAttribute(StyleConstants.NameAttribute);
+            if (tag != null) {
+                sb.append("<").append(tag);
+                // 添加属性
+                Enumeration<?> names = attrs.getAttributeNames();
+                while (names.hasMoreElements()) {
+                    Object name = names.nextElement();
+                    if (name instanceof HTML.Attribute) {
+                        HTML.Attribute attr = (HTML.Attribute) name;
+                        Object value = attrs.getAttribute(attr);
+                        if (value != null) {
+                            sb.append(" ").append(attr.toString()).append("=\"").append(value).append("\"");
+                        }
+                    }
+                }
+                sb.append(">");
+            }
+        }
+
+        // 反转列表以展示正确的嵌套顺序
+        Collections.reverse(elements);
+        return sb.toString();
     }
 
     /**

@@ -32,6 +32,8 @@ public class NextChapterAction extends BaseAction {
         operateActionUtil.executorServiceShutdown();
         // 停止语音
         operateActionUtil.stopTTS();
+        // 重置编辑器消息垂直滚动条位置
+        cacheService.setEditorMessageVerticalScrollValue(0);
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
@@ -48,6 +50,7 @@ public class NextChapterAction extends BaseAction {
                 selectedChapterInfoTemp.setChapterContentList(null);
 
                 operateActionUtil.updateContentText();
+
                 break;
             case Settings.DISPLAY_TYPE_STATUSBAR:
                 WReaderStatusBarWidget.nextChapter(project);

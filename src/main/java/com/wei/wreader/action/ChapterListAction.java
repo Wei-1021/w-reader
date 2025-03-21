@@ -35,6 +35,8 @@ public class ChapterListAction extends BaseAction {
                 operateAction.executorServiceShutdown();
                 // 停止语音
                 operateAction.stopTTS();
+                // 重置编辑器消息垂直滚动条位置
+                cacheService.setEditorMessageVerticalScrollValue(0);
 
                 switch (settings.getDisplayType()) {
                     case Settings.DISPLAY_TYPE_SIDEBAR:

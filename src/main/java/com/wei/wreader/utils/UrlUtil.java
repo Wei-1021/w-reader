@@ -40,7 +40,9 @@ public class UrlUtil {
      * @throws MalformedURLException 如果基础URL格式不正确
      */
     public static String buildFullURL(String baseUrl, String relativePath) throws MalformedURLException {
-        if (relativePath.contains(ConstUtil.HTTP_SCHEME) || relativePath.contains(ConstUtil.HTTPS_SCHEME)) {
+        if (relativePath.contains(ConstUtil.HTTP_SCHEME) ||
+                relativePath.contains(ConstUtil.HTTPS_SCHEME) ||
+                relativePath.startsWith("file://")) {
             return relativePath;
         }
 

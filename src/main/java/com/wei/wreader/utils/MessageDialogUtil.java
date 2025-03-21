@@ -286,6 +286,53 @@ public class MessageDialogUtil {
         return builder;
     }
 
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     */
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            JComponent centerPanel,
+                                            int width, int height) {
+
+        DialogBuilder builder = new DialogBuilder(project);
+        builder.centerPanel(centerPanel);
+        builder.title(title);
+        builder.getDialogWrapper().setSize(width, height);
+        builder.show();
+
+        return builder;
+    }
+
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     */
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            JComponent centerPanel,
+                                            int width, int height,
+                                            boolean isRemoveAllActions) {
+
+        DialogBuilder builder = new DialogBuilder(project);
+        builder.centerPanel(centerPanel);
+        builder.title(title);
+        builder.getDialogWrapper().setSize(width, height);
+        if (isRemoveAllActions) {
+            builder.removeAllActions();
+        }
+        builder.show();
+
+        return builder;
+    }
+
     public static void showEditorMessage(Editor editor, JComponent msgComponent) {
         HintManager hintManager = HintManager.getInstance();
         hintManager.showInformationHint(editor, msgComponent);

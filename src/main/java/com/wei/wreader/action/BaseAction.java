@@ -11,8 +11,17 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class BaseAction extends AnAction {
 
+    /**
+     * 信息缓存服务
+     */
     protected CacheService cacheService;
+    /**
+     * 配置文件信息
+     */
     protected ConfigYaml configYaml;
+    /**
+     * 设置信息
+     */
     protected Settings settings;
     protected Project project;
     @Override

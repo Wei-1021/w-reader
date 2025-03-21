@@ -11,18 +11,32 @@ import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.ConstUtil;
+import com.wei.wreader.utils.*;
 import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.*;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -304,6 +318,31 @@ public class WReaderToolWindow  {
         contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);
         contentScrollPane.setBorder(JBUI.Borders.empty(2, 5));
+
+        contentTextPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                int pos = OperateActionUtil.getClickedPosition(contentTextPane, mouseEvent);
+                if (pos == -1) {
+                    return;
+                }
+
+                // 获取点击位置处的HTML标签
+                String htmlTag = OperateActionUtil.getHTMLTagAtPosition(contentTextPane, pos);
+                if (StringUtils.isNotBlank(htmlTag) && htmlTag.contains("<img")) {
+                    // 提取img标签中的src属性
+                    Matcher matcher = Pattern.compile("src=\"([^\"]+)\"").matcher(htmlTag);
+                    if (matcher.find()) {
+                        String imageUrl = matcher.group(1);
+                        if (StringUtils.isNotBlank(imageUrl)) {
+                            // 图片预览
+                            ImagePreviewer imagePreviewer = new ImagePreviewer(toolWindow.getProject(), imageUrl);
+                            imagePreviewer.openImagePreview();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void setContentText(String content) {

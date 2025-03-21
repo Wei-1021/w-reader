@@ -14,12 +14,19 @@ import com.intellij.util.ui.UIUtil;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
+import com.wei.wreader.utils.ImagePreviewer;
+import com.wei.wreader.utils.OperateActionUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 编辑器提示信息
@@ -67,8 +74,33 @@ public class EditorMessageAction extends BaseAction {
         JBScrollPane scrollPane = new JBScrollPane();
         scrollPane.setViewportView(contentTextPane);
         scrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
-        scrollPane.setPreferredSize(new Dimension(350, 200));
+        scrollPane.setPreferredSize(new Dimension(ConstUtil.HINT_MANAGER_DIALOG_WIDTH, ConstUtil.HINT_MANAGER_DIALOG_HEIGHT));
         scrollPane.setBorder(JBUI.Borders.empty());
+
+        contentTextPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                int pos = OperateActionUtil.getClickedPosition(contentTextPane, mouseEvent);
+                if (pos == -1) {
+                    return;
+                }
+
+                // 获取点击位置处的HTML标签
+                String htmlTag = OperateActionUtil.getHTMLTagAtPosition(contentTextPane, pos);
+                if (StringUtils.isNotBlank(htmlTag) && htmlTag.contains("<img")) {
+                    // 提取img标签中的src属性
+                    Matcher matcher = Pattern.compile("src=\"([^\"]+)\"").matcher(htmlTag);
+                    if (matcher.find()) {
+                        String imageUrl = matcher.group(1);
+                        if (StringUtils.isNotBlank(imageUrl)) {
+                            // 图片预览
+                            ImagePreviewer imagePreviewer = new ImagePreviewer(project, imageUrl);
+                            imagePreviewer.openImagePreview();
+                        }
+                    }
+                }
+            }
+        });
 
         // 滚动到上一次阅读的位置
         SwingUtilities.invokeLater(() -> {

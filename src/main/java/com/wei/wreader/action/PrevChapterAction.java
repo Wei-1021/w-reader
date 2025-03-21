@@ -27,6 +27,8 @@ public class PrevChapterAction extends BaseAction {
         operateAction.executorServiceShutdown();
         // 停止语音
         operateAction.stopTTS();
+        // 重置编辑器消息垂直滚动条位置
+        cacheService.setEditorMessageVerticalScrollValue(0);
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
@@ -47,8 +49,6 @@ public class PrevChapterAction extends BaseAction {
                 break;
             case Settings.DISPLAY_TYPE_STATUSBAR:
                 WReaderStatusBarWidget.prevChapter(project);
-                break;
-            case Settings.DISPLAY_TYPE_TERMINAL:
                 break;
             default:
                 break;

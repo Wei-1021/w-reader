@@ -159,5 +159,25 @@ public class ConstUtil {
      * 代码配置--结束标签
      */
     public static final String CODE_CONFIG_END_LABEL = "</java>";
+    /**
+     * 消息提示框宽度
+     */
+    public static final int HINT_MANAGER_DIALOG_WIDTH = 350;
+    /**
+     * 消息提示框高度
+     */
+    public static final int HINT_MANAGER_DIALOG_HEIGHT = 200;
+    /**
+     * 图片缩略宽度尺寸
+     */
+    public static final int IMAGE_THUMBNAIL_WIDTH = 150;
+    /**
+     * 图片预览窗口宽度
+     */
+    public static final int IMAGE_PREVIEW_WIDTH = 800;
+    /**
+     * 图片预览窗口高度
+     */
+    public static final int IMAGE_PREVIEW_HEIGHT = 600;
 
 }

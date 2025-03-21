@@ -260,6 +260,9 @@ public class StringUtil {
         // 将 SVG 中的 <image> 标签转换为 <img> 标签
         html = convertSvgImageToImg(html);
 
+        String style = "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"";
+        html = html.replaceAll("<img", "<img " + style);
+
         return html;
     }
 
@@ -279,13 +282,26 @@ public class StringUtil {
         while (matcher.find()) {
             result.append(html, lastIndex, matcher.start());
             String src = matcher.group(1);
-            if (imageMap.containsKey(src)) {
-                String imgSrc = imageMap.get(src);
-                String newTag = matcher.group().replaceFirst(Pattern.quote(src), Matcher.quoteReplacement(imgSrc));
-                result.append(newTag);
-            } else {
+            // 判断 src 是否存在于 imageMap 中
+            boolean isContain = false;
+            for (Map.Entry<String, String> entry : imageMap.entrySet()) {
+                String key = entry.getKey();
+                String imgSrc = entry.getValue();
+                if (key.contains(src) ||
+                        ((src.startsWith("./") || src.startsWith("../")) && src.endsWith(key)) ||
+                        ((key.startsWith("./") || key.startsWith("../")) && key.endsWith(src))) {
+                    isContain = true;
+                    String newTag = matcher.group().replaceFirst(Pattern.quote(src), Matcher.quoteReplacement(imgSrc));
+                    newTag = newTag.replaceAll("width\\s*=\\s*['\"]([^'\"]+)['\"]", "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"")
+                            .replaceAll("height\\s*=\\s*['\"]([^'\"]+)['\"]", "");
+                    result.append(newTag);
+                }
+            }
+
+            if (!isContain) {
                 result.append(matcher.group());
             }
+
             lastIndex = matcher.end();
         }
         result.append(html.substring(lastIndex));
@@ -327,17 +343,17 @@ public class StringUtil {
             String otherAttrs = matcher.group(3);
 
             // 提取宽度和高度属性
-            String width = extractAttribute(attrs, "width");
-            String height = extractAttribute(attrs, "height");
+//            String width = extractAttribute(attrs, "width");
+//            String height = extractAttribute(attrs, "height");
 
             // 构建 <img> 标签
             StringBuilder imgTag = new StringBuilder("<img src=\"").append(src).append("\"");
-            if (width != null) {
-                imgTag.append(" width=\"").append(width).append("\"");
-            }
-            if (height != null) {
-                imgTag.append(" height=\"").append(height).append("\"");
-            }
+//            if (width != null) {
+//                imgTag.append(" width=\"").append(width).append("\"");
+//            }
+//            if (height != null) {
+//                imgTag.append(" height=\"").append(height).append("\"");
+//            }
             // 添加其他属性
             imgTag.append(parseOtherAttributes(otherAttrs)).append(">");
 
