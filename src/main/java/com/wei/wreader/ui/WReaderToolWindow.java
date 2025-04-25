@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
@@ -15,25 +16,11 @@ import com.wei.wreader.utils.*;
 import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,7 +75,7 @@ public class WReaderToolWindow  {
     /**
      * 内容滚动面板
      */
-    private JScrollPane contentScrollPane;
+    private JBScrollPane contentScrollPane;
     /**
      * 字体大小减按钮
      */

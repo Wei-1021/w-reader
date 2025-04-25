@@ -1,12 +1,9 @@
 package com.wei.wreader.factory;
 
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.*;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.ui.WReaderToolWindow;
@@ -14,13 +11,7 @@ import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.WReaderIcons;
 import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-
-import static com.jogamp.common.os.AndroidVersion.isAvailable;
 
 /**
  * 工具窗口工厂

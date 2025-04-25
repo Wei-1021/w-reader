@@ -29,7 +29,7 @@ public class StringTemplateEngine {
         // 创建 Matcher 对象，用于在给定的模板字符串中查找与正则表达式匹配的部分
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
 
-        // 使用 StringBuffer 来构建最终渲染后的字符串结果，因为 String 是不可变的，频繁修改效率低，而 StringBuffer 可变便于拼接
+        // result构建最终渲染后的字符串结果
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
             // 获取匹配到的 ${表达式} 中的表达式部分，并去除两端的空白字符
