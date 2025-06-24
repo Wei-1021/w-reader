@@ -74,7 +74,15 @@ public class EditorMessageAction extends BaseAction {
         JBScrollPane scrollPane = new JBScrollPane();
         scrollPane.setViewportView(contentTextPane);
         scrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
-        scrollPane.setPreferredSize(new Dimension(ConstUtil.HINT_MANAGER_DIALOG_WIDTH, ConstUtil.HINT_MANAGER_DIALOG_HEIGHT));
+        int width = ConstUtil.HINT_MANAGER_DIALOG_WIDTH;
+        if (settings.getEditorHintWidth() > 0) {
+            width = settings.getEditorHintWidth();
+        }
+        int height = ConstUtil.HINT_MANAGER_DIALOG_HEIGHT;
+        if (settings.getEditorHintHeight() > 0) {
+            height = settings.getEditorHintHeight();
+        }
+        scrollPane.setPreferredSize(new Dimension(width, height));
         scrollPane.setBorder(JBUI.Borders.empty());
 
         contentTextPane.addMouseListener(new MouseAdapter() {

@@ -87,7 +87,6 @@ public class MessageDialogUtil {
         return showMessageDialog(project, title, centerPanel, okRunnable, null);
     }
 
-
     /**
      * 显示消息对话框
      *
@@ -117,6 +116,39 @@ public class MessageDialogUtil {
         }
 
         return showMessageDialog(project, title, centerPanel, okRunnable, null);
+    }
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project    Project
+     * @param title      标题
+     * @param objs       显示内容的组件集合
+     * @param okRunnable 确认按钮点击事件
+     */
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  Object[] objs,
+                                                  int width, int height,
+                                                  Runnable okRunnable) {
+        JPanel centerPanel = new JPanel();
+//        GridLayoutManager layout = new GridLayoutManager(objs.length, 1);
+        BoxLayout boxLayout = new BoxLayout(centerPanel, BoxLayout.Y_AXIS);
+        centerPanel.setLayout(boxLayout);
+        centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        for (int i = 0, len = objs.length; i < len; i++) {
+            Object obj = objs[i];
+            GridConstraints gridConstraints = new GridConstraints();
+            gridConstraints.setRow(i);
+            gridConstraints.setColumn(0);
+            if (obj instanceof JComponent) {
+                centerPanel.add((JComponent) obj, gridConstraints);
+            } else {
+                centerPanel.add(new JLabel(obj.toString()), gridConstraints);
+            }
+        }
+
+        return showMessageDialog(project, title, centerPanel, okRunnable, null, width, height);
     }
 
     /**
@@ -166,12 +198,33 @@ public class MessageDialogUtil {
                                                   JComponent centerPanel,
                                                   Runnable okRunnable,
                                                   Runnable cancelOperation) {
+        return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation, 0, 0);
+    }
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     * @param okRunnable      确认按钮点击事件
+     * @param cancelOperation 取消按钮点击事件
+     */
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  JComponent centerPanel,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation,
+                                                  int width, int height) {
 
         DialogBuilder builder = new DialogBuilder(project);
         builder.centerPanel(centerPanel);
         builder.title(title);
         builder.addOkAction();
         builder.addCancelAction();
+        if (width > 0 && height > 0) {
+            builder.getDialogWrapper().setSize(width, height);
+        }
         builder.show();
 
         DialogWrapper dialogWrapper = builder.getDialogWrapper();

@@ -28,10 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -73,6 +69,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JPanel voiceRoleJPanel;
     private JLabel selectIconStyleLabel;
     private JPanel selectIconStylePanel;
+    private JComboBox editorMessageWindosWidthComboBox;
+    private JComboBox editorMessageWindosHeightComboBox;
+    private JLabel editorMessageWindosLebel;
+    private JLabel editorMessageWindosWidthLabel;
+    private JLabel editorMessageWindosHeightLabel;
     private ButtonGroup selectIconStyleRadioButtonGroup;
     private ButtonGroup displayTypeRadioGroup;
 
@@ -96,6 +97,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 主图标风格
         if (settings.getMainIconStyle() <= 0) {
             settings.setMainIconStyle(configYaml.getSettings().getMainIconStyle());
+        }
+        // 编辑器窗口信息
+        if (settings.getEditorHintWidth() <= 0) {
+            settings.setEditorHintWidth(configYaml.getSettings().getEditorHintWidth());
+        }
+        if (settings.getEditorHintHeight() <= 0) {
+            settings.setEditorHintHeight(configYaml.getSettings().getEditorHintHeight());
         }
         // 音色
         if (StringUtils.isBlank(settings.getVoiceRole())) {
@@ -184,41 +192,6 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             displayTypeRadioGroup.add(radioButton);
         }
 
-//        // 创建单选按钮--侧边栏
-//        sideBarRadioButton = new JBRadioButton();
-//        sideBarRadioButton.setText(Settings.DISPLAY_TYPE_SIDEBAR_STR);
-//        // 创建单选按钮--底部状态栏
-//        statusBarRadioButton = new JBRadioButton();
-//        statusBarRadioButton.setText(Settings.DISPLAY_TYPE_STATUSBAR_STR);
-//        // 设置显示类型Panel布局
-//        GridLayoutManager displayTypeRadioPanelLayoutManager = new GridLayoutManager(1, 3);
-//        displayTypeRadioPanel.setLayout(displayTypeRadioPanelLayoutManager);
-//        // 添加单选按钮至布局中
-//        GridConstraints sideBarRadioGridConstraints = new GridConstraints();
-//        sideBarRadioGridConstraints.setRow(0);
-//        sideBarRadioGridConstraints.setColumn(0);
-//        displayTypeRadioPanel.add(sideBarRadioButton, sideBarRadioGridConstraints);
-//        GridConstraints statusBarRadioGridConstraints = new GridConstraints();
-//        statusBarRadioGridConstraints.setRow(0);
-//        statusBarRadioGridConstraints.setColumn(1);
-//        displayTypeRadioPanel.add(statusBarRadioButton, statusBarRadioGridConstraints);
-//        // 设置默认选中
-//        int displayTypeTemp = settings.getDisplayType();
-//        switch (displayTypeTemp) {
-//            case Settings.DISPLAY_TYPE_SIDEBAR:
-//                sideBarRadioButton.setSelected(true);
-//                break;
-//            case Settings.DISPLAY_TYPE_STATUSBAR:
-//                statusBarRadioButton.setSelected(true);
-//                break;
-//            default:
-//                sideBarRadioButton.setSelected(true);
-//                break;
-//        }
-//        displayTypeRadioGroup = new ButtonGroup();
-//        displayTypeRadioGroup.add(sideBarRadioButton);
-//        displayTypeRadioGroup.add(statusBarRadioButton);
-
         // 字符集
         CharsetGroupComboBox charsetGroupComboBox = new CharsetGroupComboBox();
         charsetComboBox = charsetGroupComboBox.buildComboBox();
@@ -258,6 +231,20 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             selectIconStylePanel.add(radioButtons, mainIconStyleRadioButtonGridConstraints);
             selectIconStyleRadioButtonGroup.add(radioButtons);
         }
+
+        // 编辑器消息窗口--宽度
+        Integer[] editorHintWidths = {100, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800};
+        editorMessageWindosWidthComboBox.setModel(new DefaultComboBoxModel<>(editorHintWidths));
+        editorMessageWindosWidthComboBox.setEditable(true);
+        ComboBoxEditor editorMessageWindowWidthEditor = editorMessageWindosWidthComboBox.getEditor();
+        editorMessageWindowWidthEditor.setItem(settings.getEditorHintWidth());
+
+        // 编辑器消息窗口--高度
+        Integer[] editorHintHeights = {100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800};
+        editorMessageWindosHeightComboBox.setModel(new DefaultComboBoxModel<>(editorHintHeights));
+        editorMessageWindosHeightComboBox.setEditable(true);
+        ComboBoxEditor editorMessageWindowHeightEditor = editorMessageWindosHeightComboBox.getEditor();
+        editorMessageWindowHeightEditor.setItem(settings.getEditorHintHeight());
 
         // *** 音频管理 ***
         TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
@@ -345,6 +332,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (mainIconStyle != selectedIconStyle) {
             return true;
         }
+        // 编辑器消息窗口--宽度
+        int editorHintWidth = (Integer) editorMessageWindosWidthComboBox.getSelectedItem();
+        if (settings.getEditorHintWidth() != editorHintWidth) {
+            return true;
+        }
+        // 编辑器消息窗口--高度
+        int editorHintHeight = (Integer) editorMessageWindosHeightComboBox.getSelectedItem();
+        if (settings.getEditorHintHeight() != editorHintHeight) {
+            return true;
+        }
 
         // 音色
         OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
@@ -402,10 +399,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             selectedIconStyle = NumberUtil.parseInt(mainIconStyleSelection.getActionCommand());
         }
         settings.setMainIconStyle(selectedIconStyle);
+        // 编辑器消息窗口--宽高
+        settings.setEditorHintWidth((Integer) editorMessageWindosWidthComboBox.getSelectedItem());
+        settings.setEditorHintHeight((Integer) editorMessageWindosHeightComboBox.getSelectedItem());
 
+        // 语速
         ComboBoxEditor rateEditor = rateComboBox.getEditor();
         settings.setRate((Float) rateEditor.getItem());
-
+        // 音量
         ComboBoxEditor volumeEditor = volumeComboBox.getEditor();
         settings.setVolume((Integer) volumeEditor.getItem());
         cacheService.setSettings(settings);

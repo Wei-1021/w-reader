@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.13'
+  version: '0.0.14'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -15,6 +15,8 @@ wreader:
     charset: 'GBK' #字符集
     autoReadTime: 5 #自动阅读时间
     mainIconStyle: 1 #主图标风格：1-默认，2-浅色
+    editorHintWidth: 350 #编辑器提示消息框宽度
+    editorHintHeight: 200 #编辑器提示消息框高度
     voiceRole: '晓晓' #音色
     audioTimeout: 3 #听书超时
     rate: 1.0 #语速
@@ -106,20 +108,24 @@ wreader:
   # name: 网站名称
   # baseUrl: 网站根路径
   # searchUrl: 搜索路径
+  # header: 请求头
   # searchBookNameParam: 搜索参数
   # searchDataBookListRule: 获取小说列表的JSONPath规则
   # searchDataBookListInfoDataRule: 获取小说列表每一列中书本信息的JSONPath规则
-  # bookListElementName: 书本列表元素名
-  # bookListElementType: 书本列表元素类型（class、id）
+  # bookListElementName: 书本列表区块元素cssQuery
+  # bookListUrlElement: 书本列表链接元素cssQuery, 规则分段，用@分隔,
+  #     @back:表示获取到的内容在后面加上@back:之后的内容
+  #     @front:表示获取到的内容在前面加上@front:之后的内容
+  # bookListTitleElement: 书本标题列表元素cssQuery
   # listMainUrl: 目录url
-  # listMainElementName: 目录元素名
-  # listMainElementType: 目录元素类型（class、id）
+  # listMainElementName: 目录区块元素cssQuery
+  # chapterListUrlElement: 目录链接元素cssQuery
   # chapterContentUrl: 章节url
   # chapterContentHandleRule: 章节内容处理规则
   # isContentOriginalStyle: 是否使用原网页的css样式
   # replaceContentOriginalRegex: 原网页的css样式字符替换正则
   # chapterContentElementName: 章节内容元素名
-  # chapterContentElementType: 章节内容元素类型（class、id）
+  # chapterContentRegex: 章节内容的正则表达式，用@分隔，前面是正则表达式，后面是替换的内容
   # bookIdField: 书籍id字段名
   # bookNameField: 书籍名字段名
   # bookUrlField: 书籍url字段名
@@ -131,29 +137,34 @@ wreader:
   site_list:
     - isEnabled: true
       id: 'xbiqugu.net'
-      name: '笔趣阁-书香小说'
+      name: '书香小说'
       baseUrl: 'http://www.xbiqugu.net'
+      header: ''
       searchUrl: 'http://www.xbiqugu.net/modules/article/waps.php?searchkey=${key}'
       searchBookNameParam: 'searchkey'
       searchDataBookListRule: ''
       bookDataId: ''
-      bookListElementName: '.grid'
-      bookListElementType: ''
+      bookListElementName: '.grid tr:not(:first-child)'
+      bookListUrlElement: ':nth-child(1) > a'
+      bookListTitleElement: ':nth-child(1) > a'
       listMainUrl: ''
       listMainUrlDataRule: ''
       isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
-      listMainElementName: '#list'
-      listMainElementType: ''
+      listMainElementName: '#list dl dd'
+      chapterListUrlElement: 'a'
+      chapterListTitleElement: 'a'
       chapterContentUrl: ''
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: '#content'
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'book_id'
       bookNameField: 'even'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'bookAuthor'
@@ -163,29 +174,34 @@ wreader:
       isPathParam: true
     - isEnabled: true
       id: 'xbiquzw.com'
-      name: '笔趣阁-笔尖小说'
+      name: '笔尖小说'
       baseUrl: 'http://www.xbiquzw.com'
+      header: ''
       searchUrl: 'http://www.xbiquzw.com/modules/article/search.php?searchkey=${key}'
       searchBookNameParam: 'searchkey'
       searchDataBookListRule: ''
       bookDataId: ''
-      bookListElementName: '.grid'
-      bookListElementType: ''
+      bookListElementName: '.grid tr:not(:first-child)'
+      bookListUrlElement: ':nth-child(1) > a'
+      bookListTitleElement: ':nth-child(1) > a'
       listMainUrl: ''
       listMainUrlDataRule: ''
       isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
-      listMainElementName: '#list'
-      listMainElementType: ''
+      listMainElementName: '#list dl dd'
+      chapterListUrlElement: 'a'
+      chapterListTitleElement: 'a'
       chapterContentUrl: ''
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: '#content'
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'book_id'
       bookNameField: 'odd'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'bookAuthor'
@@ -193,31 +209,36 @@ wreader:
       bookImgUrlField: 'bookImgUrl'
       isHtml: true
       isPathParam: true
-    - isEnabled: true
+    - isEnabled: false
       id: '3bqg.cc'
       name: '笔趣阁(不推荐)'
       baseUrl: 'https://www.3bqg.cc'
+      header: ''
       searchUrl: 'https://www.3bqg.cc/user/search.html?q=${key}'
       searchBookNameParam: 'q'
       searchDataBookListRule: ''
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: ''
       listMainUrlDataRule: ''
       isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '.listmain'
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: ''
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: '.chaptercontent'
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'book_id'
       bookNameField: 'articlename'
       bookUrlField: 'url_list'
       bookAuthorField: 'author'
@@ -229,27 +250,32 @@ wreader:
       id: 'fanqienovel.com'
       name: '番茄小说'
       baseUrl: 'https://api5-normal-lf.fqnovel.com'
+      header: ''
       searchUrl: 'https://api5-normal-lf.fqnovel.com/reading/bookapi/search/page/v/?query={key}&aid=1967&channel=0&os_version=0&device_type=0&device_platform=0&iid=466614321180296&passback={(page-1)*10}&version_code=999'
       searchBookNameParam: ''
       searchDataBookListRule: '$..book_data[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'https://fanqienovel.com/api/reader/directory/detail?bookId={bookId}'
       listMainUrlDataRule: '$..chapterListWithVolume[*].*'
       isSavelistMainUrlData: false
       listMainItemIdField: 'itemId'
       listMainItemTitleField: 'title'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'https://fanqienovel.com/reader/{itemId}'
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: true
       replaceContentOriginalRegex: '\.font-[a-zA-Z0-9]+'
       chapterContentElementName: '.muye-reader-content'
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'book_id'
       bookNameField: 'book_name'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'author'
@@ -261,27 +287,32 @@ wreader:
       id: 'appi.kuwo.cn'
       name: '酷我小说'
       baseUrl: 'http://appi.kuwo.cn'
+      header: ''
       searchUrl: 'http://appi.kuwo.cn/novels/api/book/search?keyword=${key}&pi=${page}&ps=30'
       searchBookNameParam: ''
       searchDataBookListRule: '$.data[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'http://appi.kuwo.cn/novels/api/book/${bookId}/chapters?paging=0'
       listMainUrlDataRule: '$.data[*]'
       isSavelistMainUrlData: false
       listMainItemIdField: 'chapter_id'
       listMainItemTitleField: 'chapter_title'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'http://appi.kuwo.cn/novels/api/book/${bookId}/chapters/${itemId}'
       chapterContentUrlDataRule: '$.data.content'
       chapterContentHandleRule: ''
       isContentOriginalStyle: true
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: 'book_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'book_id'
       bookNameField: 'title'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'author_name'
@@ -293,27 +324,32 @@ wreader:
       id: 'www.lianjianxsw.com'
       name: '读书阁'
       baseUrl: 'http://www.lianjianxsw.com'
+      header: ''
       searchUrl: 'url=http://www.lianjianxsw.com/search;method=POST;query_params=;body_params=keyword=${key}'
       searchBookNameParam: ''
       searchDataBookListRule: '$.data[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'http://www.lianjianxsw.com/getCataLogs?bookid=${bookId}&page=1&limit=99999'
       listMainUrlDataRule: '$.data.list[*]'
       isSavelistMainUrlData: false
       listMainItemIdField: '_id'
       listMainItemTitleField: 'name'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'http://www.lianjianxsw.com/getContent?bookid=${bookId}&chapterid=${itemId}'
       chapterContentUrlDataRule: '$.data.chapterInfo.content'
       chapterContentHandleRule: '<java>com.wei.wreader.utils.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {"st###":"&nbsp;&nbsp;&nbsp;&nbsp;","###$$$":"<br>&nbsp;&nbsp;&nbsp;&nbsp;"})</java>'
       isContentOriginalStyle: true
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: '_id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  '_id'
       bookNameField: 'name'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'author'
@@ -325,27 +361,32 @@ wreader:
       id: 'novelapi.kpkpo.com'
       name: '笔阅读器'
       baseUrl: 'https://novelapi.kpkpo.com'
+      header: ''
       searchUrl: 'https://novelapi.kpkpo.com/api/category-search?name=${key}'
       searchBookNameParam: ''
       searchDataBookListRule: '$.result.list[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'https://novelapi-hw.tttxtt.com/h5/book-catalog-id-${bookId}'
       listMainUrlDataRule: ''
       isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
       listMainElementName: '.page'
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'https://novelapi-hw.tttxtt.com/h5/book-chapter-id-${bookId}-chapter_id-{itemId}'
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: '.article'
-      chapterContentElementType: ''
-      bookIdField: 'id'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'id'
       bookNameField: 'name'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'author'
@@ -357,12 +398,14 @@ wreader:
       id: 'www.shuqi.com'
       name: '书旗小说（不推荐）'
       baseUrl: 'https://www.shuqi.com'
+      header: ''
       searchUrl: 'https://read.xiaoshuo1-sm.com/novel/i.php?q=${key}&page=1&size=100&do=is_search&isNewBind=0&tk=&imei=&sn=&channelId=&clientPatch=&clientVersion=&device=&deviceId=&utdid=&model=&osName=&osVersion=&umidToken=&appVersion=&app=&platform=3&ykToken=&ykuid=&shuqi_h5=&token=&user_id=8000000&uid=8000000&filterMigu=1&ver=&p=3'
       searchBookNameParam: ''
       searchDataBookListRule: '$.data[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl:
        <java>
          <package_import>import java.util.*;import com.wei.wreader.utils.*;</package_import>
@@ -383,7 +426,8 @@ wreader:
       listMainItemIdField: 'chapterId'
       listMainItemTitleField: 'chapterName'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl:
        '<java>
          <package_import>import java.util.*;import com.wei.wreader.utils.*;import com.jayway.jsonpath.*;</package_import>
@@ -414,8 +458,10 @@ wreader:
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: 'bid'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'bid'
       bookNameField: 'title'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'author'
@@ -425,29 +471,34 @@ wreader:
       isPathParam: true
     - isEnabled: true
       id: 'www.wtzw.com'
-      name: '梧桐文学(不推荐)'
+      name: '梧桐文学'
       baseUrl: 'https://www.wtzw.com'
+      header: ''
       searchUrl: 'https://www.wtzw.com/search-${key}.html?p=${page}'
       searchBookNameParam: ''
       searchDataBookListRule: ''
       bookDataId: ''
-      bookListElementName: '.searchList ul .w_txt a'
-      bookListElementType: ''
+      bookListElementName: '.searchList ul li'
+      bookListUrlElement: '.w_txt .sTit a'
+      bookListTitleElement: '.w_txt .sTit a'
       listMainUrl: ''
       listMainUrlDataRule: ''
       isSavelistMainUrlData: false
       listMainItemIdField: ''
       listMainItemTitleField: ''
-      listMainElementName: '.w_mod ul li a'
-      listMainElementType: ''
+      listMainElementName: '.chapterList .clearfix li'
+      chapterListUrlElement: 'a'
+      chapterListTitleElement: 'a'
       chapterContentUrl: ''
       chapterContentUrlDataRule: ''
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: '#read_page'
-      chapterContentElementType: ''
-      bookIdField: 'bookId'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'bookId'
       bookNameField: 'bookName'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'bookAuthor'
@@ -459,27 +510,32 @@ wreader:
       id: 'www.jjwxc.net'
       name: '晋江文学'
       baseUrl: 'http://app.jjwxc.org'
+      header: ''
       searchUrl: 'http://app.jjwxc.org/androidapi/search?keyword=${key}&type=1&page=${page}&token=null&searchType=1&sortMode=DESC&versionCode=173'
       searchBookNameParam: ''
       searchDataBookListRule: '$.items[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'http://app-cdn.jjwxc.net/androidapi/chapterList?novelId=${bookId}&more=0&whole=1'
       listMainUrlDataRule: '$.chapterlist[*]'
       isSavelistMainUrlData: false
       listMainItemIdField: 'chapterid'
       listMainItemTitleField: 'chaptername'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'http://app-cdn.jjwxc.net:80/androidapi/chapterContent?novelId=${bookId}&chapterId=${itemId}'
       chapterContentUrlDataRule: '$.content'
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: 'novelid'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'novelid'
       bookNameField: 'novelname'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'authorname'
@@ -491,27 +547,32 @@ wreader:
       id: 'www.ihuaben.com'
       name: '话本小说'
       baseUrl: 'https://www.ihuaben.com'
+      header: ''
       searchUrl: 'https://www.ihuaben.com/app/search?indexName=book&keyword=${key}&page=${page}&pageSize=50'
       searchBookNameParam: ''
       searchDataBookListRule: '$.pageUtil.pageList[*]'
       bookDataId: ''
       bookListElementName: ''
-      bookListElementType: ''
+      bookListUrlElement: ''
+      bookListTitleElement: ''
       listMainUrl: 'https://cdncn.ihuaben.com/cdn/chapters/${bookId}/000'
       listMainUrlDataRule: '$.modelData.chapters[*]'
       isSavelistMainUrlData: false
       listMainItemIdField: 'chapterId'
       listMainItemTitleField: 'title'
       listMainElementName: ''
-      listMainElementType: ''
+      chapterListUrlElement: ''
+      chapterListTitleElement: ''
       chapterContentUrl: 'https://cdncn.ihuaben.com/cdn/chapter/${bookId}/${itemId}/000'
       chapterContentUrlDataRule: '$.modelData.content'
       chapterContentHandleRule: ''
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
-      chapterContentElementType: ''
-      bookIdField: 'bookid'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'bookid'
       bookNameField: 'bookname'
       bookUrlField: 'bookUrl'
       bookAuthorField: 'authorname'
@@ -519,25 +580,78 @@ wreader:
       bookImgUrlField: 'bookpic'
       isHtml: false
       isPathParam: true
-#    - id: 'm.qidian.com'
-#      name: '起点'
-#      baseUrl: 'https://m.qidian.com'
-#      searchUrl: '/soushu/${key}.html'
-#      searchBookNameParam: ''
-#      bookDataId: 'data-bid'
-#      bookListElementName: 'y-list__content'
-#      bookListElementType: 'class'
-#      listMainUrl: ''
-#      listMainElementName: 'listmain'
-#      listMainElementType: 'class'
-#      chapterContentUrl: ''
-#      chapterContentElementName: 'chaptercontent'
-#      chapterContentElementType: 'id'
-#      bookNameField: 'articlename'
-#      bookUrlField: 'url_list'
-#      bookAuthorField: 'author'
-#      bookDescField: 'intro'
-#      bookImgUrlField: 'url_img'
-#      isHtml: true
-#      isPathParam: true
+    - isEnabled: true
+      id: 'www.yuedu.com'
+      name: '阅读'
+      baseUrl: 'http://www.yuedu.info'
+      header: ''
+      searchUrl: 'http://www.yuedu.info/search/result.html?searchkey=${key}'
+      searchBookNameParam: ''
+      searchDataBookListRule: ''
+      bookDataId: ''
+      bookListElementName: '.librarylist li'
+      bookListUrlElement: '.info .novelname'
+      bookListTitleElement: '.info .novelname'
+      listMainUrl: ''
+      listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainElementName: '.dirlist li'
+      chapterListUrlElement: 'a'
+      chapterListTitleElement: 'a'
+      chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
+      chapterContentHandleRule: ''
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: '#chaptercontent'
+      chapterContentRegex: ''
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField:  'bookid'
+      bookNameField: 'novelname'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'authorname'
+      bookDescField: 'bookinfo'
+      bookImgUrlField: 'bookpic'
+      isHtml: true
+      isPathParam: true
+    - isEnabled: true
+      id: 'www.huanmengacg.com'
+      name: '梦幻轻小说'
+      baseUrl: 'https://www.huanmengacg.com'
+      header: ''
+      searchUrl: 'https://www.huanmengacg.com/index.php/book/search?action=search&key=${key}'
+      searchBookNameParam: ''
+      searchDataBookListRule: ''
+      bookDataId: ''
+      bookListElementName: '.searchResult .rankdatacont dl'
+      bookListUrlElement: 'dd .bigpic-book-name'
+      bookListTitleElement: 'dd .bigpic-book-name'
+      listMainUrl: ''
+      listMainUrlDataRule: ''
+      isSavelistMainUrlData: false
+      listMainItemIdField: ''
+      listMainItemTitleField: ''
+      listMainElementName: '.dibu ul li'
+      chapterListUrlElement: 'a'
+      chapterListTitleElement: 'a'
+      chapterContentUrl: ''
+      chapterContentUrlDataRule: ''
+      chapterContentHandleRule: ''
+      isContentOriginalStyle: false
+      replaceContentOriginalRegex: ''
+      chapterContentElementName: '#content'
+      chapterContentRegex: '<p></p>@ '
+      isChapterContentPaging: false
+      chapterContentPagingElement: ''
+      bookIdField: 'bookid'
+      bookNameField: 'novelname'
+      bookUrlField: 'bookUrl'
+      bookAuthorField: 'authorname'
+      bookDescField: 'bookinfo'
+      bookImgUrlField: 'bookpic'
+      isHtml: true
+      isPathParam: true
 

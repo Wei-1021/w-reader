@@ -6,14 +6,18 @@ import com.intellij.openapi.project.Project;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 public class SearchBookNameAction extends BaseAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
-        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
-        operateAction.buildSearchBookDialog(project);
+        SwingUtilities.invokeLater(() -> {
+            OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
+            operateAction.buildSearchBookDialog(project);
+        });
     }
 
 

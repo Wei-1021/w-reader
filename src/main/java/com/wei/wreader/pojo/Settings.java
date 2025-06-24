@@ -77,6 +77,15 @@ public class Settings {
      * 主图标风格：1-默认，2-浅色
      */
     private int mainIconStyle;
+    /**
+     * 编辑器提示消息框宽度
+     */
+    private int editorHintWidth;
+    /**
+     * 编辑器提示消息框高度
+     */
+    private int editorHintHeight;
+
     //--------------------------------------------
     //----------------  语音TTS  ------------------
     //--------------------------------------------
@@ -164,6 +173,22 @@ public class Settings {
 
     public void setMainIconStyle(int mainIconStyle) {
         this.mainIconStyle = mainIconStyle;
+    }
+
+    public int getEditorHintWidth() {
+        return editorHintWidth;
+    }
+
+    public void setEditorHintWidth(int editorHintWidth) {
+        this.editorHintWidth = editorHintWidth;
+    }
+
+    public int getEditorHintHeight() {
+        return editorHintHeight;
+    }
+
+    public void setEditorHintHeight(int editorHintHeight) {
+        this.editorHintHeight = editorHintHeight;
     }
 
     public String getVoiceRole() {

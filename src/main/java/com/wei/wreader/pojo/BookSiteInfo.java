@@ -26,6 +26,10 @@ public class BookSiteInfo implements Serializable {
      */
     private String baseUrl;
     /**
+     * 请求头
+     */
+    private String header;
+    /**
      * 搜索小说的url
      */
     private String searchUrl;
@@ -46,9 +50,15 @@ public class BookSiteInfo implements Serializable {
      */
     private String bookListElementName;
     /**
-     * 小说列表的HTML标签类型（class, id）
+     * 书本列表链接元素cssQuery，规则分段，用@分隔<br>
+     * {@code @back}:表示获取到的内容在后面加上@back:之后的内容<br>
+     * {@code @front}:表示获取到的内容在前面加上@front:之后的内容
      */
-    private String bookListElementType;
+    private String bookListUrlElement;
+    /**
+     * 小说标题列表元素cssQuery
+     */
+    private String bookListTitleElement;
     /**
      * 小说目录列表URL
      */
@@ -78,9 +88,13 @@ public class BookSiteInfo implements Serializable {
      */
     private String listMainElementName;
     /**
-     * 小说目录列表的HTML标签类型（class, id）
+     * 目录链接元素cssQuery
      */
-    private String listMainElementType;
+    private String chapterListUrlElement;
+    /**
+     * 目录标题元素cssQuery
+     */
+    private String chapterListTitleElement;
     /**
      * 小说章节内容URL
      */
@@ -108,9 +122,9 @@ public class BookSiteInfo implements Serializable {
      */
     private String chapterContentElementName;
     /**
-     * 小说内容的HTML标签类型（class, id）
+     * 小说内容的正则表达式，用@分隔，前面是正则表达式，后面是替换的内容
      */
-    private String chapterContentElementType;
+    private String chapterContentRegex;
     /**
      * 小说id字段名称
      */
@@ -200,6 +214,14 @@ public class BookSiteInfo implements Serializable {
         this.searchUrl = searchUrl;
     }
 
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
     public String getBookDataId() {
         return bookDataId;
     }
@@ -214,6 +236,22 @@ public class BookSiteInfo implements Serializable {
 
     public void setBookListElementName(String bookListElementName) {
         this.bookListElementName = bookListElementName;
+    }
+
+    public String getBookListUrlElement() {
+        return bookListUrlElement;
+    }
+
+    public void setBookListUrlElement(String bookListUrlElement) {
+        this.bookListUrlElement = bookListUrlElement;
+    }
+
+    public String getBookListTitleElement() {
+        return bookListTitleElement;
+    }
+
+    public void setBookListTitleElement(String bookListTitleElement) {
+        this.bookListTitleElement = bookListTitleElement;
     }
 
     public String getListMainUrl() {
@@ -280,6 +318,22 @@ public class BookSiteInfo implements Serializable {
         this.listMainElementName = listMainElementName;
     }
 
+    public String getChapterListUrlElement() {
+        return chapterListUrlElement;
+    }
+
+    public void setChapterListUrlElement(String chapterListUrlElement) {
+        this.chapterListUrlElement = chapterListUrlElement;
+    }
+
+    public String getChapterListTitleElement() {
+        return chapterListTitleElement;
+    }
+
+    public void setChapterListTitleElement(String chapterListTitleElement) {
+        this.chapterListTitleElement = chapterListTitleElement;
+    }
+
     public String getListMainItemIdField() {
         return listMainItemIdField;
     }
@@ -312,21 +366,6 @@ public class BookSiteInfo implements Serializable {
         this.listMainItemTitleField = listMainItemTitleField;
     }
 
-    public String getListMainElementType() {
-        return listMainElementType;
-    }
-
-    public void setListMainElementType(String listMainElementType) {
-        this.listMainElementType = listMainElementType;
-    }
-
-    public String getBookListElementType() {
-        return bookListElementType;
-    }
-
-    public void setBookListElementType(String bookListElementType) {
-        this.bookListElementType = bookListElementType;
-    }
 
     public String getChapterContentUrl() {
         return chapterContentUrl;
@@ -344,12 +383,12 @@ public class BookSiteInfo implements Serializable {
         this.chapterContentElementName = chapterContentElementName;
     }
 
-    public String getChapterContentElementType() {
-        return chapterContentElementType;
+    public String getChapterContentRegex() {
+        return chapterContentRegex;
     }
 
-    public void setChapterContentElementType(String chapterContentElementType) {
-        this.chapterContentElementType = chapterContentElementType;
+    public void setChapterContentRegex(String chapterContentRegex) {
+        this.chapterContentRegex = chapterContentRegex;
     }
 
     public String getBookIdField() {
@@ -423,24 +462,27 @@ public class BookSiteInfo implements Serializable {
                 ", name='" + name + '\'' +
                 ", baseUrl='" + baseUrl + '\'' +
                 ", searchUrl='" + searchUrl + '\'' +
+                ", header='" + header + '\'' +
                 ", searchBookNameParam='" + searchBookNameParam + '\'' +
                 ", searchDataBookListRule='" + searchDataBookListRule + '\'' +
                 ", bookDataId='" + bookDataId + '\'' +
                 ", bookListElementName='" + bookListElementName + '\'' +
-                ", bookListElementType='" + bookListElementType + '\'' +
+                ", bookListUrlElement='" + bookListUrlElement + '\'' +
+                ", bookListTitleElement='" + bookListTitleElement + '\'' +
                 ", listMainUrl='" + listMainUrl + '\'' +
                 ", listMainUrlDataRule='" + listMainUrlDataRule + '\'' +
                 ", listMainItemIdField='" + listMainItemIdField + '\'' +
                 ", listMainItemTitleField='" + listMainItemTitleField + '\'' +
                 ", listMainElementName='" + listMainElementName + '\'' +
-                ", listMainElementType='" + listMainElementType + '\'' +
+                ", chapterListUrlElement='" + chapterListUrlElement + '\'' +
+                ", chapterListTitleElement='" + chapterListTitleElement + '\'' +
                 ", chapterContentUrl='" + chapterContentUrl + '\'' +
                 ", chapterContentUrlDataRule='" + chapterContentUrlDataRule + '\'' +
                 ", chapterContentHandleRule='" + chapterContentHandleRule + '\'' +
                 ", isContentOriginalStyle=" + isContentOriginalStyle +
                 ", replaceContentOriginalRegex='" + replaceContentOriginalRegex + '\'' +
                 ", chapterContentElementName='" + chapterContentElementName + '\'' +
-                ", chapterContentElementType='" + chapterContentElementType + '\'' +
+                ", chapterContentRegex='" + chapterContentRegex + '\'' +
                 ", bookIdField='" + bookIdField + '\'' +
                 ", bookNameField='" + bookNameField + '\'' +
                 ", bookUrlField='" + bookUrlField + '\'' +

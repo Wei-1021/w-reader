@@ -330,6 +330,15 @@ public class WReaderToolWindow  {
                 }
             }
         });
+
+        // 监听组件大小改变
+        contentPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent componentEvent) {
+                // 重设内容面板的大小
+                contentTextPane.setPreferredSize(new Dimension(contentPanel.getWidth(), contentPanel.getHeight()));
+            }
+        });
     }
 
     private void setContentText(String content) {

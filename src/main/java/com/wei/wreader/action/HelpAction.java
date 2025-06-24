@@ -46,6 +46,8 @@ public class HelpAction extends BaseAction {
             textPane.setEditable(false);
             textPane.setContentType("text/html");
             textPane.setText(content);
+            // 设置背景色为主题背景色
+            textPane.setBackground(UIManager.getColor("Panel.background"));
 
             JBScrollPane scrollPane = new JBScrollPane();
             scrollPane.setViewportView(textPane);

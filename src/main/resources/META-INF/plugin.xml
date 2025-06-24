@@ -1,14 +1,14 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.13</version>
+    <version>0.0.14</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
     <div>
         <h1>W-Reader</h1>
-        <h2>An Immersive Novel Reading Tool on JetBrains IDEs.</h2>
-        <h2>JetBrains IDEs 上的沉浸式小说阅读利器</h2>
+        <h2>An Immersive Novel Reading Tool on JetBrains IDEs, enjoy easy access to a wide range of books.</h2>
+        <h2>JetBrains IDEs 上的沉浸式小说阅读利器，轻松阅读各类书籍。</h2>
         <p>专为开发者设计的轻量级小说阅读插件</p>
     </div>
 
@@ -63,6 +63,17 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.0.14:
+        <ul>
+            <li>1.【完善】代码注释块对齐缩进；</li>
+            <li>2.【完善】侧边栏页面滑动效果更细腻；</li>
+            <li>3.【修复】因选择书源冲突，导致切换功能出现异常；</li>
+            <li>4.【新增】书源；</li>
+            <li>5.【新增】增加编辑器消息提示窗口宽度和高度的设置，可在设置页面修改其尺寸；</li>
+            <li>6.【新增】右键菜单新增更多功能选项；</li>
+        </ul>
+    </div>
     <div>
         0.0.13:
         <ul>
@@ -152,12 +163,6 @@
         <ul>
             <li>1.【新增】本地加载小说功能；；</li>
             <li>2.【优化】优化其他功能的问题；</li>
-        </ul>
-    </div>
-    <div>
-        0.0.1:
-        <ul>
-            <li>初始版本</li>
         </ul>
     </div>
     ]]></change-notes>
@@ -267,6 +272,17 @@
             <reference id="wreader.EditorMessageAction"/>
             <reference id="wreader.CommentBlockAction"/>
             <reference id="wreader.AudioReadingAction"/>
+            <separator/>
+            <reference id="wreader.FontSizeSubAction"/>
+            <reference id="wreader.FontSizeAddAction"/>
+            <reference id="wreader.PrevChapterAction"/>
+            <reference id="wreader.NextChapterAction"/>
+            <separator/>
+            <reference id="wreader.ChangeFontColorAction"/>
+            <reference id="wreader.LoadLocalFileAction"/>
+            <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.HelpAction"/>
+            <reference id="wreader.ShowBookInfoAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->

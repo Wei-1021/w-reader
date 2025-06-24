@@ -99,13 +99,20 @@ public class CommentBlockAction extends BaseAction {
 
             StringBuilder text = new StringBuilder(finalCommentStartSymbol);
             text.append("\n");
+            // 计算并设置每行缩进的空格数，于第一行对应
+            StringBuilder linePrefix = new StringBuilder();
+            int column = primaryCaret.getVisualPosition().column;
+            if (column > 0) {
+                linePrefix.append(" ".repeat(column));
+            }
             for (String content : chapterContentList) {
-                text.append(finalCommentLineSymbol)
+                text.append(linePrefix)
+                        .append(finalCommentLineSymbol)
                         .append(" ")
                         .append(content)
                         .append("\n");
             }
-            text.append(finalCommentEndSymbol);
+            text.append(linePrefix).append(finalCommentEndSymbol);
 
             document.insertString(primaryCaret.getOffset(), text.toString());
         });

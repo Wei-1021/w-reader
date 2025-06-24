@@ -1,11 +1,11 @@
 package com.wei.wreader.utils.tts;
 
+import com.wei.wreader.utils.tts.listener.ITTSListener;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 import org.apache.commons.lang3.StringUtils;
-import org.dreamwork.tools.tts.ITTSListener;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;

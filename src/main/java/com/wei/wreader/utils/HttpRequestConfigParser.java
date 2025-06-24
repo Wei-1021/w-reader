@@ -12,7 +12,6 @@ import java.util.Map;
  *            <b>method</b>：HTTP方法，默认为GET;
  *            <b>query_params</b>：查询参数，格式为参数1=值1&参数2=值2;
  *            <b>body_params</b>：请求体参数，格式为参数3=值3&参数4=值4
- *            <i>注意：参数名不能包含等号("=")，否则解析会出错。各配置项之间以分号";"分隔。</i>
  *     <b>示例配置字符串</b>：
  *     url=http://example.com/api/data;method=POST;query_params=param1=value1&param2=value2;body_params=param3=value3&param4=value4
  * </pre>
