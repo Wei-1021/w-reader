@@ -274,6 +274,11 @@ public class OperateActionUtil {
         });
     }
 
+    /**
+     * 搜索弹出窗口确定按钮点击事件
+     * @param comboBox
+     * @param searchBookTextField
+     */
     private void searchBookDialogOk(ComboBox<String> comboBox, JTextField searchBookTextField) {
         this.tempSelectedBookSiteIndex = this.selectedBookSiteIndex;
         this.tempSelectedBookSiteInfo = this.selectedBookSiteInfo;

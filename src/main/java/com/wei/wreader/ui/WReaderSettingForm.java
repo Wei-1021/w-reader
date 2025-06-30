@@ -333,12 +333,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 编辑器消息窗口--宽度
-        int editorHintWidth = (Integer) editorMessageWindosWidthComboBox.getSelectedItem();
+        ComboBoxEditor editorMessageWindowWidthEditor = editorMessageWindosWidthComboBox.getEditor();
+        int editorHintWidth = (Integer) editorMessageWindowWidthEditor.getItem();
         if (settings.getEditorHintWidth() != editorHintWidth) {
             return true;
         }
         // 编辑器消息窗口--高度
-        int editorHintHeight = (Integer) editorMessageWindosHeightComboBox.getSelectedItem();
+        ComboBoxEditor editorMessageWindowHeightEditor = editorMessageWindosHeightComboBox.getEditor();
+        int editorHintHeight = (Integer) editorMessageWindowHeightEditor.getItem();
         if (settings.getEditorHintHeight() != editorHintHeight) {
             return true;
         }
@@ -353,11 +355,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             return true;
         }
         // 语速
-        if (!settings.getRate().equals(rateComboBox.getSelectedItem())) {
+        ComboBoxEditor rateEditor = rateComboBox.getEditor();
+        if (!settings.getRate().equals(rateEditor.getItem())) {
             return true;
         }
         // 音量
-        if (!settings.getVolume().equals(volumeComboBox.getSelectedItem())) {
+        ComboBoxEditor volumeEditor = volumeComboBox.getEditor();
+        if (!settings.getVolume().equals(volumeEditor.getItem())) {
             return true;
         }
         // 音频风格
@@ -400,8 +404,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         settings.setMainIconStyle(selectedIconStyle);
         // 编辑器消息窗口--宽高
-        settings.setEditorHintWidth((Integer) editorMessageWindosWidthComboBox.getSelectedItem());
-        settings.setEditorHintHeight((Integer) editorMessageWindosHeightComboBox.getSelectedItem());
+        ComboBoxEditor editorMessageWindowWidthEditor = editorMessageWindosWidthComboBox.getEditor();
+        settings.setEditorHintWidth((Integer) editorMessageWindowWidthEditor.getItem());
+        ComboBoxEditor editorMessageWindowHeightEditor = editorMessageWindosHeightComboBox.getEditor();
+        settings.setEditorHintHeight((Integer) editorMessageWindowHeightEditor.getItem());
 
         // 语速
         ComboBoxEditor rateEditor = rateComboBox.getEditor();

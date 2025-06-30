@@ -135,17 +135,6 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="4d7e4" class="javax.swing.JLabel" binding="editorMessageWindosWidthLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
-                    <minimum-size width="80" height="35"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <horizontalAlignment value="4"/>
-                  <text value="宽度"/>
-                </properties>
-              </component>
               <component id="62182" class="javax.swing.JComboBox" binding="editorMessageWindosWidthComboBox">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
@@ -157,7 +146,7 @@
               <component id="ed5df" class="javax.swing.JLabel" binding="editorMessageWindosHeightLabel">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
-                    <minimum-size width="80" height="35"/>
+                    <minimum-size width="40" height="35"/>
                   </grid>
                 </constraints>
                 <properties>
@@ -183,6 +172,17 @@
                   <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
               </hspacer>
+              <component id="4d7e4" class="javax.swing.JLabel" binding="editorMessageWindosWidthLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                    <minimum-size width="40" height="35"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <horizontalAlignment value="4"/>
+                  <text value="宽度"/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>

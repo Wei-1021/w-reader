@@ -4,6 +4,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.components.JBLabel;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.BookSiteInfo;
+import com.wei.wreader.pojo.Settings;
+import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.LegadoSourceParser;
 import com.wei.wreader.utils.MessageDialogUtil;
 import org.jetbrains.annotations.NotNull;
@@ -25,24 +27,32 @@ public class ShowBookInfoAction extends BaseAction {
 //            LegadoSourceParser legadoSourceParser = new LegadoSourceParser();
 //            legadoSourceParser.test();
 
-            JBLabel bookSiteNameLabel = new JBLabel("书源：" + selectedBookSiteInfo.getName());
-            bookSiteNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            JBLabel bookSiteIdLabel = new JBLabel("书源网址：" + selectedBookSiteInfo.getId());
-            bookSiteIdLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
             JBLabel bookNameLabel = new JBLabel("书名：" + selectedBookInfo.getBookName());
             bookNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
             JBLabel bookAuthorLabel = new JBLabel("作者：" + selectedBookInfo.getBookAuthor());
             bookAuthorLabel.setHorizontalAlignment(SwingConstants.LEFT);
             JBLabel bookDescLabel = new JBLabel("简介：" + selectedBookInfo.getBookDesc());
             bookDescLabel.setHorizontalAlignment(SwingConstants.LEFT);
-
             Object[] objects = new Object[] {
-                    bookSiteNameLabel,
-                    bookSiteIdLabel,
                     bookNameLabel,
                     bookAuthorLabel,
                     bookDescLabel
             };
+            if (Settings.DATA_LOAD_TYPE_NETWORK == settings.getDataLoadType()) {
+                JBLabel bookSiteNameLabel = new JBLabel("书源：" + selectedBookSiteInfo.getName());
+                bookSiteNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
+                JBLabel bookSiteIdLabel = new JBLabel("书源网址：" + selectedBookSiteInfo.getId());
+                bookSiteIdLabel.setHorizontalAlignment(SwingConstants.LEFT);
+                objects = new Object[] {
+                        bookSiteNameLabel,
+                        bookSiteIdLabel,
+                        bookNameLabel,
+                        bookAuthorLabel,
+                        bookDescLabel
+                };
+            }
+
 
             MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 350, 250,
                     null);
