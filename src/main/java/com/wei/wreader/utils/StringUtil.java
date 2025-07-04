@@ -244,7 +244,7 @@ public class StringUtil {
     }
 
     /**
-     * 替换 HTML 或 SVG 中的图片链接为 Base64 编码字符串
+     * 替换 HTML 或 SVG 中的图片链接
      * @param html
      * @param imageMap
      * @return

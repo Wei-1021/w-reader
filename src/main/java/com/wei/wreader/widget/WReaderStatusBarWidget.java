@@ -37,8 +37,8 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private ChapterInfo selectedChapterInfo;
     private Settings settings;
     private List<String> contentArr;
-    public static String currentContentStr;
-    public static String showContentStr;
+    public String currentContentStr;
+    public String showContentStr;
     /**
      * 是否隐藏文字
      */
@@ -139,6 +139,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             }
         }
 
+        // 鼠标悬停时的提示内容
         String tooltipText = getTooltipText();
 
         EditorBasedStatusBarPopup.WidgetState widgetState = new EditorBasedStatusBarPopup
@@ -186,7 +187,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     public static void update(@NotNull Project project, String chapterContent) {
         WReaderStatusBarWidget widget = findWidget(project);
         if (widget != null) {
-            currentContentStr = chapterContent;
+            widget.currentContentStr = chapterContent;
             widget.update(() -> {
                 if (widget.myStatusBar == null) {
                     Messages.showErrorDialog("状态栏更新异常", MessageDialogUtil.TITLE_ERROR);
@@ -198,9 +199,17 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     }
 
     public static void hide(@NotNull Project project) {
-        isHide = true;
-        update(project, "");
-        isHide = false;
+        WReaderStatusBarWidget widget = findWidget(project);
+        if (widget != null) {
+            widget.showContentStr = "";
+            widget.update(() -> {
+                if (widget.myStatusBar == null) {
+                    Messages.showErrorDialog("状态栏更新异常", MessageDialogUtil.TITLE_ERROR);
+                    return;
+                }
+                widget.myStatusBar.updateWidget(ConstUtil.WREADER_STATUS_BAR_WIDGET_ID);
+            });
+        }
     }
 
     public static String getWidgetId() {
@@ -211,18 +220,24 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * 隐藏文字
      */
     public static void hideText(@NotNull Project project) {
-        showContentStr = "";
-        hide(project);
-        update(project, showContentStr);
+        WReaderStatusBarWidget widget = findWidget(project);
+        if (widget != null) {
+            widget.isHideText = true;
+            widget.showContentStr = "";
+            hide(project);
+        }
     }
 
     /**
      * 显示文字
      */
     public static void showText(@NotNull Project project) {
-        showContentStr = currentContentStr;
-        hide(project);
-        update(project, showContentStr);
+        WReaderStatusBarWidget widget = findWidget(project);
+        if (widget != null) {
+            widget.isHideText = false;
+            widget.showContentStr = widget.currentContentStr;
+            hide(project);
+        }
     }
 
     /**

@@ -24,12 +24,14 @@ import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.tts.EdgeTTS;
+import com.wei.wreader.utils.tts.VoiceRole;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import io.documentnode.epub4j.domain.*;
 import io.documentnode.epub4j.epub.EpubReader;
 import io.documentnode.epub4j.util.IOUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -956,6 +958,7 @@ public class OperateActionUtil {
             Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
             chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
             chapterContentText = StringUtils.normalizeSpace(chapterContentText);
+            chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
             // 缓存当前章节信息
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             currentChapterInfo.setChapterContent(chapterContentHtml);
@@ -999,6 +1002,7 @@ public class OperateActionUtil {
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
+                    chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
                 }
             } catch (Exception e) {
                 Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
@@ -1090,6 +1094,7 @@ public class OperateActionUtil {
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
+                    chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
                 }
             }
 
@@ -1147,6 +1152,7 @@ public class OperateActionUtil {
                     Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
                     chapterContentText = pattern.matcher(chapterContentHtml).replaceAll("　");
                     chapterContentText = StringUtils.normalizeSpace(chapterContentText);
+                    chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
                 }
             }
 
@@ -1576,7 +1582,7 @@ public class OperateActionUtil {
         if (StringUtils.isBlank(voiceRole)) {
             voiceRole = configYaml.getSettings().getVoiceRole();
         }
-        com.wei.wreader.utils.tts.VoiceRole voiceRoleEnum = com.wei.wreader.utils.tts.VoiceRole.getByNickName(voiceRole);
+        VoiceRole voiceRoleEnum = VoiceRole.getByNickName(voiceRole);
         // 音频超时时间
         int audioTimeout = settings.getAudioTimeout();
         if (audioTimeout <= 0) {
