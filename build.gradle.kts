@@ -11,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.14"
+version = "0.0.15"
 
 repositories {
     maven {
@@ -20,6 +20,10 @@ repositories {
 
     maven {
         url = uri("https://maven.aliyun.com/repository/public")
+    }
+
+    maven {
+        url = uri("https://github.com/psiegman/mvn-repo/raw/master/releases")
     }
 
     mavenCentral()
@@ -62,11 +66,15 @@ dependencies {
     }
 
     implementation("org.yaml:snakeyaml:2.0")
-    implementation("io.documentnode:epub4j-core:4.2.1")
+    implementation("io.documentnode:epub4j-core:4.2.2")
     implementation("com.googlecode.soundlibs:jlayer:1.0.1.4")
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.codehaus.janino:janino:3.1.9")
+//    implementation("nl.siegmann.epublib:epublib-core:3.1") {
+//        exclude(group = "org.slf4j")
+//        exclude(group = "xmlpull")
+//    }
 //    implementation("org.noear:liquor:1.3.7")
 //    implementation("org.mozilla:rhino:1.7.14")
 //    implementation("org.apache.pdfbox:fontbox:3.0.3")
@@ -149,58 +157,9 @@ tasks {
         token.set(providers.gradleProperty("publicToken"))
     }
 
-
-    // 获取构建目录
-//    val buildDir = layout.buildDirectory
-//    val printMappingFile = buildDir.file("mapping.txt").get()
-//    val inJarsFile = buildDir.file("libs/$pluginName-$version.jar").get()
-//    val proguardJar = buildDir.file("libs/$pluginName-$version-proguard.jar")
-//    val proguard by registering(ProGuardTask::class) {
-//        printmapping(printMappingFile)
-//        configuration("proguard-rules.pro")
-//
-//        injars(inJarsFile)
-////        injars(composedJar.map { it.archiveFile })
-//        outjars(proguardJar)
-//    }
-//
-//    // 显式声明 proguard 任务依赖于 composedJar 任务
-//    proguard {
-//        dependsOn(composedJar)
-//    }
-//
-//    prepareSandbox {
-//        pluginJar = proguardJar
-//        dependsOn(proguard)
-//    }
-
     intellijPlatform {
         autoReload.set(true)
     }
 
 }
 
-//val buildDir = layout.buildDirectory
-//val proguardJar = buildDir.file("libs/$pluginName-$version-proguard.jar").get()
-//val inJarsFile = buildDir.file("libs/$pluginName-$version.jar").get()
-//
-//tasks.register<ProGuardTask>("proguard") {
-//    printmapping(buildDir.file("mapping.txt").get())
-//    configuration("proguard-rules.pro")
-//
-//    injars(inJarsFile)
-//    outjars(proguardJar)
-//
-//    // 设置库文件
-//    val javaHome = System.getProperty("java.home")
-//    val rtJar = "$javaHome/lib/rt.jar"
-//    libraryjars(files(rtJar))
-//    libraryjars(configurations.runtimeClasspath.get().files)
-//
-//    dependsOn(tasks.named("jar"))
-//}
-//
-//tasks.named("prepareSandbox") {
-//    dependsOn("proguard")
-//    (this as PrepareSandboxTask).pluginJar = proguardJar
-//}

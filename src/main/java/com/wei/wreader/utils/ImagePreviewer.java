@@ -3,6 +3,7 @@ package com.wei.wreader.utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
@@ -28,7 +29,7 @@ import javax.imageio.ImageIO;
 public class ImagePreviewer {
     private Project project;
     private JLabel imageLabel;
-    private BufferedImage image;
+    private Image image;
     private double scale = 1.0;
     private int lastX, lastY;
 
@@ -84,6 +85,19 @@ public class ImagePreviewer {
     }
 
     public void openImagePreview() {
+        // 原始宽度
+        int width = image.getWidth(null);
+        // 缩放宽度
+        int scaleWidth = ConstUtil.IMAGE_PREVIEW_WIDTH - 50;
+        // 原始高度
+        int height = image.getHeight(null);
+        // 缩放高度
+        int scaleHeight = ConstUtil.IMAGE_PREVIEW_HEIGHT - 80;
+        // 计算缩放比例（宽度缩放比例和高度缩放比例中选择缩放比例高的）
+        double initScale = Math.min((double) scaleWidth / width, (double) scaleHeight / height);
+        image = ImageUtil.scaleImage(image, initScale);
+        // 重置图片尺寸，以适应窗口大小
+//        image = image.getScaledInstance(scaleWidth, scaleHeight, Image.SCALE_SMOOTH);
         // 创建 JLabel 用于显示图片
         imageLabel = new JLabel(new ImageIcon(image));
 
@@ -148,8 +162,8 @@ public class ImagePreviewer {
 
     private void updateImage() {
         // 根据缩放比例调整图片大小
-        int newWidth = (int) (image.getWidth() * scale);
-        int newHeight = (int) (image.getHeight() * scale);
+        int newWidth = (int) (image.getWidth(null) * scale);
+        int newHeight = (int) (image.getHeight(null) * scale);
         Image scaledImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
         imageLabel.setIcon(new ImageIcon(scaledImage));
     }

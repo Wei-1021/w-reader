@@ -16,6 +16,7 @@ import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.DecimalDocumentFilter;
 import com.wei.wreader.widget.GroupedComboBox.CharsetGroupComboBox;
 import com.wei.wreader.widget.GroupedComboBox.GroupedComboBox;
 import com.wei.wreader.utils.NumberUtil;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.AbstractDocument;
 import java.util.*;
 import java.util.List;
 
@@ -202,10 +204,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         charsetPanel.add(charsetComboBox, charsetGridConstraints);
 
         // 自动阅读
-        autoReadTimeTextField.setDocument(new NumberDocument());
-        int autoReadTime = settings.getAutoReadTime();
-        if (autoReadTime <= 0) {
-            autoReadTime = 5;
+        ((AbstractDocument) autoReadTimeTextField.getDocument()).setDocumentFilter(new DecimalDocumentFilter(2));
+        float autoReadTime = settings.getAutoReadTime();
+        if (autoReadTime <= 0f) {
+            autoReadTime = 5f;
         }
         autoReadTimeTextField.setText(String.valueOf(autoReadTime));
 
@@ -319,7 +321,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         // 自动阅读
         String autoReadTime = autoReadTimeTextField.getText();
-        if (settings.getAutoReadTime() != NumberUtil.parseInt(autoReadTime)) {
+
+        if (!NumberUtil.parseFloat(autoReadTime).equals(settings.getAutoReadTime())) {
             return true;
         }
         // 主图标风格
@@ -391,7 +394,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setDisplayType(selectedDisplayType);
         OptionItem charsetSelectedItem = (OptionItem) charsetComboBox.getSelectedItem();
         settings.setCharset(charsetSelectedItem == null ? settings.getCharset() : charsetSelectedItem.getText());
-        settings.setAutoReadTime(NumberUtil.parseInt(autoReadTimeTextField.getText()));
+        settings.setAutoReadTime(NumberUtil.parseFloat(autoReadTimeTextField.getText()));
         OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
         settings.setVoiceRole(voiceRoleSelectedItem == null ? settings.getVoiceRole() : voiceRoleSelectedItem.getText());
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());

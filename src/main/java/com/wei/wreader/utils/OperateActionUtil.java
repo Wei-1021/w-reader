@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,6 +75,10 @@ public class OperateActionUtil {
     private static Project mProject;
     private static OperateActionUtil instance;
     private static ScheduledExecutorService executorService;
+    /**
+     * 是否已成功切换下一个章节
+     */
+    private static boolean IS_SWITCH_NEXT_CHAPTER_SUCCESS = false;
     /**
      * 书本名称列表
      */
@@ -158,6 +164,7 @@ public class OperateActionUtil {
      * 搜索小说对话框
      */
     private DialogBuilder searchBookDialogBuilder;
+
 
     //endregion
 
@@ -278,6 +285,7 @@ public class OperateActionUtil {
 
     /**
      * 搜索弹出窗口确定按钮点击事件
+     *
      * @param comboBox
      * @param searchBookTextField
      */
@@ -418,7 +426,7 @@ public class OperateActionUtil {
             String bookListUrlElement = selectedBookSiteInfo.getBookListUrlElement();
             bookListUrlElement = StringUtils.isBlank(bookListUrlElement) ? "a" : bookListUrlElement;
             String[] bookListUrlElementRules = bookListUrlElement.split("@");
-            String bookListUrlCssQueryRule =  bookListUrlElementRules[0];
+            String bookListUrlCssQueryRule = bookListUrlElementRules[0];
             String bookListUrlRuleBack = "";
             String bookListUrlRuleFront = "";
             if (bookListUrlElementRules.length > 1) {
@@ -869,8 +877,8 @@ public class OperateActionUtil {
                                 // 设置内容
                                 chapterContent = String.format(
                                         """
-                                        <div style="color:%s;font-family:'%s';font-size:%dpx;">%s</div>
-                                        """,
+                                                <div style="color:%s;font-family:'%s';font-size:%dpx;">%s</div>
+                                                """,
                                         fontColorHex, fontFamily, fontSize, chapterContent);
                             }
 
@@ -908,7 +916,7 @@ public class OperateActionUtil {
         // 提取章节名称和章节链接
         String chapterTitle = chapterList.get(currentChapterIndex);
         // 提取章节链接
-        if(ListUtil.isEmpty(chapterUrlList)) {
+        if (ListUtil.isEmpty(chapterUrlList)) {
             Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
             return;
         }
@@ -1072,7 +1080,7 @@ public class OperateActionUtil {
 
             int dataLoadType = settings.getDataLoadType();
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
-                if(ListUtil.isEmpty(chapterUrlList)) {
+                if (ListUtil.isEmpty(chapterUrlList)) {
                     Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
                     return null;
                 }
@@ -1113,9 +1121,10 @@ public class OperateActionUtil {
      */
     public ChapterInfo nextPageChapter() {
         try {
+            IS_SWITCH_NEXT_CHAPTER_SUCCESS = false;
             int dataLoadType = settings.getDataLoadType();
             if (dataLoadType == Settings.DATA_LOAD_TYPE_NETWORK) {
-                if(ListUtil.isEmpty(chapterUrlList)) {
+                if (ListUtil.isEmpty(chapterUrlList)) {
                     Messages.showErrorDialog(ConstUtil.WREADER_LOAD_CONTENT_ERROR, "提示");
                     return null;
                 }
@@ -1162,7 +1171,10 @@ public class OperateActionUtil {
             currentChapterInfo.setPrevReadLineNum(1);
             currentChapterInfo.setNextReadLineNum(2);
             currentChapterInfo.setLastReadLineNum(1);
+            currentChapterInfo.setChapterContentList(null);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
+
+            IS_SWITCH_NEXT_CHAPTER_SUCCESS = true;
 
             return currentChapterInfo;
         } catch (Exception e) {
@@ -1396,53 +1408,23 @@ public class OperateActionUtil {
                 }
             }
 
-            // 获取书籍内容列表
-            List<Resource> contentList = book.getContents();
-            // 获取书籍的阅读顺序
-            List<SpineReference> spineReferenceList = book.getSpine().getSpineReferences();
-            // 获取书籍的章节列表
-            TableOfContents tableOfContents = book.getTableOfContents();
-            List<TOCReference> tocReferences = tableOfContents.getTocReferences();
             // 创建两个列表，分别存储章节标题和章节内容
             List<String> chapterList = new ArrayList<>();
             List<String> chapterContentList = new ArrayList<>();
-            for (SpineReference spineReference : spineReferenceList) {
-                Resource resource = spineReference.getResource();
 
-                // 标题匹配
-                String resourceTitle = resource.getTitle();
-                for (TOCReference tocReference : tocReferences) {
-                    Resource tocReferenceRes = tocReference.getResource();
-                    if (resource.getId().equals(tocReferenceRes.getId())) {
-                        resourceTitle = tocReference.getTitle();
-                    }
-                }
-                if (resourceTitle != null) {
-                    resource.setTitle(resourceTitle);
-                } else {
-                    resourceTitle = resource.getId();
+            // 遍历章节列表
+            EpubReaderComplete.readEpub(book, resMap -> {
+                String title = resMap.get("title");
+                String content = resMap.get("content");
+                // 获取<body>标签中的内容
+                content = StringUtil.extractBodyContent(content);
+                if (isShowLocalImg) {
+                    content = StringUtil.replaceImageLinks(content, imgTempPathMap);
                 }
 
-                // 内容匹配
-                String contentText = "";
-                for (Resource contentRes : contentList) {
-                    if (resource.getId().equals(contentRes.getId())) {
-                        byte[] content = contentRes.getData();
-                        // 获取输入编码
-                        String inputEncoding = contentRes.getInputEncoding();
-                        // 将章节内容byte转换为字符串
-                        String contentStr = new String(content, inputEncoding);
-                        // 获取<body>标签中的内容
-                        contentText = StringUtil.extractBodyContent(contentStr);
-                        if (isShowLocalImg) {
-                            contentText = StringUtil.replaceImageLinks(contentText, imgTempPathMap);
-                        }
-                    }
-                }
-
-                chapterList.add(resourceTitle);
-                chapterContentList.add(contentText);
-            }
+                chapterList.add(title);
+                chapterContentList.add(content);
+            });
             cacheService.setChapterList(chapterList);
             cacheService.setChapterContentList(chapterContentList);
             this.chapterList = chapterList;
@@ -1466,6 +1448,91 @@ public class OperateActionUtil {
             e.printStackTrace();
             Messages.showMessageDialog(ConstUtil.WREADER_LOAD_FAIL, "提示", Messages.getInformationIcon());
         }
+    }
+
+    /**
+     * 递归打印目录项及其子项
+     *
+     * @param tocRef 当前处理的目录引用
+     * @param level  当前层级深度 (0表示顶级)
+     */
+    private static void printTocReference(TOCReference tocRef,
+                                          int level,
+                                          List<String> chapterList,
+                                          List<String> chapterContentList,
+                                          Map<String, String> imgTempPathMap,
+                                          boolean isShowLocalImg) throws IOException {
+        // 根据层级添加缩进，使输出更清晰
+        // 每级缩进四个空格
+        String indent = "    ".repeat(Math.max(0, level));
+
+        // 如果标题为空，尝试获取资源的ID或文件名作为回退
+        Resource resource = tocRef.getResource();
+        // 获取标题
+        String title = getEpubChapterTitle(tocRef, resource);
+        // 获取内容
+        String content = getEpubChapterContent(resource, imgTempPathMap, isShowLocalImg);
+
+        chapterList.add(indent + title);
+        chapterContentList.add(content);
+
+        // 递归处理子目录项
+        List<TOCReference> children = tocRef.getChildren();
+        if (children != null && !children.isEmpty()) {
+            for (TOCReference child : children) {
+                // 层级加1
+                printTocReference(child, level + 1, chapterList, chapterContentList,
+                        imgTempPathMap, isShowLocalImg);
+            }
+        }
+    }
+
+    /**
+     * 获取目录项的标题
+     * @param tocRef
+     * @param resource
+     * @return
+     */
+    @NotNull
+    private static String getEpubChapterTitle(TOCReference tocRef, Resource resource) {
+        String title = tocRef.getTitle();
+        if (title == null || title.trim().isEmpty()) {
+            if (resource != null) {
+                title = "Untitled (Resource ID: " + resource.getId() + ")";
+                // 或者使用 resource.getHref() 获取文件路径作为标题
+                // title = "Untitled (" + resource.getHref() + ")";
+            } else {
+                title = "Untitled (No Resource)";
+            }
+        }
+
+        return title;
+    }
+
+    /**
+     * 获取epub章节内容
+     * @param resource
+     * @param imgTempPathMap
+     * @param isShowLocalImg
+     * @return
+     * @throws IOException
+     */
+    private static String getEpubChapterContent(Resource resource,
+                                                Map<String, String> imgTempPathMap,
+                                                boolean isShowLocalImg) throws IOException {
+        String contentText = "";
+        byte[] content = resource.getData();
+        // 获取输入编码
+        String inputEncoding = resource.getInputEncoding();
+        // 将章节内容byte转换为字符串
+        String contentStr = new String(content, inputEncoding);
+        // 获取<body>标签中的内容
+        contentText = StringUtil.extractBodyContent(contentStr);
+        if (isShowLocalImg) {
+            contentText = StringUtil.replaceImageLinks(contentText, imgTempPathMap);
+        }
+
+        return contentText;
     }
 
     /**
@@ -1503,8 +1570,8 @@ public class OperateActionUtil {
         }
 
         // 获取当前选中章节内容
-        List<String> chapterContentList = selectedChapterInfo.getChapterContentList();
-        if (chapterContentList == null || chapterContentList.isEmpty()) {
+        AtomicReference<List<String>> chapterContentList = new AtomicReference<>(selectedChapterInfo.getChapterContentList());
+        if (chapterContentList.get() == null || chapterContentList.get().isEmpty()) {
             return;
         }
 
@@ -1514,25 +1581,36 @@ public class OperateActionUtil {
         }
 
         // 获取章节内容长度
-        int len = chapterContentList.size();
+        AtomicInteger len = new AtomicInteger(chapterContentList.get().size());
         // 获取自动阅读时间
-        int autoReadTime = settings.getAutoReadTime();
-        if (autoReadTime <= 0) {
-            autoReadTime = 5;
+        float autoReadTime = settings.getAutoReadTime();
+        if (autoReadTime <= 0f) {
+            autoReadTime = 5f;
         }
 
         // 创建一个任务，用于每过autoReadTime秒执行一次
         Runnable readNextLineTask = () -> {
             int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
-            if (lastReadLineNum < len) {
+            len.set(selectedChapterInfo.getChapterContentList() == null ? 0 : selectedChapterInfo.getChapterContentList().size());
+
+            if (lastReadLineNum < len.get()) {
+                IS_SWITCH_NEXT_CHAPTER_SUCCESS = false;
                 WReaderStatusBarWidget.nextLine(mProject);
             } else {
-                executorService.shutdown();
+                if (!IS_SWITCH_NEXT_CHAPTER_SUCCESS) {
+                    // 停止语音
+                    stopTTS();
+                    // 重置编辑器消息垂直滚动条位置
+                    cacheService.setEditorMessageVerticalScrollValue(0);
+//                    nextPageChapter();
+                    WReaderStatusBarWidget.nextChapter(mProject);
+                }
             }
         };
 
+        long autoReadTimeMillis = (long) (autoReadTime * 1000);
         // 调度任务，每过autoReadTime秒执行一次
-        executorService.scheduleAtFixedRate(readNextLineTask, autoReadTime, autoReadTime, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(readNextLineTask, autoReadTimeMillis, autoReadTimeMillis, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -1679,6 +1757,7 @@ public class OperateActionUtil {
 
     /**
      * 获取鼠标点击的文档位置
+     *
      * @param e
      * @return
      */
@@ -1689,6 +1768,7 @@ public class OperateActionUtil {
 
     /**
      * 获取指定位置的HTML标签
+     *
      * @param textPane
      * @param pos
      * @return

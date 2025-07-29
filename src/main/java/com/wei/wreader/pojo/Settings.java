@@ -68,7 +68,7 @@ public class Settings {
     /**
      * 自动阅读时间(秒)
      */
-    private int autoReadTime;
+    private float autoReadTime;
     /**
      * 本地加载时是否显示图片
      */
@@ -151,11 +151,11 @@ public class Settings {
         this.charset = charset;
     }
 
-    public int getAutoReadTime() {
+    public float getAutoReadTime() {
         return autoReadTime;
     }
 
-    public void setAutoReadTime(int autoReadTime) {
+    public void setAutoReadTime(float autoReadTime) {
         this.autoReadTime = autoReadTime;
     }
 

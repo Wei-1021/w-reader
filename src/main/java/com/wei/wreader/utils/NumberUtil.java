@@ -15,6 +15,16 @@ public class NumberUtil {
             return 0;
         }
 
-        return Integer.parseInt(str);
+        return Integer.valueOf(str);
+    }
+
+    /**
+     * float
+     */
+    public static Float parseFloat(String str) {
+        if (StringUtils.isBlank(str)) {
+            return 0f;
+        }
+        return Float.valueOf(str);
     }
 }
