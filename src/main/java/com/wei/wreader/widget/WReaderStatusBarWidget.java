@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
@@ -16,8 +15,6 @@ import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.List;
@@ -31,7 +28,6 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private final Project project;
     private static String WIDGET_ID;
     private ConfigYaml configYaml;
-    private ToolWindowInfo toolWindow;
     private CacheService cacheService;
     private BookInfo selectedBookInfo;
     private ChapterInfo selectedChapterInfo;
@@ -69,7 +65,6 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             settings = configYaml.getSettings();
         }
         WIDGET_ID = ConstUtil.WREADER_STATUS_BAR_WIDGET_ID;
-        toolWindow = configYaml.getToolWindow();
 
         isHideText = cacheService.isHideText();
         isHide = false;
@@ -281,8 +276,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
         List<String> chapterContentList = selectedChapterInfoTemp.getChapterContentList();
         int lastReadLineNum = selectedChapterInfoTemp.getLastReadLineNum();
-        if (chapterContentList != null &&
-                !chapterContentList.isEmpty() &&
+        if (chapterContentList != null && !chapterContentList.isEmpty() &&
                 lastReadLineNum <= chapterContentList.size()) {
             lastReadLineNum = lastReadLineNum == chapterContentList.size() ? lastReadLineNum : lastReadLineNum + 1;
             selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
@@ -319,13 +313,14 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
 
         // 获取上一章
         OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
-        operateAction.prevPageChapter();
-        selectedChapterInfoTemp.setLastReadLineNum(1);
-        selectedChapterInfoTemp.setPrevReadLineNum(1);
-        selectedChapterInfoTemp.setNextReadLineNum(1);
-        selectedChapterInfoTemp.setChapterContentList(null);
-        hide(project);
-        update(project, "");
+        operateAction.prevPageChapter(chapterInfo -> {
+            selectedChapterInfoTemp.setLastReadLineNum(1);
+            selectedChapterInfoTemp.setPrevReadLineNum(1);
+            selectedChapterInfoTemp.setNextReadLineNum(1);
+            selectedChapterInfoTemp.setChapterContentList(null);
+            hide(project);
+            update(project, "");
+        });
     }
 
     /**
@@ -351,13 +346,14 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             return;
         }
         OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
-        operateAction.nextPageChapter();
-        selectedChapterInfoTemp.setLastReadLineNum(1);
-        selectedChapterInfoTemp.setPrevReadLineNum(1);
-        selectedChapterInfoTemp.setNextReadLineNum(1);
-        selectedChapterInfoTemp.setChapterContentList(null);
-        hide(project);
-        update(project, "");
+        operateAction.nextPageChapter(chapterInfo -> {
+            selectedChapterInfoTemp.setLastReadLineNum(1);
+            selectedChapterInfoTemp.setPrevReadLineNum(1);
+            selectedChapterInfoTemp.setNextReadLineNum(1);
+            selectedChapterInfoTemp.setChapterContentList(null);
+            hide(project);
+            update(project, "");
+        });
 
     }
 

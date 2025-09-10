@@ -1,15 +1,14 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.wei.wreader.pojo.BookInfo;
-import com.wei.wreader.pojo.BookSiteInfo;
 import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.LegadoSourceParser;
+import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.utils.MessageDialogUtil;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * 书本信息展示
@@ -22,40 +21,38 @@ public class ShowBookInfoAction extends BaseAction {
         // 获取当前选择的书本信息
         BookInfo selectedBookInfo = cacheService.getSelectedBookInfo();
         // 获取当前选择的书源
-        BookSiteInfo selectedBookSiteInfo = cacheService.getSelectedBookSiteInfo();
+        SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
         SwingUtilities.invokeLater(() -> {
-//            LegadoSourceParser legadoSourceParser = new LegadoSourceParser();
-//            legadoSourceParser.test();
+            String bookInfoStr =
+                    "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
+                    "<p>作者：" + selectedBookInfo.getBookAuthor() + "</p>" +
+                    "<p>简介：" + selectedBookInfo.getBookDesc() + "</p>";
 
-
-            JBLabel bookNameLabel = new JBLabel("书名：" + selectedBookInfo.getBookName());
-            bookNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            JBLabel bookAuthorLabel = new JBLabel("作者：" + selectedBookInfo.getBookAuthor());
-            bookAuthorLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            JBLabel bookDescLabel = new JBLabel("简介：" + selectedBookInfo.getBookDesc());
-            bookDescLabel.setHorizontalAlignment(SwingConstants.LEFT);
-            Object[] objects = new Object[] {
-                    bookNameLabel,
-                    bookAuthorLabel,
-                    bookDescLabel
-            };
             if (Settings.DATA_LOAD_TYPE_NETWORK == settings.getDataLoadType()) {
-                JBLabel bookSiteNameLabel = new JBLabel("书源：" + selectedBookSiteInfo.getName());
-                bookSiteNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-                JBLabel bookSiteIdLabel = new JBLabel("书源网址：" + selectedBookSiteInfo.getId());
-                bookSiteIdLabel.setHorizontalAlignment(SwingConstants.LEFT);
-                objects = new Object[] {
-                        bookSiteNameLabel,
-                        bookSiteIdLabel,
-                        bookNameLabel,
-                        bookAuthorLabel,
-                        bookDescLabel
-                };
+                bookInfoStr =
+                        "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
+                        "<p>作者：" + selectedBookInfo.getBookAuthor() + "</p>" +
+                        "<p>书源：" + selectedSiteBean.getName() + "</p>" +
+                        "<p>书源网址：" + selectedSiteBean.getId() + "</p>" +
+                        "<p>简介：" + selectedBookInfo.getBookDesc() + "</p>";
             }
 
+            bookInfoStr = "<div>" + bookInfoStr + "</div>";
 
-            MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 350, 250,
-                    null);
+            JTextPane bookInfoTextPane = new JTextPane();
+            bookInfoTextPane.setContentType("text/html");
+            bookInfoTextPane.setEditable(false);
+            bookInfoTextPane.setPreferredSize(new Dimension(450, 550));
+            bookInfoTextPane.setMaximumSize(new Dimension(450, 550));
+            bookInfoTextPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+            bookInfoTextPane.setEditorKit(new HTMLEditorKitBuilder().withWordWrapViewFactory().build());
+            bookInfoTextPane.setText(bookInfoStr);
+
+            Object[] objects = new Object[] {
+                    bookInfoTextPane
+            };
+
+            MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 500, 0, null);
         });
     }
 }

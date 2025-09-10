@@ -1,11 +1,10 @@
 package com.wei.wreader.utils;
 
-import com.wei.wreader.pojo.BookSiteInfo;
-import com.wei.wreader.pojo.ComponentIdKey;
-import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.pojo.ToolWindowInfo;
+import com.intellij.openapi.ui.Messages;
+import com.wei.wreader.pojo.*;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -20,6 +19,7 @@ public class ConfigYaml {
 
     private static Map<String, Object> DATA_MAP = new LinkedHashMap<>();
     private static ConfigYaml instance;
+    private static ConfigYamlPojo configYamlPojo;
 
     /**
      * 获取单例
@@ -34,15 +34,22 @@ public class ConfigYaml {
     }
 
     public ConfigYaml() {
-        Yaml yaml = new Yaml();
-        // 加载路径为classpath下的constConfig.yml
-        InputStream is = ConfigYaml.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH);
-        Map<String, Object> ymlMap = new LinkedHashMap<>();
-        for (Object obj : yaml.loadAll(is)) {
-            ymlMap = asMap(obj);
-        }
+        try {
+            Yaml yaml = new Yaml();
+            // 加载路径为classpath下的constConfig.yml
+            InputStream is = ConfigYaml.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH);
+            Map<String, Object> ymlMap = new LinkedHashMap<>();
+            for (Object obj : yaml.loadAll(is)) {
+                ymlMap = asMap(obj);
+            }
+            DATA_MAP = ymlMap;
 
-        DATA_MAP = ymlMap;
+            YamlReader yamlReader = new YamlReader();
+            configYamlPojo = yamlReader.readFromFile(CONFIG_FILE_PATH, ConfigYamlPojo.class);
+        } catch (IOException e) {
+            Messages.showErrorDialog(ConstUtil.WREADER_CONFIG_LOAD_FAIL, MessageDialogUtil.TITLE_ERROR);
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -124,48 +131,35 @@ public class ConfigYaml {
      *
      * @return
      */
-    public String getName() {
+    public String getNameOld() {
         return (String) getObject("wreader.name");
     }
 
-    public String getNameHump() {
+    public String getNameHumpOld() {
         return (String) getObject("wreader.nameHump");
     }
 
-    public String getVersion() {
+    public String getVersionOld() {
         return (String) getObject("wreader.version");
     }
 
-    public String getDescription() {
+    public String getDescriptionOld() {
         return (String) getObject("wreader.description");
     }
 
-    public String getAuthor() {
+    public String getAuthorOld() {
         return (String) getObject("wreader.author");
     }
 
-    public Map<String, Object> getLanguage() {
+    public Map<String, Object> getLanguageOld() {
         return (Map<String, Object>) getObject("wreader.language");
     }
 
-    public List<String> getAllowFileExtension() {
+    public List<String> getAllowFileExtensionOld() {
         return (List<String>) getObject("wreader.allowFileExtension");
     }
 
-    public ComponentIdKey getComponentIdKey() {
-        LinkedHashMap<String, Object> componentIdKeyMap = (LinkedHashMap<String, Object>) getObject("wreader.componentIdKey");
-        ComponentIdKey componentIdKey = new ComponentIdKey();
-        componentIdKey.setBookDirectory(componentIdKeyMap.get("bookDirectory").toString());
-        componentIdKey.setNextChapter(componentIdKeyMap.get("nextChapter").toString());
-        componentIdKey.setPrevChapter(componentIdKeyMap.get("prevChapter").toString());
-        componentIdKey.setPrevLine(componentIdKeyMap.get("prevLine").toString());
-        componentIdKey.setNextLine(componentIdKeyMap.get("nextLine").toString());
-        componentIdKey.setSearchBook(componentIdKeyMap.get("searchBook").toString());
-        componentIdKey.setSetting(componentIdKeyMap.get("setting").toString());
-        return componentIdKey;
-    }
-
-    public Settings getSettings() {
+    public Settings getSettingsOld() {
         LinkedHashMap<String, Object> settingsMap = (LinkedHashMap<String, Object>) getObject("wreader.settings");
         Settings settings = new Settings();
         settings.setSingleLineChars(Integer.parseInt(settingsMap.get("singleLineChars").toString()));
@@ -185,75 +179,17 @@ public class ConfigYaml {
         return settings;
     }
 
-    public ToolWindowInfo getToolWindow() {
-        LinkedHashMap<String, Object> toolWindowMap = (LinkedHashMap<String, Object>) getObject("wreader.toolWindow");
-        ToolWindowInfo toolWindowInfo = new ToolWindowInfo();
-        toolWindowInfo.setSearchTitle(toolWindowMap.get("search-title").toString());
-        toolWindowInfo.setFontSizeSubTitle(toolWindowMap.get("font-size-sub-title").toString());
-        toolWindowInfo.setFontSizeAddTitle(toolWindowMap.get("font-size-add-title").toString());
-        toolWindowInfo.setChapterListTitle(toolWindowMap.get("chapter-list-title").toString());
-        toolWindowInfo.setPrevChapterTitle(toolWindowMap.get("prev-chapter-title").toString());
-        toolWindowInfo.setNextChapterTitle(toolWindowMap.get("next-chapter-title").toString());
-        return toolWindowInfo;
-    }
-
-    public List<BookSiteInfo> getSiteList() {
-        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object>>) getObject("wreader.site_list");
-
-        List<BookSiteInfo> siteList = new ArrayList<>();
-        siteListList.forEach(objMap -> {
-            BookSiteInfo bookSiteInfo = new BookSiteInfo();
-            bookSiteInfo.setEnabled(Boolean.parseBoolean(objMap.get("isEnabled").toString()));
-            bookSiteInfo.setId(objMap.get("id").toString());
-            bookSiteInfo.setName(objMap.get("name").toString());
-            bookSiteInfo.setBaseUrl(objMap.get("baseUrl").toString());
-            bookSiteInfo.setSearchUrl(objMap.get("searchUrl").toString());
-            bookSiteInfo.setHeader(objMap.get("header").toString());
-            bookSiteInfo.setSearchBookNameParam(objMap.get("searchBookNameParam").toString());
-            bookSiteInfo.setSearchDataBookListRule(objMap.get("searchDataBookListRule").toString());
-            bookSiteInfo.setBookDataId(objMap.get("bookDataId").toString());
-            bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
-            bookSiteInfo.setBookListUrlElement(objMap.get("bookListUrlElement").toString());
-            bookSiteInfo.setBookListTitleElement(objMap.get("bookListTitleElement").toString());
-            bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
-            bookSiteInfo.setListMainUrlDataRule(objMap.get("listMainUrlDataRule").toString());
-            bookSiteInfo.setIsSavelistMainUrlData(Boolean.parseBoolean(objMap.get("isSavelistMainUrlData").toString()));
-            bookSiteInfo.setListMainItemIdField(objMap.get("listMainItemIdField").toString());
-            bookSiteInfo.setListMainItemTitleField(objMap.get("listMainItemTitleField").toString());
-            bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
-            bookSiteInfo.setChapterListUrlElement(objMap.get("chapterListUrlElement").toString());
-            bookSiteInfo.setChapterListTitleElement(objMap.get("chapterListTitleElement").toString());
-            bookSiteInfo.setChapterContentUrl(objMap.get("chapterContentUrl").toString());
-            bookSiteInfo.setChapterContentUrlDataRule(objMap.get("chapterContentUrlDataRule").toString());
-            bookSiteInfo.setChapterContentHandleRule(objMap.get("chapterContentHandleRule").toString());
-            bookSiteInfo.setContentOriginalStyle(Boolean.parseBoolean(objMap.get("isContentOriginalStyle").toString()));
-            bookSiteInfo.setReplaceContentOriginalRegex(objMap.get("replaceContentOriginalRegex").toString());
-            bookSiteInfo.setChapterContentElementName(objMap.get("chapterContentElementName").toString());
-            bookSiteInfo.setChapterContentRegex(objMap.get("chapterContentRegex").toString());
-            bookSiteInfo.setBookIdField(objMap.get("bookIdField").toString());
-            bookSiteInfo.setBookNameField(objMap.get("bookNameField").toString());
-            bookSiteInfo.setBookUrlField(objMap.get("bookUrlField").toString());
-            bookSiteInfo.setBookAuthorField(objMap.get("bookAuthorField").toString());
-            bookSiteInfo.setBookDescField(objMap.get("bookDescField").toString());
-            bookSiteInfo.setBookImgUrlField(objMap.get("bookImgUrlField").toString());
-            bookSiteInfo.setHtml(Boolean.parseBoolean(objMap.get("isHtml").toString()));
-            bookSiteInfo.setPathParam(Boolean.parseBoolean(objMap.get("isPathParam").toString()));
-            siteList.add(bookSiteInfo);
-        });
-        return siteList;
-    }
-
     /**
      * 获取所有启用的站点
      *
      * @return
      */
     public List<BookSiteInfo> getEnableSiteList() {
-        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object>>) getObject("wreader.site_list");
+        List<LinkedHashMap<String, Object>> siteListList = (List<LinkedHashMap<String, Object>>) getObject("wreader.siteList");
 
         List<BookSiteInfo> siteList = new ArrayList<>();
         siteListList.forEach(objMap -> {
-            boolean isEnabled = Boolean.parseBoolean(objMap.get("isEnabled").toString());
+            boolean isEnabled = Boolean.parseBoolean(objMap.get("enabled").toString());
             if (isEnabled) {
                 BookSiteInfo bookSiteInfo = new BookSiteInfo();
                 bookSiteInfo.setEnabled(isEnabled);
@@ -262,15 +198,12 @@ public class ConfigYaml {
                 bookSiteInfo.setBaseUrl(objMap.get("baseUrl").toString());
                 bookSiteInfo.setSearchUrl(objMap.get("searchUrl").toString());
                 bookSiteInfo.setHeader(objMap.get("header").toString());
-                bookSiteInfo.setSearchBookNameParam(objMap.get("searchBookNameParam").toString());
                 bookSiteInfo.setSearchDataBookListRule(objMap.get("searchDataBookListRule").toString());
-                bookSiteInfo.setBookDataId(objMap.get("bookDataId").toString());
                 bookSiteInfo.setBookListElementName(objMap.get("bookListElementName").toString());
                 bookSiteInfo.setBookListUrlElement(objMap.get("bookListUrlElement").toString());
                 bookSiteInfo.setBookListTitleElement(objMap.get("bookListTitleElement").toString());
                 bookSiteInfo.setListMainUrl(objMap.get("listMainUrl").toString());
                 bookSiteInfo.setListMainUrlDataRule(objMap.get("listMainUrlDataRule").toString());
-                bookSiteInfo.setIsSavelistMainUrlData(Boolean.parseBoolean(objMap.get("isSavelistMainUrlData").toString()));
                 bookSiteInfo.setListMainItemIdField(objMap.get("listMainItemIdField").toString());
                 bookSiteInfo.setListMainItemTitleField(objMap.get("listMainItemTitleField").toString());
                 bookSiteInfo.setListMainElementName(objMap.get("listMainElementName").toString());
@@ -290,10 +223,104 @@ public class ConfigYaml {
                 bookSiteInfo.setBookDescField(objMap.get("bookDescField").toString());
                 bookSiteInfo.setBookImgUrlField(objMap.get("bookImgUrlField").toString());
                 bookSiteInfo.setHtml(Boolean.parseBoolean(objMap.get("isHtml").toString()));
-                bookSiteInfo.setPathParam(Boolean.parseBoolean(objMap.get("isPathParam").toString()));
                 siteList.add(bookSiteInfo);
             }
         });
+        return siteList;
+    }
+
+    // -------------------------------------------------------------------------
+    // ------------------------   New Config Fun   -----------------------------
+    // -------------------------------------------------------------------------
+    public ConfigYamlPojo getConfigYamlPojo() {
+        return configYamlPojo;
+    }
+
+    public ConfigYamlPojo.Wreader getWreader() {
+        return configYamlPojo.getWreader();
+    }
+
+    /**
+     * 获取配置文件名称
+     *
+     * @return
+     */
+    public String getName() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        return wreader != null ? wreader.getName() : "W-Reader";
+    }
+
+    /**
+     * 项目驼峰名称
+     * @return
+     */
+    public String getNameHump() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        return wreader != null ? wreader.getNameHump() : "WReader";
+    }
+    public String getVersion() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        return wreader != null ? wreader.getVersion() : "0.0.1";
+    }
+
+    public String getDescription() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        return wreader != null ? wreader.getDescription() : "WReader";
+    }
+
+    public String getAuthor() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        return wreader != null ? wreader.getAuthor() : "weizhanjie";
+    }
+    /**
+     * 获取默认设置
+     * @return
+     */
+    public Settings getSettings() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        Settings settings = new Settings();
+        if (wreader != null) {
+            settings = wreader.getSettings();
+        }
+        return settings;
+    }
+
+    /**
+     * 允许的文件后缀
+     * @return
+     */
+    public List<String> getAllowFileExtension() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        List<String> allowFileExtensions = new ArrayList<>();
+        if (wreader != null) {
+            allowFileExtensions = wreader.getAllowFileExtension();
+        }
+        return allowFileExtensions;
+    }
+
+    /**
+     * 各类开发语言的注释配置
+     */
+    public Map<String, Object> getLanguage() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        Map<String, Object> languageMap = new HashMap<>();
+        if (wreader != null) {
+            languageMap = wreader.getLanguage();
+        }
+        return languageMap;
+    }
+
+
+    /**
+     * 获取所有站点
+     * @return
+     */
+    public List<SiteBean> getSiteList() {
+        ConfigYamlPojo.Wreader wreader = configYamlPojo.getWreader();
+        List<SiteBean> siteList = new ArrayList<>();
+        if (wreader != null) {
+            siteList = wreader.getSiteList();
+        }
         return siteList;
     }
 }

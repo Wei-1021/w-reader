@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
@@ -153,6 +154,33 @@ public class WReaderToolWindow  {
      * 选中的站点索引(默认第一个)
      */
     private int selectedBookSiteIndex;
+
+    // TODO: 新版配置文件测试--START
+    /**
+     * 站点信息列表(new)
+     */
+    private List<SiteBean> siteBeanList;
+    /**
+     * 选中的站点信息(默认第一个)
+     */
+    private SiteBean selectedSiteBean;
+    /**
+     * 选中的站点信息中的搜索规则
+     */
+    private SearchRules selectedSearchRules;
+    /**
+     * 选中的站点信息中的目录规则
+     */
+    private ListMainRules selectedListMainRules;
+    /**
+     * 选中的站点信息中的章节规则
+     */
+    private ChapterRules selectedChapterRules;
+    /**
+     * 选中的站点信息中的书籍信息规则
+     */
+    private BookInfoRules selectedBookInfoRules;
+    // TODO: 新版配置文件测试--END
     /**
      * 当前小说信息
      */
@@ -241,7 +269,9 @@ public class WReaderToolWindow  {
             }
 
             // 站点列表信息
-            siteList = configYaml.getEnableSiteList();
+            // TODO: 新版配置文件测试
+            siteBeanList = configYaml.getSiteList();
+//            siteList = configYaml.getEnableSiteList();
 
             // 加载持久化数据--站点信息
             Integer selectedBookSiteIndexTemp = cacheService.getSelectedBookSiteIndex();
@@ -251,12 +281,23 @@ public class WReaderToolWindow  {
             } else {
                 selectedBookSiteIndex = selectedBookSiteIndexTemp;
             }
-            selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
-            if (selectedBookSiteInfo == null) {
-                // 选中的站点信息
-                selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
-                cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
+            // TODO：新版配置文件测试
+            selectedSiteBean = siteBeanList.get(selectedBookSiteIndex);
+            if (selectedSiteBean == null) {
+                // TODO：新版配置文件测试
+                selectedSiteBean = siteBeanList.get(selectedBookSiteIndex);
+                cacheService.setSelectedSiteBean(selectedSiteBean);
             }
+            selectedSearchRules = selectedSiteBean.getSearchRules();
+            selectedListMainRules = selectedSiteBean.getListMainRules();
+            selectedChapterRules = selectedSiteBean.getChapterRules();
+            selectedBookInfoRules = selectedSiteBean.getBookInfoRules();
+//            selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
+//            if (selectedBookSiteInfo == null) {
+//                // 选中的站点信息
+//                selectedBookSiteInfo = siteList.get(selectedBookSiteIndex);
+//                cacheService.setSelectedBookSiteInfo(selectedBookSiteInfo);
+//            }
             // 加载持久化数据--小说信息
             selectBookInfo = cacheService.getSelectedBookInfo();
             // 加载持久化数据--章节信息
@@ -270,7 +311,9 @@ public class WReaderToolWindow  {
             chapterUrlList = cacheService.getChapterUrlList();
 
             // 选择的站点基础网址
-            baseUrl = selectedBookSiteInfo.getBaseUrl();
+            // TODO: 新版配置文件测试
+            baseUrl = selectedSiteBean.getBaseUrl();
+//            baseUrl = selectedBookSiteInfo.getBaseUrl();
 
             // 获取当前章节信息
             currentChapterIndex = currentChapterInfo.getSelectedChapterIndex();
@@ -299,8 +342,15 @@ public class WReaderToolWindow  {
         contentTextPane = new JTextPane();
         contentTextPane.setContentType("text/html");
         contentTextPane.setEditable(false);
+        contentTextPane.setOpaque(false);
         contentTextPane.setAlignmentY(Component.TOP_ALIGNMENT);
-        contentTextPane.setEditorKit(new HTMLEditorKit());
+//        contentTextPane.setEditorKit(new HTMLEditorKit());
+        HTMLEditorKit htmlEditorKit = new HTMLEditorKitBuilder()
+                .withoutContentCss()
+                .withGapsBetweenParagraphs()
+                .withWordWrapViewFactory()
+                .build();
+        contentTextPane.setEditorKit(htmlEditorKit);
         contentTextPane.setPreferredSize(new Dimension(toolWindowComponent.getWidth(), toolWindowComponent.getHeight()));
         contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);

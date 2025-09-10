@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.15</version>
+    <version>0.0.16</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -63,6 +63,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.0.16:
+        <ul>
+            <li>1.【调整】调整适配版本范围；</li>
+        </ul>
+    </div>
     <div>
         0.0.15:
         <ul>

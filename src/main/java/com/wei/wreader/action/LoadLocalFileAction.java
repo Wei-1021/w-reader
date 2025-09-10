@@ -10,8 +10,6 @@ import com.wei.wreader.widget.GroupedComboBox.OptionItem;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.nio.charset.Charset;
-import java.util.SortedMap;
 
 /**
  * 加载本地文件

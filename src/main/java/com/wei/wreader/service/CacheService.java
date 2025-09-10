@@ -4,10 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import com.wei.wreader.pojo.BookInfo;
-import com.wei.wreader.pojo.BookSiteInfo;
-import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.pojo.Settings;
+import com.wei.wreader.pojo.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,6 +75,25 @@ public final class CacheService implements PersistentStateComponent<CacheService
      */
     private List<String> chapterContentList;
 
+
+    // TODO: 新版配置文件测试
+    /**
+     * 选中的站点信息(默认第一个)
+     */
+    private SiteBean selectedSiteBean;
+    /**
+     * 选中的站点信息--临时缓存搜索前的站点信息
+     */
+    private SiteBean tempSelectedSiteBean;
+    /**
+     * 小说信息
+     */
+    private BookInfoRules selectedBookInfoRules;
+    /**
+     * 选中的章节信息
+     */
+    private ChapterRules selectedChapterRules;
+
     private static CacheService instance;
 
     public static CacheService getInstance() {
@@ -87,9 +103,8 @@ public final class CacheService implements PersistentStateComponent<CacheService
         return instance;
     }
 
-    @Nullable
     @Override
-    public CacheService getState() {
+    public @NotNull CacheService getState() {
         return this;
     }
 
@@ -208,5 +223,37 @@ public final class CacheService implements PersistentStateComponent<CacheService
 
     public void setEditorMessageVerticalScrollValue(int editorMessageVerticalScrollValue) {
         this.editorMessageVerticalScrollValue = editorMessageVerticalScrollValue;
+    }
+
+    public SiteBean getSelectedSiteBean() {
+        return selectedSiteBean;
+    }
+
+    public void setSelectedSiteBean(SiteBean selectedSiteBean) {
+        this.selectedSiteBean = selectedSiteBean;
+    }
+
+    public SiteBean getTempSelectedSiteBean() {
+        return tempSelectedSiteBean;
+    }
+
+    public void setTempSelectedSiteBean(SiteBean tempSelectedSiteBean) {
+        this.tempSelectedSiteBean = tempSelectedSiteBean;
+    }
+
+    public BookInfoRules getSelectedBookInfoRules() {
+        return selectedBookInfoRules;
+    }
+
+    public void setSelectedBookInfoRules(BookInfoRules selectedBookInfoRules) {
+        this.selectedBookInfoRules = selectedBookInfoRules;
+    }
+
+    public ChapterRules getSelectedChapterRules() {
+        return selectedChapterRules;
+    }
+
+    public void setSelectedChapterRules(ChapterRules selectedChapterRules) {
+        this.selectedChapterRules = selectedChapterRules;
     }
 }

@@ -52,7 +52,7 @@ public class Settings {
     /**
      * 是否显示行号
      */
-    private boolean isShowLineNum;
+    private boolean showLineNum;
     /**
      * 显示类型。1-侧边栏（默认），2-底部状态栏，3-左下角控制台
      */
@@ -72,7 +72,7 @@ public class Settings {
     /**
      * 本地加载时是否显示图片
      */
-    private boolean isShowLocalImg;
+    private boolean showLocalImg;
     /**
      * 主图标风格：1-默认，2-浅色
      */
@@ -120,11 +120,11 @@ public class Settings {
     }
 
     public boolean isShowLineNum() {
-        return isShowLineNum;
+        return showLineNum;
     }
 
     public void setShowLineNum(boolean showLineNum) {
-        isShowLineNum = showLineNum;
+        this.showLineNum = showLineNum;
     }
 
     public int getDisplayType() {
@@ -160,11 +160,11 @@ public class Settings {
     }
 
     public boolean isShowLocalImg() {
-        return isShowLocalImg;
+        return showLocalImg;
     }
 
     public void setShowLocalImg(boolean showLocalImg) {
-        isShowLocalImg = showLocalImg;
+        this.showLocalImg = showLocalImg;
     }
 
     public int getMainIconStyle() {
@@ -235,12 +235,12 @@ public class Settings {
     public String toString() {
         return "Settings{" +
                 "singleLineChars=" + singleLineChars +
-                ", isShowLineNum=" + isShowLineNum +
+                ", showLineNum=" + showLineNum +
                 ", displayType=" + displayType +
                 ", dataLoadType=" + dataLoadType +
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
-                ", isShowLocalImg=" + isShowLocalImg +
+                ", showLocalImg=" + showLocalImg +
                 ", voiceRole='" + voiceRole + '\'' +
                 ", audioTimeout=" + audioTimeout +
                 ", rate=" + rate +

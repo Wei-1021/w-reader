@@ -1,5 +1,8 @@
 package com.wei.wreader.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,22 +10,67 @@ import java.util.Map;
  * <p>HTTP请求配置解析器;</p>
  * <p>解析配置，并将结果保存在相应的属性中。</p>
  * <pre style="font-size: 10px;">
- *     <b>配置字符串格式</b>：url=url;method=请求方式;query_params=参数1=值1&参数2=值2;body_params=参数3=值3&参数4=值4
+ *     <b>配置字符串格式</b>：
+ *     {
+ *       'url': URL地址,
+ *       'method': 请求类型,
+ *       'queryParams': {
+ *          '参数1': '值1',
+ *          '参数2': '值2'
+ *       },
+ *       'bodyParams': {
+ *          '参数1': '值1',
+ *          '参数2': '值2'
+ *       },
+ *       'header':{
+ *           '请求头参数1': '值1'
+ *       }
+ *     }
  *     <b>配置项</b>: <b>url</b>：URL地址;
- *            <b>method</b>：HTTP方法，默认为GET;
- *            <b>query_params</b>：查询参数，格式为参数1=值1&参数2=值2;
- *            <b>body_params</b>：请求体参数，格式为参数3=值3&参数4=值4
+ *            <b>method</b>：请求类型，默认为GET;
+ *            <b>queryParams</b>：查询参数;
+ *            <b>bodyParams</b>：请求体参数
+ *            <b>header</b>：请求头
  *     <b>示例配置字符串</b>：
- *     url=http://example.com/api/data;method=POST;query_params=param1=value1&param2=value2;body_params=param3=value3&param4=value4
+ *     {
+ *       'url':'http://www.lianjianxsw.com/search',
+ *       'method': 'POST',
+ *       'queryParams': {
+ *          'q': '123'
+ *       },
+ *       'bodyParams': {
+ *          'keyword':'${key}'
+ *       },
+ *       'header':{
+ *           'Content-Type': 'text/html; charset=utf-8'
+ *       }
+ *     }
  * </pre>
+ *
  * @author weizhanjie
  */
 public class HttpRequestConfigParser {
 
-    private String url; // 存储URL
-    private String method; // 存储HTTP方法，默认为GET
-    private Map<String, String> queryParams; // 存储查询参数
-    private Map<String, String> bodyParams; // 存储请求体参数
+    /**
+     * 存储URL
+     */
+    private String url;
+    /**
+     * 存储HTTP方法，默认为GET
+     */
+    private String method;
+    /**
+     * 存储查询参数
+     */
+    private Map<String, String> queryParams;
+    /**
+     * 存储请求体参数
+     */
+    private Map<String, String> bodyParams;
+    /**
+     * 请求头
+     */
+    private Map<String, String> header;
 
     /**
      * 构造函数，接收配置字符串并进行解析
@@ -39,54 +87,45 @@ public class HttpRequestConfigParser {
      * @param config 包含HTTP请求配置的字符串
      */
     private void parseConfig(String config) {
+        // 标记是否找到有效的JSON字符串
+        boolean validJson = true;
+
+        Gson gson = new Gson();
+        JsonObject jsonObject = new JsonObject();
+        try {
+            jsonObject = gson.fromJson(config, JsonObject.class);
+        } catch (Exception e) {
+            validJson = false;
+        }
+
         this.url = "";
         this.method = "GET";
         this.queryParams = new HashMap<>();
         this.bodyParams = new HashMap<>();
-
-        // 标记是否找到有效的URL
-        boolean validConfig = false;
-
-        String[] lines = config.split(";"); // 将配置字符串;分割
-        for (String line : lines) {
-            if (line.startsWith("url=")) {
-                this.url = line.substring(4).trim(); // 提取URL
-                validConfig = true; // 设置标志为有效配置
-            } else if (validConfig && line.startsWith("method=")) {
-                this.method = line.substring(7).trim().toUpperCase(); // 提取并转换为大写的HTTP方法
-            } else if (validConfig && line.startsWith("query_params=")) {
-                String paramStr = line.substring(13).trim(); // 提取查询参数字符串
-                parseParams(paramStr, queryParams); // 解析查询参数
-            } else if (validConfig && line.startsWith("body_params=")) {
-                String paramStr = line.substring(12).trim(); // 提取请求体参数字符串
-                parseParams(paramStr, bodyParams); // 解析请求体参数
-            }
-        }
+        this.header = new HashMap<>();
 
         // 如果没有找到有效的URL，则清空所有字段
-        if (!validConfig) {
+        if (validJson) {
+            this.url = jsonObject.get("url").getAsString();
+            this.method = jsonObject.get("method").getAsString();
+            JsonObject queryParamsJson = jsonObject.getAsJsonObject("queryParams");
+            if (!queryParamsJson.isEmpty()) {
+                this.queryParams = gson.fromJson(queryParamsJson, Map.class);
+            }
+            JsonObject bodyParamsJson = jsonObject.getAsJsonObject("bodyParams");
+            if (!bodyParamsJson.isEmpty()) {
+                this.bodyParams = gson.fromJson(bodyParamsJson, Map.class);
+            }
+            JsonObject headerJson = jsonObject.getAsJsonObject("header");
+            if (!headerJson.isEmpty()) {
+                this.header = gson.fromJson(headerJson, Map.class);
+            }
+        } else {
             this.url = config;
             this.method = "GET";
             this.queryParams.clear();
             this.bodyParams.clear();
-        }
-    }
-
-    /**
-     * 解析参数字符串，并存入指定的映射中
-     *
-     * @param paramStr 参数字符串
-     * @param paramsMap 存储参数的映射
-     */
-    private void parseParams(String paramStr, Map<String, String> paramsMap) {
-        String[] keyValuePairs = paramStr.split("&"); // 按"&"分割键值对
-        for (String pair : keyValuePairs) {
-            int idx = pair.indexOf('='); // 查找"="的位置
-            if (idx > 0 && idx < pair.length() - 1) {
-                String key = pair.substring(0, idx).trim(); // 提取键
-                String value = pair.substring(idx + 1).trim(); // 提取值
-                paramsMap.put(key, value); // 将键值对存入映射
-            }
+            this.header.clear();
         }
     }
 
@@ -127,6 +166,14 @@ public class HttpRequestConfigParser {
     }
 
     /**
+     * 获取请求头
+     * @return
+     */
+    public Map<String, String> getHeader() {
+        return header;
+    }
+
+    /**
      * 返回解析结果的字符串表示形式
      *
      * @return 字符串表示形式
@@ -144,12 +191,32 @@ public class HttpRequestConfigParser {
         for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
             sb.append(entry.getKey()).append("=").append(entry.getValue()).append(", ");
         }
+        sb.append("\nHeader: ");
+        for (Map.Entry<String, String> entry : header.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(", ");
+        }
         return sb.toString().trim();
     }
 
     public static void main(String[] args) {
         // 测试配置字符串
-        String invalidConfig = "url=http://www.lianjianxsw.com/search;method=POST;body_params=keyword={key}";
+//        String invalidConfig = "url=http://www.lianjianxsw.com/search;method=POST;body_params=keyword={key}";
+        String invalidConfig =
+                """
+                        {
+                            'url': 'http://www.lianjianxsw.com/search',
+                            'method': 'POST',
+                            'queryParams': {
+                                'tt': '123456'
+                            },
+                            'bodyParams': {
+                                'keyword': '${key}'
+                            },
+                            'header': {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                        }
+                """;
 
         HttpRequestConfigParser invalidParser = new HttpRequestConfigParser(invalidConfig);
         System.out.println(invalidParser);
@@ -159,6 +226,7 @@ public class HttpRequestConfigParser {
         System.out.println("Parsed Method: " + invalidParser.getMethod());
         System.out.println("Parsed Query Params: " + invalidParser.getQueryParams());
         System.out.println("Parsed Body Params: " + invalidParser.getBodyParams());
+        System.out.println("Parsed Body Params: " + invalidParser.getHeader());
     }
 }
 

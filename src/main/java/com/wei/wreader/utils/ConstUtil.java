@@ -109,6 +109,7 @@ public class ConstUtil {
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
     public static final String WREADER_LOAD_FAIL = "文件加载出现异常，请重试！";
+    public static final String WREADER_CONFIG_LOAD_FAIL = "W-Reader配置加载出现异常！";
     public static final String WREADER_INIT_ERROR = "W-Reader加载失败！";
     public static final String WREADER_LOADING = "loading...";
     public static final String WREADER_SEARCH_LOADING = "search loading...";
@@ -170,7 +171,7 @@ public class ConstUtil {
     /**
      * 图片缩略宽度尺寸
      */
-    public static final int IMAGE_THUMBNAIL_WIDTH = 150;
+    public static final int IMAGE_THUMBNAIL_WIDTH = 200;
     /**
      * 图片预览窗口宽度
      */
@@ -182,9 +183,9 @@ public class ConstUtil {
     /**
      * cssQuery自定义规则标志--@back
      */
-    public static final String CSS_QUERY_BACK_FLAG = "@back:";
+    public static final String CSS_QUERY_BACK_FLAG = "back:";
     /**
      * cssQuery自定义规则标志--@font
      */
-    public static final String CSS_QUERY_FONT_FLAG = "@font:";
+    public static final String CSS_QUERY_FONT_FLAG = "font:";
 }

@@ -246,34 +246,42 @@ public class StringUtil {
     /**
      * 替换 HTML 或 SVG 中的图片链接
      * @param html
-     * @param imageMap
+     * @param imageMap 图片路径Map
+     * @param imgWidthMap 图片宽度Map
      * @return
      */
-    public static String replaceImageLinks(String html, Map<String, String> imageMap) {
+    public static String replaceImageLinks(String html,
+                                           Map<String, String> imageMap,
+                                           Map<String, Integer> imgWidthMap) {
         // 匹配 <img> 标签的正则表达式
         String imgRegex = "<img\\s+[^>]*src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
-        html = replaceWithImg(html, imgRegex, imageMap);
+        html = replaceWithImg(html, imgRegex, imageMap, imgWidthMap);
 
         // 匹配 SVG 中 <image> 标签的正则表达式
         String svgImageRegex = "<image\\s+[^>]*xlink:href\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
-        html = replaceWithImg(html, svgImageRegex, imageMap);// 去除可能存在的 ../ 前缀
+        html = replaceWithImg(html, svgImageRegex, imageMap, imgWidthMap);// 去除可能存在的 ../ 前缀
         // 将 SVG 中的 <image> 标签转换为 <img> 标签
         html = convertSvgImageToImg(html);
 
-        String style = "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"";
-        html = html.replaceAll("<img", "<img " + style);
+//        String style = "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"";
+//        String style = "style=\"max-width: " + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "px;\"";
+//        html = html.replaceAll("<img", "<img " + style);
 
         return html;
     }
 
     /**
      * 替换 HTML 或 SVG 中的图片链接
-     * @param html
-     * @param regex
-     * @param imageMap
+     * @param html HTML 或 SVG 内容
+     * @param regex 正则表达式
+     * @param imageMap 图片路径Map
+     * @param imgWidthMap 图片宽度Map
      * @return
      */
-    public static String replaceWithImg(String html, String regex, Map<String, String> imageMap) {
+    public static String replaceWithImg(String html,
+                                        String regex,
+                                        Map<String, String> imageMap,
+                                        Map<String, Integer> imgWidthMap) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(html);
         StringBuilder result = new StringBuilder();
@@ -287,13 +295,24 @@ public class StringUtil {
             for (Map.Entry<String, String> entry : imageMap.entrySet()) {
                 String key = entry.getKey();
                 String imgSrc = entry.getValue();
+                Integer imgOriginalWidth = imgWidthMap.get(key);
                 if (key.contains(src) ||
                         ((src.startsWith("./") || src.startsWith("../")) && src.endsWith(key)) ||
                         ((key.startsWith("./") || key.startsWith("../")) && key.endsWith(src))) {
+                    String imgWidthRep = "";
+                    // 如果图片原始宽度大于最大缩略图宽度，则设置图片宽度为最大缩略图宽度
+                    if (imgOriginalWidth != null && imgOriginalWidth.compareTo(ConstUtil.IMAGE_THUMBNAIL_WIDTH) > 0) {
+                        imgWidthRep = "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"";
+                    }
+
                     isContain = true;
                     String newTag = matcher.group().replaceFirst(Pattern.quote(src), Matcher.quoteReplacement(imgSrc));
-                    newTag = newTag.replaceAll("width\\s*=\\s*['\"]([^'\"]+)['\"]", "width=\"" + ConstUtil.IMAGE_THUMBNAIL_WIDTH + "\"")
-                            .replaceAll("height\\s*=\\s*['\"]([^'\"]+)['\"]", "");
+                    if (newTag.contains("width=")) {
+                        newTag = newTag.replaceAll("width\\s*=\\s*['\"]([^'\"]+)['\"]", imgWidthRep)
+                                .replaceAll("height\\s*=\\s*['\"]([^'\"]+)['\"]", "");
+                    } else {
+                        newTag = newTag.replaceAll("<img", "<img " + imgWidthRep);
+                    }
                     result.append(newTag);
                 }
             }
@@ -343,14 +362,14 @@ public class StringUtil {
             String otherAttrs = matcher.group(3);
 
             // 提取宽度和高度属性
-//            String width = extractAttribute(attrs, "width");
+            String width = extractAttribute(attrs, "width");
 //            String height = extractAttribute(attrs, "height");
 
             // 构建 <img> 标签
             StringBuilder imgTag = new StringBuilder("<img src=\"").append(src).append("\"");
-//            if (width != null) {
-//                imgTag.append(" width=\"").append(width).append("\"");
-//            }
+            if (width != null) {
+                imgTag.append(" width=\"").append(width).append("\"");
+            }
 //            if (height != null) {
 //                imgTag.append(" height=\"").append(height).append("\"");
 //            }

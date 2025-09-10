@@ -11,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.15"
+version = "0.0.16"
 
 repositories {
     maven {
@@ -65,12 +65,15 @@ dependencies {
         zipSigner()
     }
 
-    implementation("org.yaml:snakeyaml:2.0")
+    implementation("org.yaml:snakeyaml:2.2")
     implementation("io.documentnode:epub4j-core:4.2.2")
     implementation("com.googlecode.soundlibs:jlayer:1.0.1.4")
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.codehaus.janino:janino:3.1.9")
+    // apache commons
+    implementation("org.apache.commons:commons-text:1.14.0")
+//    implementation("org.lobobrowser:LoboBrowser:1.0.0")
 //    implementation("nl.siegmann.epublib:epublib-core:3.1") {
 //        exclude(group = "org.slf4j")
 //        exclude(group = "xmlpull")

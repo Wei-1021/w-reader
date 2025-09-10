@@ -1,15 +1,11 @@
 package com.wei.wreader.action;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.ui.MessageUtil;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.utils.ConfigYaml;
@@ -17,7 +13,6 @@ import com.wei.wreader.utils.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 

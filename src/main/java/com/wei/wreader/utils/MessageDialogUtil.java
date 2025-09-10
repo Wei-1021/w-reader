@@ -222,7 +222,7 @@ public class MessageDialogUtil {
         builder.title(title);
         builder.addOkAction();
         builder.addCancelAction();
-        if (width > 0 && height > 0) {
+        if (width > 0 || height > 0) {
             builder.getDialogWrapper().setSize(width, height);
         }
         builder.show();

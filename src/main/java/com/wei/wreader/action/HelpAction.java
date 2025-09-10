@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.ui.jcef.JBCefClient;
+import com.intellij.util.ui.JBUI;
 import com.wei.wreader.utils.MessageDialogUtil;
 import org.cef.CefApp;
 import org.cef.CefClient;
@@ -52,6 +53,7 @@ public class HelpAction extends BaseAction {
             JBScrollPane scrollPane = new JBScrollPane();
             scrollPane.setViewportView(textPane);
             scrollPane.setPreferredSize(new Dimension(500, 600));
+            scrollPane.setBorder(JBUI.Borders.empty());
 
             textPane.setCaretPosition(0);
 

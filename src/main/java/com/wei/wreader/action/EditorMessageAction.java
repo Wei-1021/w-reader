@@ -1,18 +1,12 @@
 package com.wei.wreader.action;
 
 import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.editor.colors.EditorColorsScheme;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.UIUtil;
 import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.utils.ConfigYaml;
 import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.ImagePreviewer;
 import com.wei.wreader.utils.OperateActionUtil;
@@ -23,8 +17,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

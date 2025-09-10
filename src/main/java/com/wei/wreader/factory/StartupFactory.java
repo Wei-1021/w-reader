@@ -3,8 +3,11 @@ package com.wei.wreader.factory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.wei.wreader.pojo.Settings;
+import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.CacheOldToNewConvert;
 import com.wei.wreader.utils.ConfigYaml;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -27,6 +30,14 @@ public class StartupFactory implements StartupActivity {
             configYaml = ConfigYaml.getInstance();
             if (settings == null) {
                 settings = configYaml.getSettings();
+            }
+
+            // 从0.0.17开始，书源站点的配置发生了大的变化，为了兼容旧版配置，这里将缓存信息进行兼容性转换
+            // 将旧版本缓存数据转换成新版本缓存数据
+            SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+            if (selectedSiteBean == null || StringUtils.isBlank(selectedSiteBean.getId())) {
+                CacheOldToNewConvert cacheOldToNewConvert = new CacheOldToNewConvert();
+                cacheOldToNewConvert.convertBookSiteInfo();
             }
 
             WReaderToolWindowFactory wReaderToolWindowFactory = new WReaderToolWindowFactory();

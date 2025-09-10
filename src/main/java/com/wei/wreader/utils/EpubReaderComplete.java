@@ -17,7 +17,7 @@ public class EpubReaderComplete {
     /**
      * 读取epub文件
      * @param book  book
-     * @param fallback 回调函数，每成功读取到一个章节的内容都会调用此方法
+     * @param fallback 回调函数，每成功读取到一个章节的内容都会执行一次此方法
      * @throws IOException
      */
     public synchronized static void readEpub(Book book, Consumer<Map<String, String>> fallback) throws IOException {
@@ -118,6 +118,4 @@ public class EpubReaderComplete {
         }
         return -1;
     }
-
-    // ... processContent 方法可以在这里定义 ...
 }

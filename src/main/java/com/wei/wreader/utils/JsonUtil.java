@@ -1,7 +1,9 @@
 package com.wei.wreader.utils;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class JsonUtil {
 
@@ -45,6 +47,22 @@ public class JsonUtil {
             return json.get(key);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /**
+     * 判断是否为有效得的JSON字符串
+     * @param jsonString
+     * @return
+     */
+    public static boolean isValid(String jsonString) {
+        try {
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
+            return jsonObject != null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
