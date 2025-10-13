@@ -1,9 +1,8 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.file;
 
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -81,27 +80,31 @@ public class FileUtil {
     }
 
     /**
-     * 预处理图片尺寸
-     * @param originalImagePath 原图片路径
-     * @param outImagePath 输出图片路径
+     * 获取文件扩展名
+     *
+     * @param fileName 文件名
+     * @return 扩展名
      */
-    public static void preProcessImageSize(String originalImagePath, String outImagePath) {
-        try {
-            // 加载原始图片
-            BufferedImage originalImage = ImageIO.read(new File(originalImagePath));
-            // 计算新尺寸
-            int newWidth = Math.min(originalImage.getWidth(), ConstUtil.IMAGE_THUMBNAIL_WIDTH);
-            int newHeight = (int) (originalImage.getHeight() * ((double) newWidth / originalImage.getWidth()));
-            // 创建缩放后的图片
-            BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = scaledImage.createGraphics();
-            g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-            g.dispose();
-            // 保存或使用缩放后的图片
-            ImageIO.write(scaledImage, "jpg", new File(outImagePath));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public static String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex >= 0) {
+            return fileName.substring(lastDotIndex + 1);
         }
+        return "";
+    }
+
+    /**
+     * 判断是否为不支持的图片格式
+     *
+     * @param key 文件名
+     * @return 是否为不支持的图片格式
+     */
+    public static boolean isUnsupportedImageFormat(String key) {
+        String lowerKey = key.toLowerCase();
+        return switch (getFileExtension(lowerKey)) {
+            case "bmp", "webp", "ico", "tiff", "avif" -> true;
+            default -> false;
+        };
     }
 
 }

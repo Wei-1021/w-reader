@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.0.16'
+  version: '0.1.0'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -115,7 +115,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
         bookNameField: 'even'
@@ -150,7 +150,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
         bookNameField: 'odd'
@@ -185,7 +185,7 @@ wreader:
         useContentOriginalStyle: true
         replaceContentOriginalRegex: ''
         contentElementName: ''
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
         bookNameField: 'title'
@@ -216,11 +216,11 @@ wreader:
       chapterRules:
         url: 'http://www.lianjianxsw.com/getContent?bookid=${bookId}&chapterid=${itemId}'
         urlDataRule: '$.data.chapterInfo.content'
-        contentHandleRule: '<java>com.wei.wreader.utils.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {"st###":"&nbsp;&nbsp;&nbsp;&nbsp;","###$$$":"<br>&nbsp;&nbsp;&nbsp;&nbsp;"})</java>'
+        contentHandleRule: '<java>com.wei.wreader.utils.comm.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {"st###":"&nbsp;&nbsp;&nbsp;&nbsp;","###$$$":"<br>&nbsp;&nbsp;&nbsp;&nbsp;"})</java>'
         useContentOriginalStyle: true
         replaceContentOriginalRegex: ''
         contentElementName: ''
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: '_id'
         bookNameField: 'name'
@@ -255,7 +255,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '.article'
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'id'
         bookNameField: 'name'
@@ -277,20 +277,24 @@ wreader:
         bookListTitleElement: ''
       listMainRules:
         url:
-          <java>
-          <package_import>import java.util.*;import com.wei.wreader.utils.*;</package_import>
-          <code>
-          public String execute(String bookId){
-          String encryptKey = "37e81a9d8f02596e1b895d07c171d5c9";
-          String user_id="8000000";
-          long timestamp=System.currentTimeMillis()/1000;
-          String param=bookId+timestamp+user_id+encryptKey;
-          String md5 = EncryptUtils.md5(param);
-          String url = "https://ocean.shuqireader.com/api/bcspub/qswebapi/book/chapterlist?_=&bookId=" + bookId + "&user_id=8000000&sign=" + md5 + "&timestamp=" + timestamp;
-          return url;
-          }
-          </code>
-          </java>
+          '<java>
+            <package_import>
+              import java.util.*;
+              import com.wei.wreader.utils.data.*;
+            </package_import>
+            <code>
+              public String execute(String bookId){
+                String encryptKey = "37e81a9d8f02596e1b895d07c171d5c9";
+                String user_id = "8000000";
+                long timestamp = System.currentTimeMillis() / 1000;
+                String param = bookId + timestamp + user_id + encryptKey;
+                String md5 = EncryptUtils.md5(param);
+                String url = "https://ocean.shuqireader.com/api/bcspub/qswebapi/book/chapterlist?_=&bookId=" + bookId + 
+                             "&user_id=8000000&sign=" + md5 + "&timestamp=" + timestamp;
+                return url;
+              }
+            </code>
+          </java>'
         urlDataRule: '$.data.chapterList[*].volumeList[*]'
         itemIdField: 'chapterId'
         itemTitleField: 'chapterName'
@@ -302,7 +306,7 @@ wreader:
           '<java>
              <package_import>
                import java.util.*;
-               import com.wei.wreader.utils.*;
+               import com.wei.wreader.utils.data.*;
                import com.jayway.jsonpath.*;
              </package_import>
              <code>
@@ -311,14 +315,14 @@ wreader:
                  String dataJsonStr=(String)paramMap.get("dataJsonStr");
                  String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.freeContUrlPrefix");
                  String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.shortContUrlPrefix");
-                 String memuListJsonStr=(String)paramMap.get("memuListJsonStr");
+                 String menuListJsonStr=(String)paramMap.get("menuListJsonStr");
                  for (Object indexObj : indexList) {
                    int index = Integer.parseInt(indexObj.toString());
-                   String contUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].contUrlSuffix");
+                   String contUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,"$["+index+"].contUrlSuffix");
                    if(!contUrlSuffix.contains("reqEncryptParam")){
                      list.add(freeContUrlPrefix+contUrlSuffix);
                    }else{
-                     String shortContUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].shortContUrlSuffix");
+                     String shortContUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,"$["+index+"].shortContUrlSuffix");
                      list.add(shortContUrlPrefix+shortContUrlSuffix);
                    }
                  }
@@ -328,11 +332,11 @@ wreader:
              </code>
            </java>'
         urlDataRule: '$.ChapterContent'
-        contentHandleRule: '<java>com.wei.wreader.utils.StringUtil.base64Decode(${content}, true)</java>'
+        contentHandleRule: '<java>com.wei.wreader.utils.data.StringUtil.base64Decode(${content}, true)</java>'
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'bid'
         bookNameField: 'title'
@@ -367,7 +371,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#read_page'
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'bookId'
         bookNameField: 'bookName'
@@ -402,7 +406,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'novelid'
         bookNameField: 'novelname'
@@ -437,7 +441,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
         bookNameField: 'bookname'
@@ -472,7 +476,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#chaptercontent'
-        contentRegex: ''
+        contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
         bookNameField: 'novelname'
@@ -507,7 +511,8 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
-        contentRegex: '<p></p>@ '
+        contentRegexList:
+          - '<p\s*>\s*</p>@replace:'
       bookInfoRules:
         bookIdField: 'bookid'
         bookNameField: 'novelname'

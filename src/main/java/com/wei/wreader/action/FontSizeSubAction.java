@@ -1,15 +1,11 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.ConstUtil;
 import com.wei.wreader.utils.OperateActionUtil;
+import com.wei.wreader.utils.comm.ToolWindowUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -36,22 +32,12 @@ public class FontSizeSubAction extends BaseAction {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     OperateActionUtil.getInstance(project).fontSizeSub();
 
-                    ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-                    ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
-                    if (toolWindow != null) {
-                        ContentManager contentManager = toolWindow.getContentManager();
-                        Content rootContent = contentManager.getContent(0);
-                        if (rootContent != null) {
-                            // 获取内容面板JTextPane
-                            JTextPane contentTextPanel = OperateActionUtil.ToolWindowUtils.getContentTextPanel(rootContent);
-                            if (contentTextPanel != null) {
-                                int caretPosition = contentTextPanel.getCaretPosition();
-                                String text = getContent(cacheService, selectedChapterInfo);
-                                contentTextPanel.setText(text);
-                                contentTextPanel.setCaretPosition(caretPosition);
-                            }
-                        }
-                    }
+                    ToolWindowUtil.updateContentText(project, contentTextPanel -> {
+                        int caretPosition = contentTextPanel.getCaretPosition();
+                        String text = getContent(cacheService, selectedChapterInfo);
+                        contentTextPanel.setText(text);
+                        contentTextPanel.setCaretPosition(caretPosition);
+                    });
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
                     break;

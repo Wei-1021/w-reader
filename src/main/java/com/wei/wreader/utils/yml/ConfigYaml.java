@@ -1,7 +1,9 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.yml;
 
 import com.intellij.openapi.ui.Messages;
 import com.wei.wreader.pojo.*;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -126,6 +128,10 @@ public class ConfigYaml {
         }
     }
 
+
+    // -------------------------------------------------------------------------
+    // ------------------------   Old Config Fun   -----------------------------
+    // -------------------------------------------------------------------------
     /**
      * 获取配置文件名称
      *

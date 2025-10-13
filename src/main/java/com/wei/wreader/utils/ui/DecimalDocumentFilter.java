@@ -1,10 +1,15 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.ui;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 
+/**
+ * 小数输入过滤器
+ *
+ * @author weizhanjie
+ */
 public class DecimalDocumentFilter extends DocumentFilter {
     private int maxDecimalPlaces = 2; // 最大小数位数
     

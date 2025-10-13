@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.data;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;

@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.comm;
 
 import org.codehaus.janino.SimpleCompiler;
 
@@ -99,14 +99,14 @@ public class DynamicCodeExecutor {
                 <code>
                     public String execute(Map<String, Object> paramMap, Integer index, String bookId, String itemId) {
                         String dataJsonStr = (String) paramMap.get("dataJsonStr");
-                        String memuListJsonStr = (String) paramMap.get("memuListJsonStr");
-                        String contUrlSuffix = (String) StringUtil.jsonPathRead(memuListJsonStr, "$[" + index + "].contUrlSuffix");
+                        String menuListJsonStr = (String) paramMap.get("menuListJsonStr");
+                        String contUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].contUrlSuffix");
                         if (!contUrlSuffix.contains("reqEncryptParam")) {
                            String freeContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.freeContUrlPrefix");
                            return freeContUrlPrefix + contUrlSuffix;
                         } else {
                            String shortContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.shortContUrlPrefix");
-                           String shortContUrlSuffix = (String) StringUtil.jsonPathRead(memuListJsonStr, "$[" + index + "].shortContUrlSuffix");
+                           String shortContUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].shortContUrlSuffix");
                            return shortContUrlPrefix + shortContUrlSuffix;
                         }
                     }

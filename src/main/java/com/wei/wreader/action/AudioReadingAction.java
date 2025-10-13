@@ -2,8 +2,8 @@ package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.MessageDialogUtil;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 
 

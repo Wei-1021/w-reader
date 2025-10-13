@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.ui;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.editor.Editor;

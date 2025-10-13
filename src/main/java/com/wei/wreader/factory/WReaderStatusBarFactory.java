@@ -10,14 +10,13 @@ import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.StringUtil;
+import com.wei.wreader.utils.yml.ConfigYaml;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.data.StringUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.List;
 
 /**

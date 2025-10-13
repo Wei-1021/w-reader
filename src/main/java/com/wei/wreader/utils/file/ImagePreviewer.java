@@ -1,17 +1,16 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.file;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.JBUI;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;

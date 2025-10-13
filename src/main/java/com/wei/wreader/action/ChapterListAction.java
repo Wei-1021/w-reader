@@ -41,19 +41,12 @@ public class ChapterListAction extends BaseAction {
                 switch (settings.getDisplayType()) {
                     case Settings.DISPLAY_TYPE_SIDEBAR:
                         ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                        selectedChapterInfoTemp.setLastReadLineNum(1);
-                        selectedChapterInfoTemp.setPrevReadLineNum(1);
-                        selectedChapterInfoTemp.setNextReadLineNum(1);
-                        selectedChapterInfoTemp.setChapterContentList(null);
-
+                        selectedChapterInfoTemp.initLineNum(1,1,1);
                         operateAction.updateContentText();
 
                     case Settings.DISPLAY_TYPE_STATUSBAR:
                         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                        selectedChapterInfo.setLastReadLineNum(1);
-                        selectedChapterInfo.setPrevReadLineNum(1);
-                        selectedChapterInfo.setNextReadLineNum(1);
-                        selectedChapterInfo.setChapterContentList(null);
+                        selectedChapterInfo.initLineNum(1,1,1);
                         WReaderStatusBarWidget.update(project, "");
                         break;
                     case Settings.DISPLAY_TYPE_TERMINAL:

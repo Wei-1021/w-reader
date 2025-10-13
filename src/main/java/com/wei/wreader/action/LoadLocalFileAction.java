@@ -3,7 +3,7 @@ package com.wei.wreader.action;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBCheckBox;
-import com.wei.wreader.utils.MessageDialogUtil;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.GroupedComboBox.CharsetGroupComboBox;
 import com.wei.wreader.widget.GroupedComboBox.OptionItem;

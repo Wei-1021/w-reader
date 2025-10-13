@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.data;
 
 import com.jayway.jsonpath.JsonPath;
 import org.jsoup.Jsoup;
@@ -411,6 +411,22 @@ public class StringUtil {
         // 过滤掉 xlink 相关属性
         String filtered = otherAttrs.replaceAll("xlink:[^=]+\\s*=\\s*['\"][^'\"]+['\"]", "");
         return filtered.trim().isEmpty() ? "" : " " + filtered.trim();
+    }
+
+    public static String buildFullHtml(String title, String style, String content) {
+        String html = """
+                <!DOCTYPE html>
+                <html lang="zh-CN">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>%s</title>
+                    %s
+                </head>
+                <body>%s</body>
+                </html>
+                """;
+        return String.format(html, title, style, content);
     }
 
     /**

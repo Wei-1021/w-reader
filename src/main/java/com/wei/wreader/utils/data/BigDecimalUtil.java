@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.data;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

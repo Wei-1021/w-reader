@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.http;
 
 import java.util.HashMap;
 import java.util.Map;

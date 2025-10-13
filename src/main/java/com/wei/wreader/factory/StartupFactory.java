@@ -5,8 +5,8 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.CacheOldToNewConvert;
-import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.file.CacheOldToNewConvert;
+import com.wei.wreader.utils.yml.ConfigYaml;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ public class StartupFactory implements StartupActivity {
                 settings = configYaml.getSettings();
             }
 
-            // 从0.0.17开始，书源站点的配置发生了大的变化，为了兼容旧版配置，这里将缓存信息进行兼容性转换
+            // 从0.1.0开始，书源站点的配置发生了大的变化，为了兼容旧版配置，这里将缓存信息进行兼容性转换
             // 将旧版本缓存数据转换成新版本缓存数据
             SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
             if (selectedSiteBean == null || StringUtils.isBlank(selectedSiteBean.getId())) {

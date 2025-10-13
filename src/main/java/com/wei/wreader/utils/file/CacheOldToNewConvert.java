@@ -1,8 +1,10 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.file;
 
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * 缓存数据转换，旧版本缓存数据转换成新版本缓存数据
@@ -58,7 +60,9 @@ public class CacheOldToNewConvert {
             chapterRules.setUseContentOriginalStyle(selectedBookSiteInfo.isContentOriginalStyle());
             chapterRules.setReplaceContentOriginalRegex(selectedBookSiteInfo.getReplaceContentOriginalRegex());
             chapterRules.setContentElementName(selectedBookSiteInfo.getChapterContentElementName());
-            chapterRules.setContentRegex(selectedBookSiteInfo.getChapterContentRegex());
+            if (StringUtils.isNotBlank(selectedBookSiteInfo.getChapterContentRegex())) {
+                chapterRules.setContentRegexList(List.of(selectedBookSiteInfo.getChapterContentRegex()));
+            }
             // 书籍信息规则
             BookInfoRules bookInfoRules = new BookInfoRules();
             bookInfoRules.setBookIdField(selectedBookSiteInfo.getBookIdField());

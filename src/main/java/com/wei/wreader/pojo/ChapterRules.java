@@ -1,5 +1,7 @@
 package com.wei.wreader.pojo;
 
+import java.util.List;
+
 /**
  * 章节规则
  * @author weizhanjie
@@ -30,9 +32,9 @@ public class ChapterRules {
      */
     private String contentElementName;
     /**
-     * 小说内容的正则表达式，用@分隔，前面是正则表达式，后面是替换的内容
+     * 小说内容的正则表达式集合，每项用@replace:分隔，前面是正则表达式，后面是替换的内容
      */
-    private String contentRegex;
+    private List<String> contentRegexList;
 
     public String getUrl() {
         return url;
@@ -82,12 +84,12 @@ public class ChapterRules {
         this.contentElementName = contentElementName;
     }
 
-    public String getContentRegex() {
-        return contentRegex;
+    public List<String> getContentRegexList() {
+        return contentRegexList;
     }
 
-    public void setContentRegex(String contentRegex) {
-        this.contentRegex = contentRegex;
+    public void setContentRegexList(List<String> contentRegexList) {
+        this.contentRegexList = contentRegexList;
     }
 
     @Override
@@ -99,7 +101,7 @@ public class ChapterRules {
                 ", useContentOriginalStyle=" + useContentOriginalStyle +
                 ", replaceContentOriginalRegex='" + replaceContentOriginalRegex + '\'' +
                 ", contentElementName='" + contentElementName + '\'' +
-                ", contentRegex='" + contentRegex + '\'' +
+                ", contentRegexList=" + contentRegexList +
                 '}';
     }
 }

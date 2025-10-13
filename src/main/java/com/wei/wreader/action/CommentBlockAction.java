@@ -8,8 +8,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.MessageDialogUtil;
+import com.wei.wreader.utils.yml.ConfigYaml;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -82,13 +82,13 @@ public class CommentBlockAction extends BaseAction {
 
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
             if (selectedChapterInfo == null) {
-                Messages.showErrorDialog(MessageDialogUtil.TITLE_INFO, "请先选择章节");
+                Messages.showErrorDialog("请先选择章节", MessageDialogUtil.TITLE_INFO);
                 return;
             }
 
             List<String> chapterContentList = selectedChapterInfo.getChapterContentList();
             if (chapterContentList == null || chapterContentList.isEmpty()) {
-                Messages.showErrorDialog(MessageDialogUtil.TITLE_INFO, "章节内容加载失败");
+                Messages.showErrorDialog("章节内容加载失败", MessageDialogUtil.TITLE_INFO);
                 return;
             }
 

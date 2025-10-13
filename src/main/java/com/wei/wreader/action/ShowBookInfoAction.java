@@ -1,11 +1,13 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.SiteBean;
-import com.wei.wreader.utils.MessageDialogUtil;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +22,10 @@ public class ShowBookInfoAction extends BaseAction {
 
         // 获取当前选择的书本信息
         BookInfo selectedBookInfo = cacheService.getSelectedBookInfo();
+        if (selectedBookInfo == null) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示");
+            return;
+        }
         // 获取当前选择的书源
         SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
         SwingUtilities.invokeLater(() -> {

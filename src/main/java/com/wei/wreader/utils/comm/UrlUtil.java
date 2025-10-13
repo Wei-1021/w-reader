@@ -1,4 +1,6 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.comm;
+
+import com.wei.wreader.utils.data.ConstUtil;
 
 import java.net.MalformedURLException;
 import java.net.URI;

@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.data;
 
 /**
  * 常量工具类
@@ -6,6 +6,16 @@ package com.wei.wreader.utils;
  * @author weizhanjie
  */
 public class ConstUtil {
+    /**
+     * 自适应css样式
+     */
+    public static final String WORD_WRAP_CSS =
+            "body {" +
+            "    width: 98%;" +
+            "    word-wrap:break-word;" +
+            "    word-break:break-all;" +
+            "    overflow-x: hidden;" +
+            "}";
     public static final String WREADER_ID = "WReader";
     public static final String WREADER_STATUS_BAR_WIDGET_ID = "wreader.WReaderStatusBarWidget";
     public static final String WREADER_STATUS_BAR_ID = "wreader.WReaderStatusBar";
@@ -82,6 +92,10 @@ public class ConstUtil {
      */
     public static final String WREADER_TOOL_WINDOW_TITLE = "WReader";
     /**
+     * 工具窗口标题
+     */
+    public static final String WREADER_DEFAULT_SITE_MAP_KEY = "WReaderDefault";
+    /**
      * 工具窗口初始化内容
      */
     public static final String WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT =
@@ -104,8 +118,10 @@ public class ConstUtil {
     public static final String WREADER_SEARCH_NETWORK_ERROR = "网络请求异常，请重试！";
     public static final String WREADER_SEARCH_BOOK_ERROR = "没有找到相关书籍";
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
+    public static final String WREADER_LOAD_CHAPTER_LIST_ERROR = "未找到章节目录信息！";
     public static final String WREADER_LOAD_CONTENT_ERROR = "加载内容失败，请重新加载书本！";
     public static final String WREADER_ERROR = "出现异常，请重试！";
+    public static final String WREADER_CACHE_ERROR = "缓存信息异常，请重试！";
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
     public static final String WREADER_LOAD_FAIL = "文件加载出现异常，请重试！";
@@ -118,6 +134,7 @@ public class ConstUtil {
     public static final String WREADER_CONTENT = "content";
     public static final String WREADER_LOAD_LOCAL_TIP = "若目录未加载成功或文字乱码，请尝试修改字符集，然后重新加载文件";
     public static final String WREADER_AUDIO_READING_ERROR = "音频播放异常！";
+    public static final String WREADER_DIY_SITE_JSON_ERROR = "自定义书源规则字符串格式错误！";
     public static final String HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36";
     public static final String STR_ONE = "1";
     public static final String DEFAULT_FONT_FAMILY = "DNMrHsV173Pd4pgy, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -188,4 +205,9 @@ public class ConstUtil {
      * cssQuery自定义规则标志--@font
      */
     public static final String CSS_QUERY_FONT_FLAG = "font:";
+    /**
+     * 正则表达式替换规则分隔标识--@replace
+     */
+    public static final String SPLIT_REGEX_REPLACE_FLAG = "@replace:";
+
 }

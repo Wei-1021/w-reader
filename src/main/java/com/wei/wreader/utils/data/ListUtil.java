@@ -1,10 +1,7 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.data;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;

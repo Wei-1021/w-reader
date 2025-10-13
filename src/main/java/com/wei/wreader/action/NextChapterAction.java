@@ -29,10 +29,7 @@ public class NextChapterAction extends BaseAction {
                     }
 
                     ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfoTemp.setLastReadLineNum(1);
-                    selectedChapterInfoTemp.setPrevReadLineNum(1);
-                    selectedChapterInfoTemp.setNextReadLineNum(1);
-                    selectedChapterInfoTemp.setChapterContentList(null);
+                    selectedChapterInfoTemp.initLineNum(1, 1, 1);
 
                     operateActionUtil.updateContentText();
                 });

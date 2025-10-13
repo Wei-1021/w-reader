@@ -9,11 +9,13 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
-import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.*;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.file.ImagePreviewer;
+import com.wei.wreader.utils.yml.ConfigYaml;
 import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
@@ -344,13 +346,7 @@ public class WReaderToolWindow  {
         contentTextPane.setEditable(false);
         contentTextPane.setOpaque(false);
         contentTextPane.setAlignmentY(Component.TOP_ALIGNMENT);
-//        contentTextPane.setEditorKit(new HTMLEditorKit());
-        HTMLEditorKit htmlEditorKit = new HTMLEditorKitBuilder()
-                .withoutContentCss()
-                .withGapsBetweenParagraphs()
-                .withWordWrapViewFactory()
-                .build();
-        contentTextPane.setEditorKit(htmlEditorKit);
+        contentTextPane.setEditorKit(new HTMLEditorKit());
         contentTextPane.setPreferredSize(new Dimension(toolWindowComponent.getWidth(), toolWindowComponent.getHeight()));
         contentScrollPane.setAlignmentY(Component.TOP_ALIGNMENT);
         contentScrollPane.setViewportView(contentTextPane);

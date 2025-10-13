@@ -4,7 +4,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.util.NlsContexts;
 import com.wei.wreader.ui.WReaderSettingForm;
-import com.wei.wreader.utils.ConfigYaml;
+import com.wei.wreader.utils.yml.ConfigYaml;
 
 import javax.swing.*;
 

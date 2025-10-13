@@ -10,8 +10,8 @@ import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.ConfigYaml;
-import com.wei.wreader.utils.MessageDialogUtil;
+import com.wei.wreader.utils.yml.ConfigYaml;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.apache.commons.lang3.StringUtils;
 

@@ -11,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.0.16"
+version = "0.1.0"
 
 repositories {
     maven {
@@ -74,18 +74,11 @@ dependencies {
     // apache commons
     implementation("org.apache.commons:commons-text:1.14.0")
 //    implementation("org.lobobrowser:LoboBrowser:1.0.0")
-//    implementation("nl.siegmann.epublib:epublib-core:3.1") {
-//        exclude(group = "org.slf4j")
-//        exclude(group = "xmlpull")
-//    }
 //    implementation("org.noear:liquor:1.3.7")
 //    implementation("org.mozilla:rhino:1.7.14")
 //    implementation("org.apache.pdfbox:fontbox:3.0.3")
 //    implementation("com.jaredrummler:sfntly:1.0.1")
 //    implementation("de.dfki.mary:voice-cmu-slt-hsmm:5.2.1")
-//    implementation("io.github.kevinzhwl:edge-tts-java:1.0.0")
-//    implementation("io.github.seth-yang:java-wrapper-for-edge-tts:1.0.1")
-//    implementation("io.github.ikfly:java-tts:1.0.2")
     // 导入本地jar
 //    implementation(fileTree("libs") {
 //        include("*.jar")

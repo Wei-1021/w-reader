@@ -4,11 +4,12 @@ import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.ChapterInfo;
-import com.wei.wreader.utils.ConstUtil;
-import com.wei.wreader.utils.ImagePreviewer;
+import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.file.ImagePreviewer;
 import com.wei.wreader.utils.OperateActionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +41,7 @@ public class EditorMessageAction extends BaseAction {
         // 获取小说内容
         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfo == null) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示");
             return;
         }
 

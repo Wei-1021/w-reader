@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.comm;
 
 import java.util.ArrayList;
 import java.util.List;

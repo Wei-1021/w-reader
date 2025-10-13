@@ -342,7 +342,7 @@ wreader:
       chapterListTitleElement: ''
       chapterContentUrl: 'http://www.lianjianxsw.com/getContent?bookid=${bookId}&chapterid=${itemId}'
       chapterContentUrlDataRule: '$.data.chapterInfo.content'
-      chapterContentHandleRule: '<java>com.wei.wreader.utils.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {"st###":"&nbsp;&nbsp;&nbsp;&nbsp;","###$$$":"<br>&nbsp;&nbsp;&nbsp;&nbsp;"})</java>'
+      chapterContentHandleRule: '<java>com.wei.wreader.utils.comm.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {"st###":"&nbsp;&nbsp;&nbsp;&nbsp;","###$$$":"<br>&nbsp;&nbsp;&nbsp;&nbsp;"})</java>'
       isContentOriginalStyle: true
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''
@@ -437,14 +437,14 @@ wreader:
              String dataJsonStr=(String)paramMap.get("dataJsonStr");
              String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.freeContUrlPrefix");
              String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,"$.data.shortContUrlPrefix");
-             String memuListJsonStr=(String)paramMap.get("memuListJsonStr");
+             String menuListJsonStr=(String)paramMap.get("menuListJsonStr");
              for (Object indexObj : indexList) {
                int index = Integer.parseInt(indexObj.toString());
-               String contUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].contUrlSuffix");
+               String contUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,"$["+index+"].contUrlSuffix");
                if(!contUrlSuffix.contains("reqEncryptParam")){
                  list.add(freeContUrlPrefix+contUrlSuffix);
                }else{
-                 String shortContUrlSuffix=(String)StringUtil.jsonPathRead(memuListJsonStr,"$["+index+"].shortContUrlSuffix");
+                 String shortContUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,"$["+index+"].shortContUrlSuffix");
                  list.add(shortContUrlPrefix+shortContUrlSuffix);
                }
              }
@@ -454,7 +454,7 @@ wreader:
          </code>
        </java>'
       chapterContentUrlDataRule: '$.ChapterContent'
-      chapterContentHandleRule: '<java>com.wei.wreader.utils.StringUtil.base64Decode(${content}, true)</java>'
+      chapterContentHandleRule: '<java>com.wei.wreader.utils.data.StringUtil.base64Decode(${content}, true)</java>'
       isContentOriginalStyle: false
       replaceContentOriginalRegex: ''
       chapterContentElementName: ''

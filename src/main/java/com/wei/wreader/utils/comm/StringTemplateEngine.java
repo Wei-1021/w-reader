@@ -1,4 +1,6 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.comm;
+
+import com.wei.wreader.utils.data.BigDecimalUtil;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.wei.wreader.utils;
+package com.wei.wreader.utils.comm;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
