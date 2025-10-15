@@ -53,6 +53,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
 import javax.imageio.ImageIO;
@@ -258,8 +259,15 @@ public class OperateActionUtil {
                 cacheService.setFontColorHex(fontColorHex);
             }
 
-            // 站点列表信息
-            siteBeanList = configYaml.getSiteList();
+            String selectedCustomSiteRuleKey = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
+            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedCustomSiteRuleKey)) {
+                // 站点列表信息
+                siteBeanList = configYaml.getSiteList();
+            } else {
+                // 站点列表信息
+                Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
+                siteBeanList = siteMap.get(selectedCustomSiteRuleKey);
+            }
 
             // 加载持久化数据--站点信息
             Integer selectedBookSiteIndexTemp = cacheService.getSelectedBookSiteIndex();
@@ -679,7 +687,7 @@ public class OperateActionUtil {
                         int selectedIndex = searchBookList.getSelectedIndex();
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         // 小说目录链接
-                        ListMainRules tempListMainRules = tempSelectedSiteBean.getListMainRules();
+                        ListMainRules tempListMainRules = selectedSiteBean.getListMainRules();
                         if (tempListMainRules == null) {
                             Messages.showErrorDialog(ConstUtil.WREADER_CACHE_ERROR, "提示");
                             return;
@@ -1202,14 +1210,25 @@ public class OperateActionUtil {
                     // 获取小说内容
                     // 小说内容的HTML标签类型（class, id）
                     String chapterContentElementName = selectedChapterRules.getContentElementName();
-                    Element chapterContentElement = bodyElement.selectFirst(chapterContentElementName);
-                    if (chapterContentElement == null) {
+                    Elements chapterContentElements = bodyElement.select(chapterContentElementName);
+                    if (chapterContentElements.isEmpty()) {
                         Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示", Messages.getInformationIcon());
                         return;
                     }
 
-                    chapterContent = chapterContentElement.html();
-                    chapterContentText = chapterContentElement.text();
+                    StringBuilder contentHtml = new StringBuilder();
+                    for (Element element : chapterContentElements) {
+                        Tag tag = element.tag();
+                        String html = element.html();
+                        if (tag.isEmpty() || StringUtils.trimToNull(html) == null) {
+                            continue;
+                        }
+
+                        contentHtml.append(String.format("<%s>%s</%s>", tag.normalName(), html, tag.normalName()));
+                    }
+
+                    chapterContent = contentHtml.toString();
+                    chapterContentText = chapterContentElements.text();
                 }
 
                 progressIndicator.setFraction(1.0);
