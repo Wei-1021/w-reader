@@ -1,0 +1,455 @@
+[
+  {
+    "enabled": true,
+    "id": "xbiqugu.net",
+    "name": "书香小说",
+    "baseUrl": "http://www.xbiqugu.net",
+    "header": "",
+    "searchRules": {
+      "url": "http://www.xbiqugu.net/modules/article/waps.php?searchkey=${key}",
+      "dataBookListRule": "",
+      "bookListElementName": ".grid tr:not(:first-child)",
+      "bookListUrlElement": ":nth-child(1) > a",
+      "bookListTitleElement": ":nth-child(1) > a"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": "#list dl dd",
+      "urlElement": "a",
+      "titleElement": "a"
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#content",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "book_id",
+      "bookNameField": "even",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "bookAuthor",
+      "bookDescField": "bookDesc",
+      "bookImgUrlField": "bookImgUrl"
+    },
+    "hasHtml": true
+  },
+  {
+    "enabled": true,
+    "id": "xbiquzw.com",
+    "name": "笔尖小说",
+    "baseUrl": "http://www.xbiquzw.com",
+    "header": "",
+    "searchRules": {
+      "url": "http://www.xbiquzw.com/modules/article/search.php?searchkey=${key}",
+      "dataBookListRule": "",
+      "bookListElementName": ".grid tr:not(:first-child)",
+      "bookListUrlElement": ":nth-child(1) > a",
+      "bookListTitleElement": ":nth-child(1) > a"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": "#list dl dd",
+      "urlElement": "a",
+      "titleElement": "a"
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#content",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "book_id",
+      "bookNameField": "odd",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "bookAuthor",
+      "bookDescField": "bookDesc",
+      "bookImgUrlField": "bookImgUrl"
+    },
+    "hasHtml": true
+  },
+  {
+    "enabled": true,
+    "id": "appi.kuwo.cn",
+    "name": "酷我小说",
+    "baseUrl": "http://appi.kuwo.cn",
+    "header": "",
+    "searchRules": {
+      "url": "http://appi.kuwo.cn/novels/api/book/search?keyword=${key}&pi=${page}&ps=30",
+      "dataBookListRule": "$.data[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "http://appi.kuwo.cn/novels/api/book/${bookId}/chapters?paging=0",
+      "urlDataRule": "$.data[*]",
+      "itemIdField": "chapter_id",
+      "itemTitleField": "chapter_title",
+      "listMainElementName": "",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "http://appi.kuwo.cn/novels/api/book/${bookId}/chapters/${itemId}",
+      "urlDataRule": "$.data.content",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": true,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "book_id",
+      "bookNameField": "title",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "author_name",
+      "bookDescField": "intro",
+      "bookImgUrlField": "cover_url"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "www.lianjianxsw.com",
+    "name": "读书阁",
+    "baseUrl": "http://www.lianjianxsw.com",
+    "header": "",
+    "searchRules": {
+      "url": "{'url':'http://www.lianjianxsw.com/search','method':'POST','queryParams':{},'bodyParams':{'keyword':'${key}'},'header':{}}",
+      "dataBookListRule": "$.data[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "http://www.lianjianxsw.com/getCataLogs?bookid=${bookId}&page=1&limit=9999",
+      "urlDataRule": "$.data.list[*]",
+      "itemIdField": "_id",
+      "itemTitleField": "name",
+      "listMainElementName": "",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "http://www.lianjianxsw.com/getContent?bookid=${bookId}&chapterid=${itemId}",
+      "urlDataRule": "$.data.chapterInfo.content",
+      "contentHandleRule": "<java>com.wei.wreader.utils.comm.AESDecryption.aesBase64DecodeToTransStr(${content}, 6CE93717FBEA3E4F, AES/CBC/NoPadding, 6CE93717FBEA3E4F, {\"st###\":\"&nbsp;&nbsp;&nbsp;&nbsp;\",\"###$$$\":\"<br>&nbsp;&nbsp;&nbsp;&nbsp;\"})</java>",
+      "useContentOriginalStyle": true,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "_id",
+      "bookNameField": "name",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "author",
+      "bookDescField": "intro",
+      "bookImgUrlField": "cover_url"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "novelapi.kpkpo.com",
+    "name": "笔阅读器",
+    "baseUrl": "https://novelapi.kpkpo.com",
+    "header": "",
+    "searchRules": {
+      "url": "https://novelapi.kpkpo.com/api/category-search?name=${key}",
+      "dataBookListRule": "$.result.list[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "https://novelapi-hw.tttxtt.com/h5/book-catalog-id-${bookId}",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": ".page",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "https://novelapi-hw.tttxtt.com/h5/book-chapter-id-${bookId}-chapter_id-{itemId}",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": ".article",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "id",
+      "bookNameField": "name",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "author",
+      "bookDescField": "description",
+      "bookImgUrlField": "icon"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "www.shuqi.com",
+    "name": "书旗小说",
+    "baseUrl": "https://www.shuqi.com",
+    "header": "",
+    "searchRules": {
+      "url": "https://read.xiaoshuo1-sm.com/novel/i.php?q=${key}&page=1&size=100&do=is_search&isNewBind=0&tk=&imei=&sn=&channelId=&clientPatch=&clientVersion=&device=&deviceId=&utdid=&model=&osName=&osVersion=&umidToken=&appVersion=&app=&platform=3&ykToken=&ykuid=&shuqi_h5=&token=&user_id=8000000&uid=8000000&filterMigu=1&ver=&p=3",
+      "dataBookListRule": "$.data[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "<java> <package_import> import com.wei.wreader.pojo.BookInfo; import java.util.*; import com.wei.wreader.utils.data.*; </package_import> <code> public String execute(String bookId){ String encryptKey = \"37e81a9d8f02596e1b895d07c171d5c9\"; String user_id = \"8000000\"; long timestamp = System.currentTimeMillis() / 1000; String param = bookId + timestamp + user_id + encryptKey; String md5 = EncryptUtils.md5(param); String url = \"https://ocean.shuqireader.com/api/bcspub/qswebapi/book/chapterlist?_=&bookId=\" + bookId +  \"&user_id=8000000&sign=\" + md5 + \"&timestamp=\" + timestamp; return url; } </code> </java>",
+      "urlDataRule": "$.data.chapterList[*].volumeList[*]",
+      "itemIdField": "chapterId",
+      "itemTitleField": "chapterName",
+      "listMainElementName": "",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "<java> <package_import> import java.util.*; import com.wei.wreader.utils.data.*; import com.jayway.jsonpath.*; </package_import> <code> public List<String> execute(Map<String,Object> paramMap, List<Object> indexList, String bookId, List<Object> itemIdList){ List<String> list = new ArrayList<>(); String dataJsonStr=(String)paramMap.get(\"dataJsonStr\"); String freeContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,\"$.data.freeContUrlPrefix\"); String shortContUrlPrefix=(String)StringUtil.jsonPathRead(dataJsonStr,\"$.data.shortContUrlPrefix\"); String menuListJsonStr=(String)paramMap.get(\"menuListJsonStr\"); for (Object indexObj : indexList) { int index = Integer.parseInt(indexObj.toString()); String contUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,\"$[\"+index+\"].contUrlSuffix\"); if(!contUrlSuffix.contains(\"reqEncryptParam\")){ list.add(freeContUrlPrefix+contUrlSuffix); }else{ String shortContUrlSuffix=(String)StringUtil.jsonPathRead(menuListJsonStr,\"$[\"+index+\"].shortContUrlSuffix\"); list.add(shortContUrlPrefix+shortContUrlSuffix); } }\nreturn list; } </code> </java>",
+      "urlDataRule": "$.ChapterContent",
+      "contentHandleRule": "<java>com.wei.wreader.utils.data.StringUtil.base64Decode(${content}, true)</java>",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "bid",
+      "bookNameField": "title",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "author",
+      "bookDescField": "desc",
+      "bookImgUrlField": "cover"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "www.wtzw.com",
+    "name": "梧桐文学",
+    "baseUrl": "https://www.wtzw.com",
+    "header": "",
+    "searchRules": {
+      "url": "https://www.wtzw.com/search-${key}.html?p=${page}",
+      "dataBookListRule": "",
+      "bookListElementName": ".searchList ul li",
+      "bookListUrlElement": ".w_txt .sTit a",
+      "bookListTitleElement": ".w_txt .sTit a"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": ".chapterList .clearfix li",
+      "urlElement": "a",
+      "titleElement": "a"
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#read_page",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "bookId",
+      "bookNameField": "bookName",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "bookAuthor",
+      "bookDescField": "bookDesc",
+      "bookImgUrlField": "bookImgUrl"
+    },
+    "hasHtml": true
+  },
+  {
+    "enabled": true,
+    "id": "www.jjwxc.net",
+    "name": "晋江文学",
+    "baseUrl": "http://app.jjwxc.org",
+    "header": "",
+    "searchRules": {
+      "url": "http://app.jjwxc.org/androidapi/search?keyword=${key}&type=1&page=${page}&token=null&searchType=1&sortMode=DESC&versionCode=173",
+      "dataBookListRule": "$.items[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "http://app-cdn.jjwxc.net/androidapi/chapterList?novelId=${bookId}&more=0&whole=1",
+      "urlDataRule": "$.chapterlist[*]",
+      "itemIdField": "chapterid",
+      "itemTitleField": "chaptername",
+      "listMainElementName": "",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "http://app-cdn.jjwxc.net:80/androidapi/chapterContent?novelId=${bookId}&chapterId=${itemId}",
+      "urlDataRule": "$.content",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "novelid",
+      "bookNameField": "novelname",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "authorname",
+      "bookDescField": "novelintroshort",
+      "bookImgUrlField": "cover"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "www.ihuaben.com",
+    "name": "话本小说",
+    "baseUrl": "https://www.ihuaben.com",
+    "header": "",
+    "searchRules": {
+      "url": "https://www.ihuaben.com/app/search?indexName=book&keyword=${key}&page=${page}&pageSize=50",
+      "dataBookListRule": "$.pageUtil.pageList[*]",
+      "bookListElementName": "",
+      "bookListUrlElement": "",
+      "bookListTitleElement": ""
+    },
+    "listMainRules": {
+      "url": "https://cdncn.ihuaben.com/cdn/chapters/${bookId}/000",
+      "urlDataRule": "$.modelData.chapters[*]",
+      "itemIdField": "chapterId",
+      "itemTitleField": "title",
+      "listMainElementName": "",
+      "urlElement": "",
+      "titleElement": ""
+    },
+    "chapterRules": {
+      "url": "https://cdncn.ihuaben.com/cdn/chapter/${bookId}/${itemId}/000",
+      "urlDataRule": "$.modelData.content",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "bookid",
+      "bookNameField": "bookname",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "authorname",
+      "bookDescField": "bookinfo",
+      "bookImgUrlField": "bookpic"
+    },
+    "hasHtml": false
+  },
+  {
+    "enabled": true,
+    "id": "www.yuedu.com",
+    "name": "阅读",
+    "baseUrl": "http://www.yuedu.info",
+    "header": "",
+    "searchRules": {
+      "url": "http://www.yuedu.info/search/result.html?searchkey=${key}",
+      "dataBookListRule": "",
+      "bookListElementName": ".librarylist li",
+      "bookListUrlElement": ".info .novelname",
+      "bookListTitleElement": ".info .novelname"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": ".dirlist li",
+      "urlElement": "a",
+      "titleElement": "a"
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#chaptercontent",
+      "contentRegexList": null
+    },
+    "bookInfoRules": {
+      "bookIdField": "bookid",
+      "bookNameField": "novelname",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "authorname",
+      "bookDescField": "bookinfo",
+      "bookImgUrlField": "bookpic"
+    },
+    "hasHtml": true
+  },
+  {
+    "enabled": true,
+    "id": "www.huanmengacg.com",
+    "name": "幻梦轻小说",
+    "baseUrl": "https://www.huanmengacg.com",
+    "header": "",
+    "searchRules": {
+      "url": "https://www.huanmengacg.com/index.php/book/search?action=search&key=${key}",
+      "dataBookListRule": "",
+      "bookListElementName": ".searchResult .rankdatacont dl",
+      "bookListUrlElement": "dd .bigpic-book-name",
+      "bookListTitleElement": "dd .bigpic-book-name"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "listMainElementName": ".dibu ul li",
+      "urlElement": "a",
+      "titleElement": "a"
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#content",
+      "contentRegexList": [
+        "<p\\s*>\\s*</p>@replace:"
+      ]
+    },
+    "bookInfoRules": {
+      "bookIdField": "bookid",
+      "bookNameField": "novelname",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "authorname",
+      "bookDescField": "bookinfo",
+      "bookImgUrlField": "bookpic"
+    },
+    "hasHtml": true
+  }
+]

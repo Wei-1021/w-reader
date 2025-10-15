@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Service(Service.Level.APP)
 @State(name = "CustomSiteRuleCacheServer", storages = {@Storage("w-reader-custom-site-rule.xml")})
-public class CustomSiteRuleCacheServer implements PersistentStateComponent<CustomSiteRuleCacheServer> {
+public final class CustomSiteRuleCacheServer implements PersistentStateComponent<CustomSiteRuleCacheServer> {
     /**
      * 自定义书源规则缓存
      */

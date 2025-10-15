@@ -1,13 +1,14 @@
 package com.wei.wreader.utils.file;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,6 +106,48 @@ public class FileUtil {
             case "bmp", "webp", "ico", "tiff", "avif" -> true;
             default -> false;
         };
+    }
+
+    /**
+     * 读取resources目录下的Json资源文件
+     * @param resourcePath Json资源路径（相对于 resources 目录，如 "json/config.json"）
+     * @return JSON 节点对象
+     */
+    public static String readResourcesJsonStr(@NotNull String resourcePath) {
+        // 通过当前类的类加载器获取资源流
+        try (InputStream inputStream = FileUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                LOGGER.warning("资源不存在: " + resourcePath);
+                return null;
+            }
+
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOGGER.throwing("FileUtil","读取资源失败: " + resourcePath, e);
+            return null;
+        }
+    }
+
+    /**
+     * 读取resources目录下的Json资源文件
+     * @param resourcePath Json资源路径（相对于 resources 目录，如 "data/config.json"）
+     * @return JSON 节点对象
+     */
+    public static JsonNode readResourcesJson(@NotNull String resourcePath) {
+        // 通过当前类的类加载器获取资源流（插件环境推荐方式）
+        try (InputStream inputStream = FileUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                LOGGER.warning("资源不存在: " + resourcePath);
+                return null;
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            // 解析为 JsonNode（可按需映射为 Java 对象）
+            return objectMapper.readTree(inputStream);
+        } catch (IOException e) {
+            LOGGER.throwing("FileUtil","读取资源失败: " + resourcePath, e);
+            return null;
+        }
     }
 
 }

@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.0.16</version>
+    <version>0.1.0</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -185,12 +185,14 @@
     ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
+<!--    <depends>com.intellij.platform.jcef</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity id="wreader.StartupFactory"
                              implementation="com.wei.wreader.factory.StartupFactory"
                              order="first"/>
         <applicationService serviceImplementation="com.wei.wreader.service.CacheService"/>
+        <applicationService serviceImplementation="com.wei.wreader.service.CustomSiteRuleCacheServer"/>
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
                                  id="wreader.WReaderSettingForm"
@@ -276,6 +278,10 @@
                 text="书籍信息"
                 icon="com.wei.wreader.utils.WReaderIcons.BOOK_INFO">
         </action>
+        <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction" text="自定义书源规则"
+                icon="AllIcons.Actions.EditSource">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt DECIMAL"/>
+        </action>
         <!--endregion-->
 
         <!--region Group-->
@@ -307,6 +313,7 @@
             <reference id="wreader.WReaderSetting"/>
             <reference id="wreader.HelpAction"/>
             <reference id="wreader.ShowBookInfoAction"/>
+            <reference id="wreader.CustomSiteRuleAction"/>
             <separator/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.EditorMessageAction"/>

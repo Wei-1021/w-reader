@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * @author weizhanjie
  */
 @Log4j2
-public class WReaderToolWindow  {
+public class WReaderToolWindow {
 
     //region 参数属性
     //region 组件
@@ -44,29 +44,9 @@ public class WReaderToolWindow  {
      */
     private JPanel readerPanel;
     /**
-     * 菜单工具面板
-     */
-    private JPanel menuToolPanel;
-    /**
      * 内容面板
      */
     private JPanel contentPanel;
-    /**
-     * 目录列表按钮
-     */
-    private JButton menuListButton;
-    /**
-     * 上一页按钮
-     */
-    private JButton prevPageButton;
-    /**
-     * 下一页按钮
-     */
-    private JButton nextPageButton;
-    /**
-     * 搜索按钮
-     */
-    private JButton searchBookButton;
     /**
      * 内容编辑器JEditorPane
      */
@@ -79,14 +59,6 @@ public class WReaderToolWindow  {
      * 内容滚动面板
      */
     private JBScrollPane contentScrollPane;
-    /**
-     * 字体大小减按钮
-     */
-    private JButton fontSubButton;
-    /**
-     * 字体大小加按钮
-     */
-    private JButton fontAddButton1;
     /**
      * 颜色显示面板
      */
@@ -202,7 +174,6 @@ public class WReaderToolWindow  {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
 
-        menuToolPanel.setVisible(false);
         menuToolBarPanel.setVisible(false);
         SwingUtilities.invokeLater(() -> {
             // 初始化组件
@@ -406,8 +377,8 @@ public class WReaderToolWindow  {
         // 设置内容
         chapterContent = String.format(
                 """
-                <div style="color:%s;font-family:'%s';font-size:%dpx;">%s</div>
-                """,
+                        <div style="color:%s;font-family:'%s';font-size:%dpx;">%s</div>
+                        """,
                 fontColorHex, fontFamily, fontSize, chapterContent);
         contentTextPane.setText(chapterContent);
         // 设置光标位置

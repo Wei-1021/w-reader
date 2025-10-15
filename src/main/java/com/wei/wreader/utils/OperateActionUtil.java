@@ -21,6 +21,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.service.CustomSiteRuleCacheServer;
 import com.wei.wreader.utils.comm.*;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.data.JsonUtil;
@@ -28,6 +29,7 @@ import com.wei.wreader.utils.data.ListUtil;
 import com.wei.wreader.utils.data.StringUtil;
 import com.wei.wreader.utils.file.EpubReaderComplete;
 import com.wei.wreader.utils.file.FileUtil;
+import com.wei.wreader.utils.http.HttpRequestConfigParser;
 import com.wei.wreader.utils.http.HttpUtil;
 import com.wei.wreader.utils.tts.EdgeTTS;
 import com.wei.wreader.utils.tts.VoiceRole;
@@ -47,6 +49,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -59,6 +62,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -81,8 +86,10 @@ import java.util.regex.Pattern;
  */
 public class OperateActionUtil {
     //region 属性参数
-    private ConfigYaml configYaml;
-    private CacheService cacheService;
+    private static ConfigYaml configYaml;
+    private static CacheService cacheService;
+    private static CustomSiteRuleCacheServer customSiteRuleCacheServer;
+    private CustomSiteUtil customSiteUtil;
     private Settings settings;
     private static Project mProject;
     private static OperateActionUtil instance;
@@ -209,6 +216,8 @@ public class OperateActionUtil {
     public OperateActionUtil(Project project) {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
+        customSiteUtil = CustomSiteUtil.getInstance(project);
+        customSiteRuleCacheServer = CustomSiteRuleCacheServer.getInstance();
         mProject = project;
         initData();
     }
@@ -304,22 +313,66 @@ public class OperateActionUtil {
      */
     public void buildSearchBookDialog(Project project) {
         SwingUtilities.invokeLater(() -> {
-            // 创建一个弹出窗, 包含一个选择下拉框和一个输入框
-            ComboBox<String> comboBox = getStringComboBox();
+            // 创建一个搜索弹出窗
+            // 书源列表下拉框
+            ComboBox<String> siteListComboBox = buildSiteComboBox();
+            // 书源分组下拉框
+            ComboBox<String> siteGroupComboBox = buildSiteGroupComboBox(siteListComboBox);
+            // 搜索框
             JTextField searchBookTextField = new JTextField(20);
-            Object[] objs = {ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, comboBox, searchBookTextField};
+            Object[] objs = {"书源分组", siteGroupComboBox, ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, siteListComboBox, searchBookTextField};
             searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
-                    () -> searchBookDialogOk(comboBox, searchBookTextField),
+                    () -> searchBookDialogOk(siteListComboBox, searchBookTextField),
                     this::commCancelOperationHandle);
         });
     }
 
     /**
-     * 构建站点选择下拉框
+     * 构建书源列表分组下拉框
+     */
+    private ComboBox<String> buildSiteGroupComboBox(ComboBox<String> siteListComboBox) {
+        // 获取书源分组Map
+        Map<String, List<SiteBean>> siteGroupMap = customSiteUtil.getSiteMap();
+        // 获取书源分组名称列表
+        List<String> siteGroupNameList = customSiteUtil.getCustomSiteKeyGroupList();
+        // 获取已选择的分组
+        String selectedSiteGroupName = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
+        if (selectedSiteGroupName == null) {
+            selectedSiteGroupName = siteGroupNameList.get(0);
+        }
+        siteBeanList = siteGroupMap.get(selectedSiteGroupName);
+
+        // 创建书源分组下拉框
+        ComboBox<String> comboBox = new ComboBox<>();
+        for (int i = 0; i < siteGroupNameList.size(); i++) {
+            String siteGroupName = siteGroupNameList.get(i);
+            comboBox.addItem(siteGroupName);
+            if (siteGroupName.equals(selectedSiteGroupName)) {
+                comboBox.setSelectedItem(i);
+                selectedBookSiteIndex =  i;
+            }
+        }
+        comboBox.addItemListener(e -> {
+            String siteGroupName = (String) e.getItem();
+            siteBeanList = siteGroupMap.get(siteGroupName);
+            customSiteRuleCacheServer.setSelectedCustomSiteRuleKey(siteGroupName);
+            // 刷新书源列表下拉框
+            siteListComboBox.removeAllItems();
+            for (SiteBean site : siteBeanList) {
+                siteListComboBox.addItem(site.getName() + "(" + site.getId() + ")");
+            }
+            siteListComboBox.setSelectedItem(0);
+            selectedBookSiteIndex = 0;
+        });
+        return comboBox;
+    }
+
+    /**
+     * 构建书源选择下拉框
      *
      * @return
      */
-    private @NotNull ComboBox<String> getStringComboBox() {
+    private @NotNull ComboBox<String> buildSiteComboBox() {
         ComboBox<String> comboBox = new ComboBox<>();
         for (SiteBean site : siteBeanList) {
             comboBox.addItem(site.getName() + "(" + site.getId() + ")");
@@ -406,7 +459,7 @@ public class OperateActionUtil {
                     // 获取搜索结果
                     searchBookResult = searchBookList(finalSearchBookUrl);
                 } catch (Exception e) {
-                    error.printStackTrace();
+                    e.printStackTrace();
                     // 捕获异常，以便在 onSuccess 或 onThrowable 中处理
                     error = e;
                 }
@@ -465,13 +518,33 @@ public class OperateActionUtil {
         // 获取小说列表的接口返回的是否是html
         boolean isHtml = selectedSiteBean.isHasHtml();
         if (isHtml) {
+            HttpRequestConfigParser parser = new HttpRequestConfigParser(url);
+            String requestUrl = parser.getUrl();
+            String requestMethod = parser.getMethod();
+            Map<String, String> queryParam = parser.getQueryParams();
+            Map<String, String> bodyParam = parser.getBodyParams();
+
             // 获取html
             Document document = null;
             try {
-                document = Jsoup.connect(url)
+                if (queryParam != null && !queryParam.isEmpty()) {
+                    requestUrl += "?";
+                    for (Map.Entry<String, String> entry : queryParam.entrySet()) {
+                        requestUrl += entry.getKey() + "=" + entry.getValue() + "&";
+                    }
+                }
+
+                Connection connection = Jsoup.connect(requestUrl)
                         .headers(headerJson)
-                        .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                        .get();
+                        .header("User-Agent", ConstUtil.HEADER_USER_AGENT);
+                if (HttpUtil.POST.equals(requestMethod)) {
+                    for (Map.Entry<String, String> entry : bodyParam.entrySet()) {
+                        connection.data(entry.getKey(), entry.getValue());
+                    }
+                    document = connection.post();
+                } else {
+                    document = connection.get();
+                }
             } catch (IOException e) {
                 Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
                 throw new RuntimeException(e);
@@ -621,8 +694,8 @@ public class OperateActionUtil {
                             try {
                                 bookUrl = (String) DynamicCodeExecutor.executeMethod(listMainUrl,
                                         "execute",
-                                        new Class[]{String.class},
-                                        new Object[]{selectBookInfo.getBookId()});
+                                        new Class[]{BookInfo.class},
+                                        new Object[]{selectBookInfo});
                             } catch (Exception e1) {
                                 e1.printStackTrace();
                                 Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");

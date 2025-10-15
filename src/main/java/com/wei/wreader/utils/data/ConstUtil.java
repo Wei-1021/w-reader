@@ -94,7 +94,7 @@ public class ConstUtil {
     /**
      * 工具窗口标题
      */
-    public static final String WREADER_DEFAULT_SITE_MAP_KEY = "WReaderDefault";
+    public static final String WREADER_DEFAULT_SITE_MAP_KEY = "Default";
     /**
      * 工具窗口初始化内容
      */

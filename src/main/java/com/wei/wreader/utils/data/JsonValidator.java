@@ -188,7 +188,7 @@ public final class JsonValidator {
         /**
          * 错误列表
          */
-        private final List<ErrorDetail> errors;
+        private List<ErrorDetail> errors;
         /**
          * 转换后的对象集合
          */
@@ -215,6 +215,10 @@ public final class JsonValidator {
 
         public boolean isValid() {
             return valid;
+        }
+
+        public void setErrors(List<ErrorDetail> errors) {
+            this.errors = errors;
         }
 
         public List<ErrorDetail> getErrors() {
