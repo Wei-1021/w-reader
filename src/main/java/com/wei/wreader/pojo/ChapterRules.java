@@ -32,6 +32,11 @@ public class ChapterRules {
      */
     private String contentElementName;
     /**
+     * 本章节下一页内容的链接（针对某些网站会把一章内容分成多页的情况）。<br>
+     * 可以是请求链接，也可以用代码，然后返回一个链接
+     */
+    private String nextContentUrl;
+    /**
      * 小说内容的正则表达式集合，每项用@replace:分隔，前面是正则表达式，后面是替换的内容
      */
     private List<String> contentRegexList;
@@ -84,6 +89,14 @@ public class ChapterRules {
         this.contentElementName = contentElementName;
     }
 
+    public String getNextContentUrl() {
+        return nextContentUrl;
+    }
+
+    public void setNextContentUrl(String nextContentUrl) {
+        this.nextContentUrl = nextContentUrl;
+    }
+
     public List<String> getContentRegexList() {
         return contentRegexList;
     }
@@ -101,6 +114,7 @@ public class ChapterRules {
                 ", useContentOriginalStyle=" + useContentOriginalStyle +
                 ", replaceContentOriginalRegex='" + replaceContentOriginalRegex + '\'' +
                 ", contentElementName='" + contentElementName + '\'' +
+                ", nextContentUrl='" + nextContentUrl + '\'' +
                 ", contentRegexList=" + contentRegexList +
                 '}';
     }

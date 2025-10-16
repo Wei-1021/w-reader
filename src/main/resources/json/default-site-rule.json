@@ -28,6 +28,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -69,6 +70,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -110,6 +112,7 @@
       "useContentOriginalStyle": true,
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -151,6 +154,7 @@
       "useContentOriginalStyle": true,
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -192,6 +196,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": ".article",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -233,6 +238,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -274,6 +280,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#read_page",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -315,6 +322,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -356,6 +364,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -397,6 +406,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#chaptercontent",
+      "nextContentUrl": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -438,6 +448,7 @@
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
+      "nextContentUrl": "",
       "contentRegexList": [
         "<p\\s*>\\s*</p>@replace:"
       ]

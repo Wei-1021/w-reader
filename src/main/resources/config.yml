@@ -115,6 +115,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -150,6 +151,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -185,6 +187,7 @@ wreader:
         useContentOriginalStyle: true
         replaceContentOriginalRegex: ''
         contentElementName: ''
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -220,6 +223,7 @@ wreader:
         useContentOriginalStyle: true
         replaceContentOriginalRegex: ''
         contentElementName: ''
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: '_id'
@@ -255,6 +259,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '.article'
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'id'
@@ -338,6 +343,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bid'
@@ -373,6 +379,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#read_page'
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookId'
@@ -408,6 +415,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'novelid'
@@ -443,6 +451,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
@@ -478,6 +487,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#chaptercontent'
+        nextContentUrl: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
@@ -513,6 +523,7 @@ wreader:
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
+        nextContentUrl: ''
         contentRegexList:
           - '<p\s*>\s*</p>@replace:'
       bookInfoRules:

@@ -942,7 +942,7 @@ public class OperateActionUtil {
                 currentChapterInfo.setChapterTitle(chapterTitle);
                 currentChapterInfo.setChapterUrl(chapterUrl);
                 // 远程获取章节内容
-                searchBookContentRemote(chapterUrl, () -> {
+                searchBookContentRemote(chapterUrl, (bodyElement) -> {
                     currentChapterInfo.setChapterContent(chapterContentHtml);
                     currentChapterInfo.setChapterContentStr(chapterContentText);
                     currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -1070,6 +1070,45 @@ public class OperateActionUtil {
     }
 
     /**
+     * TODO: 待办
+     * 加载本章节下一页的内容
+     * @param bodyElement 文章内容html页面{@code <body></body>}部分的元素
+     */
+    public void loadThisChapterNextContent(Element bodyElement) {
+        if (settings.getDisplayType() != Settings.DATA_LOAD_TYPE_NETWORK) {
+            return;
+        }
+
+        ChapterRules chapterRules = selectedSiteBean.getChapterRules();
+        if (chapterRules == null) {
+            return;
+        }
+
+        String nextContentUrl = chapterRules.getNextContentUrl();
+        if (StringUtils.isEmpty(nextContentUrl)) {
+            return;
+        }
+
+        String chapterUrl = chapterRules.getUrl();
+        // 判断是否是动态代码配置
+        boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
+        if (isCodeConfig) {
+            try {
+                nextContentUrl = (String) DynamicCodeExecutor.executeMethod(
+                        chapterUrl,
+                        "execute",
+                        new Class[]{String.class, String.class},
+                        new Object[]{chapterUrl, bodyElement.html()}
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+                Messages.showErrorDialog("本章节下一页内容加载失败", "提示");
+            }
+        }
+    }
+
+    /**
      * 远程加载小说目录
      *
      * @param chapterListJBList
@@ -1096,7 +1135,7 @@ public class OperateActionUtil {
         currentChapterInfo.setChapterTitle(chapterTitle);
         currentChapterInfo.setChapterUrl(chapterUrl);
         // 搜索章节内容
-        searchBookContentRemote(chapterUrl, () -> {
+        searchBookContentRemote(chapterUrl, (bodyElement) -> {
             // 初始化并缓存当前章节信息
             currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
@@ -1141,11 +1180,14 @@ public class OperateActionUtil {
      * 远程获取小说内容
      *
      * @param url
+     * @param call 获取成功后执行的方法
      * @throws IOException
      */
-    public void searchBookContentRemote(String url, Runnable runnable) {
+    public void searchBookContentRemote(String url, Consumer<Element> call) {
         new Task.Backgroundable(mProject, "【W-Reader】正在获取内容...") {
             String chapterContent = "";
+
+            Element bodyElement;
 
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -1206,7 +1248,7 @@ public class OperateActionUtil {
                     }
 
                     // 页面展示主体
-                    Element bodyElement = document.body();
+                    bodyElement = document.body();
                     // 获取小说内容
                     // 小说内容的HTML标签类型（class, id）
                     String chapterContentElementName = selectedChapterRules.getContentElementName();
@@ -1250,7 +1292,7 @@ public class OperateActionUtil {
                 chapterContentText = StringUtils.normalizeSpace(chapterContentText);
                 chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
 
-                runnable.run();
+                call.accept(bodyElement);
             }
 
             @Override
@@ -1293,7 +1335,7 @@ public class OperateActionUtil {
                 }
                 currentChapterInfo.setChapterUrl(prevChapterUrl);
                 // 远程搜索上一章内容
-                searchBookContentRemote(prevChapterUrl, () -> {
+                searchBookContentRemote(prevChapterUrl, (bodyElement) -> {
                     // 初始化并缓存章节信息
                     currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
@@ -1355,7 +1397,7 @@ public class OperateActionUtil {
                 }
                 currentChapterInfo.setChapterUrl(nextChapterUrl);
                 // 远程获取下一章内容
-                searchBookContentRemote(nextChapterUrl, () -> {
+                searchBookContentRemote(nextChapterUrl, (bodyElement) -> {
                     // 初始化并缓存章节信息
                     currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
