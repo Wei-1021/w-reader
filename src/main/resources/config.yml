@@ -116,6 +116,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -152,6 +154,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -188,6 +192,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: ''
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'book_id'
@@ -224,6 +230,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: ''
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: '_id'
@@ -260,6 +268,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '.article'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'id'
@@ -344,6 +354,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: ''
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bid'
@@ -380,6 +392,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '#read_page'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookId'
@@ -416,6 +430,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: ''
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'novelid'
@@ -452,6 +468,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: ''
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
@@ -488,6 +506,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '#chaptercontent'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
       bookInfoRules:
         bookIdField: 'bookid'
@@ -524,6 +544,8 @@ wreader:
         replaceContentOriginalRegex: ''
         contentElementName: '#content'
         nextContentUrl: ''
+        useNextContentApi: false
+        nextContentApiDataRule: ''
         contentRegexList:
           - '<p\s*>\s*</p>@replace:'
       bookInfoRules:

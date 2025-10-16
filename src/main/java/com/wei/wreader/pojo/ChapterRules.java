@@ -37,6 +37,16 @@ public class ChapterRules {
      */
     private String nextContentUrl;
     /**
+     * 本章节下一页内容是否为使用API请求的方式获取。<br>
+     * true: 使用API请求方式获取。<br>
+     * false: 使用HTML页面获取。
+     */
+    private boolean useNextContentApi;
+    /**
+     * 本章节下一页内容为API请求时，获取章节内融的JSONPath规则
+     */
+    private String nextContentApiDataRule;
+    /**
      * 小说内容的正则表达式集合，每项用@replace:分隔，前面是正则表达式，后面是替换的内容
      */
     private List<String> contentRegexList;
@@ -97,6 +107,22 @@ public class ChapterRules {
         this.nextContentUrl = nextContentUrl;
     }
 
+    public boolean isUseNextContentApi() {
+        return useNextContentApi;
+    }
+
+    public void setUseNextContentApi(boolean useNextContentApi) {
+        this.useNextContentApi = useNextContentApi;
+    }
+
+    public String getNextContentApiDataRule() {
+        return nextContentApiDataRule;
+    }
+
+    public void setNextContentApiDataRule(String nextContentApiDataRule) {
+        this.nextContentApiDataRule = nextContentApiDataRule;
+    }
+
     public List<String> getContentRegexList() {
         return contentRegexList;
     }
@@ -115,6 +141,8 @@ public class ChapterRules {
                 ", replaceContentOriginalRegex='" + replaceContentOriginalRegex + '\'' +
                 ", contentElementName='" + contentElementName + '\'' +
                 ", nextContentUrl='" + nextContentUrl + '\'' +
+                ", useNextContentApi=" + useNextContentApi +
+                ", nextContentApiDataRule='" + nextContentApiDataRule + '\'' +
                 ", contentRegexList=" + contentRegexList +
                 '}';
     }

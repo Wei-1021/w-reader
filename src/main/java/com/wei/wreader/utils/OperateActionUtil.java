@@ -951,6 +951,8 @@ public class OperateActionUtil {
                     // 更新内容
                     updateContentText();
 
+                    loadThisChapterNextContent(bodyElement);
+
                     // 设置数据加载模式
                     settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
                     cacheService.setSettings(settings);
@@ -1094,17 +1096,54 @@ public class OperateActionUtil {
         boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
                 chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
         if (isCodeConfig) {
-            try {
-                nextContentUrl = (String) DynamicCodeExecutor.executeMethod(
-                        chapterUrl,
-                        "execute",
-                        new Class[]{String.class, String.class},
-                        new Object[]{chapterUrl, bodyElement.html()}
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-                Messages.showErrorDialog("本章节下一页内容加载失败", "提示");
-            }
+            Task.Backgroundable task = new Task.Backgroundable(mProject, "【W-Reader】加载本章节下一页内容") {
+
+                String returnResult = nextContentUrl;
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    // 在后台线程执行耗时操作
+                    progressIndicator.setText("【W-Reader】加载本章节下一页内容...");
+                    // 设置进度条为不确定模式
+                    progressIndicator.setIndeterminate(true);
+
+                    try {
+                        String preContentUrlTemp = "";
+                        while (StringUtils.isNotEmpty(returnResult)) {
+                            // 执行动态代码，获取结果；
+                            // 传递3个参数：1.章节链接，1.上一页链接（第一页传递空字符串），2.章节内容<body></body>部分html字符串
+                            returnResult = (String) DynamicCodeExecutor.executeMethod(
+                                    nextContentUrl,
+                                    "execute",
+                                    new Class[]{String.class, String.class, String.class},
+                                    new Object[]{chapterUrl, preContentUrlTemp, bodyElement.html()}
+                            );
+
+                            preContentUrlTemp = returnResult;
+
+                            String nextContent = requestContent(returnResult);
+                            ToolWindowUtil.insertContentText(mProject, nextContent);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Messages.showErrorDialog("本章节下一页内容加载失败", "提示");
+                    }
+                }
+
+                @Override
+                public void onSuccess() {
+                    NotificationInfo notificationInfo = new NotificationInfo(
+                            "W-Reader",
+                            "章节内容加载完成",
+                            "章节内容已加载完成！"
+                    );
+                }
+
+                @Override
+                public void onThrowable(@NotNull Throwable error) {
+                    super.onThrowable(error);
+                }
+            };
+            task.queue();
         }
     }
 
@@ -1726,6 +1765,84 @@ public class OperateActionUtil {
             chapterContentSplitList = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
         }
         currentChapterInfo.setChapterContentList(chapterContentSplitList);
+    }
+
+    private String requestContent(String url) {
+        String content = "";
+        ChapterRules chapterRules = selectedSiteBean.getChapterRules();
+        try {
+            if (chapterRules.isUseNextContentApi()) {
+                HttpRequestBase requestBase = HttpUtil.commonRequest(url);
+                requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
+                try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(requestBase)) {
+                    if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                        HttpEntity entity = httpResponse.getEntity();
+                        String result = EntityUtils.toString(entity);
+                        Gson gson = new Gson();
+                        JsonObject resJson = gson.fromJson(result, JsonObject.class);
+
+                        // 使用jsonpath获取内容
+                        Object readJson = JsonPath.read(resJson.toString(), chapterRules.getNextContentApiDataRule());
+
+                        content = (String) readJson;
+                    }
+                } catch (Exception e) {
+                    Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+                    throw new RuntimeException(e);
+                }
+            } else {
+                Document document = null;
+                try {
+                    document = Jsoup.connect(url)
+                            .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                            .get();
+                } catch (IOException e) {
+                    Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+                    throw new RuntimeException(e);
+                }
+
+                // 页面展示主体
+                Element bodyElement = document.body();
+                // 获取小说内容
+                // 小说内容的HTML标签类型（class, id）
+                String chapterContentElementName = chapterRules.getContentElementName();
+                Elements chapterContentElements = bodyElement.select(chapterContentElementName);
+                if (chapterContentElements.isEmpty()) {
+                    return "";
+                }
+
+                StringBuilder contentHtml = new StringBuilder();
+                for (Element element : chapterContentElements) {
+                    Tag tag = element.tag();
+                    String html = element.html();
+                    if (tag.isEmpty() || StringUtils.trimToNull(html) == null) {
+                        continue;
+                    }
+
+                    contentHtml.append(String.format("<%s>%s</%s>", tag.normalName(), html, tag.normalName()));
+                }
+
+                content = contentHtml.toString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 将换行符和制表符替换成html对应代码
+        content = content.replaceAll("\\n", "<br/>")
+                .replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+        // 章节内容处理规则
+        List<String> contentRegexList = chapterRules.getContentRegexList();
+        if (ListUtil.isNotEmpty(contentRegexList)) {
+            for (String contentRegex : contentRegexList) {
+                String[] regulars = contentRegex.split(ConstUtil.SPLIT_REGEX_REPLACE_FLAG);
+                String regex = regulars[0];
+                String replacement = regulars.length > 1 ? regulars[1] : "";
+                content = content.replaceAll(regex, replacement);
+            }
+        }
+
+        return content;
     }
 
     //region auto read next line

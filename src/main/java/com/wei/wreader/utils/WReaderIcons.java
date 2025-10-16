@@ -20,6 +20,7 @@ public class WReaderIcons {
 
     /**
      * 获取主图标
+     *
      * @param project
      * @return
      */
@@ -40,4 +41,36 @@ public class WReaderIcons {
 
         return MAIN_ICON;
     }
+
+    public String execute(String chapterUrl, String preContentUrlTemp, String bodyElement) {
+        if (bodyElement.contains("next.png")) {
+            if (preContentUrlTemp == null || preContentUrlTemp.isEmpty()) {
+                preContentUrlTemp = chapterUrl;
+            }
+
+            return incrementPage(preContentUrlTemp);
+        }
+
+        return "";
+    }
+
+    public String incrementPage(String url) {
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+)(?:_(\\d+))?(\\.html?)$");
+        java.util.regex.Matcher m = p.matcher(url);
+        if (!m.find()) {
+            return url;
+        }
+        int major = Integer.parseInt(m.group(1));
+        int minor = m.group(2) == null ? 0
+                : Integer.parseInt(m.group(2));
+        minor++;
+        String ext = m.group(3);
+
+        String newSeg = major + "_" + minor + ext;
+
+        return m.replaceFirst(newSeg);
+    }
+
+
+
 }

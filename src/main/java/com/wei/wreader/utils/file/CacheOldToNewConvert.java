@@ -61,6 +61,7 @@ public class CacheOldToNewConvert {
             chapterRules.setReplaceContentOriginalRegex(selectedBookSiteInfo.getReplaceContentOriginalRegex());
             chapterRules.setContentElementName(selectedBookSiteInfo.getChapterContentElementName());
             chapterRules.setNextContentUrl("");
+            chapterRules.setUseNextContentApi(false);
             if (StringUtils.isNotBlank(selectedBookSiteInfo.getChapterContentRegex())) {
                 chapterRules.setContentRegexList(List.of(selectedBookSiteInfo.getChapterContentRegex()));
             }

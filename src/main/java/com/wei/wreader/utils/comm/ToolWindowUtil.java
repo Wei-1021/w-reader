@@ -105,4 +105,14 @@ public class ToolWindowUtil {
             }
         }
     }
+
+    /**
+     * 内容面板插入新的内容
+     */
+    public static void insertContentText(Project project, String content) {
+        updateContentText(project, textPane -> {
+            String oldContent = textPane.getText();
+            textPane.setText(oldContent + content);
+        });
+    }
 }

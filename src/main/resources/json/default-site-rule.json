@@ -29,6 +29,8 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
       "nextContentUrl": "",
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
       "contentRegexList": null
     },
     "bookInfoRules": {
@@ -71,7 +73,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "book_id",
@@ -113,7 +117,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "book_id",
@@ -155,7 +161,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "_id",
@@ -197,7 +205,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": ".article",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "id",
@@ -239,7 +249,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "bid",
@@ -281,7 +293,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "#read_page",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "bookId",
@@ -323,7 +337,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "novelid",
@@ -365,7 +381,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "bookid",
@@ -407,7 +425,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "#chaptercontent",
       "nextContentUrl": "",
-      "contentRegexList": null
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  null
     },
     "bookInfoRules": {
       "bookIdField": "bookid",
@@ -449,7 +469,9 @@
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
       "nextContentUrl": "",
-      "contentRegexList": [
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList":  [
         "<p\\s*>\\s*</p>@replace:"
       ]
     },
