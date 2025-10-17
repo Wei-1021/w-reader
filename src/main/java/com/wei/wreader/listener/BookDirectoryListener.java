@@ -17,7 +17,7 @@ public abstract class BookDirectoryListener {
      * @param chapterList 章节列表
      * @param chapterInfo 章节内容
      */
-    public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo) {
+    public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo, Element element) {
 
     };
 }

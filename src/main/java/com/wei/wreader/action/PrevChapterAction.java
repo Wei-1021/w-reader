@@ -25,7 +25,7 @@ public class PrevChapterAction extends BaseAction {
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                operateAction.prevPageChapter(prevPageChapter -> {
+                operateAction.prevPageChapter((prevPageChapter, bodyElement) -> {
                     if (prevPageChapter == null) {
                         return;
                     }
@@ -34,6 +34,10 @@ public class PrevChapterAction extends BaseAction {
                     selectedChapterInfoTemp.initLineNum(1, 1, 1);
 
                     operateAction.updateContentText();
+
+                    if (bodyElement != null) {
+                        operateAction.loadThisChapterNextContent(prevPageChapter.getChapterUrl(), bodyElement);
+                    }
                 });
 
                 break;

@@ -3,10 +3,12 @@ package com.wei.wreader.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -63,19 +65,16 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -352,14 +351,15 @@ public class OperateActionUtil {
 
         // 创建书源分组下拉框
         ComboBox<String> comboBox = new ComboBox<>();
+        int selectedSiteGroupIndex = 0;
         for (int i = 0; i < siteGroupNameList.size(); i++) {
             String siteGroupName = siteGroupNameList.get(i);
             comboBox.addItem(siteGroupName);
             if (siteGroupName.equals(selectedSiteGroupName)) {
-                comboBox.setSelectedItem(i);
-                selectedBookSiteIndex =  i;
+                selectedSiteGroupIndex = i;
             }
         }
+        comboBox.setSelectedItem(selectedSiteGroupIndex);
         comboBox.addItemListener(e -> {
             String siteGroupName = (String) e.getItem();
             siteBeanList = siteGroupMap.get(siteGroupName);
@@ -520,7 +520,7 @@ public class OperateActionUtil {
         Map<String, String> headerJson = new HashMap<>();
         if (StringUtils.isNotBlank(header)) {
             Gson gson = new Gson();
-            headerJson = gson.fromJson(result, HashMap.class);
+            headerJson = gson.fromJson(header, HashMap.class);
         }
 
         // 获取小说列表的接口返回的是否是html
@@ -531,6 +531,7 @@ public class OperateActionUtil {
             String requestMethod = parser.getMethod();
             Map<String, String> queryParam = parser.getQueryParams();
             Map<String, String> bodyParam = parser.getBodyParams();
+            Map<String, String> headerMap = parser.getHeader();
 
             // 获取html
             Document document = null;
@@ -542,17 +543,20 @@ public class OperateActionUtil {
                     }
                 }
 
-                Connection connection = Jsoup.connect(requestUrl)
-                        .headers(headerJson)
-                        .header("User-Agent", ConstUtil.HEADER_USER_AGENT);
+                Connection connection = Jsoup.connect(requestUrl);
+                if (headerMap != null && !headerMap.isEmpty()) {
+                    connection.headers(headerMap);
+                }
                 if (HttpUtil.POST.equals(requestMethod)) {
+                    connection.method(Connection.Method.POST);
                     for (Map.Entry<String, String> entry : bodyParam.entrySet()) {
                         connection.data(entry.getKey(), entry.getValue());
                     }
-                    document = connection.post();
+                    connection.header("Content-Type", "application/x-www-form-urlencoded");
                 } else {
-                    document = connection.get();
+                    connection.method(Connection.Method.GET);
                 }
+                document = connection.execute().parse();
             } catch (IOException e) {
                 Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
                 throw new RuntimeException(e);
@@ -700,10 +704,20 @@ public class OperateActionUtil {
                         if (listMainUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
                                 listMainUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
                             try {
+                                Class<?>[] paramTypes = new Class[]{};
+                                Object[] params = new Object[]{};
+                                if (listMainUrl.contains("com.wei.wreader.pojo.BookInfo")) {
+                                    paramTypes = new Class[]{BookInfo.class};
+                                    params = new Object[]{selectBookInfo};
+                                } else  {
+                                    paramTypes = new Class[]{String.class};
+                                    params = new Object[]{selectBookInfo.getBookId()};
+                                }
+
                                 bookUrl = (String) DynamicCodeExecutor.executeMethod(listMainUrl,
                                         "execute",
-                                        new Class[]{BookInfo.class},
-                                        new Object[]{selectBookInfo});
+                                        paramTypes,
+                                        params);
                             } catch (Exception e1) {
                                 e1.printStackTrace();
                                 Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
@@ -933,11 +947,13 @@ public class OperateActionUtil {
                 currentChapterIndex = selectedIndex;
                 String chapterTitle = chapterList.get(currentChapterIndex);
                 String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
-                String chapterUrl = chapterSuffixUrl;
+                String chapterUrl;
                 if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !JsonUtil.isValid(selectBookInfo.getBookUrl())) {
                     chapterUrl = baseUrl + chapterSuffixUrl;
+                } else {
+                    chapterUrl = chapterSuffixUrl;
                 }
                 currentChapterInfo.setChapterTitle(chapterTitle);
                 currentChapterInfo.setChapterUrl(chapterUrl);
@@ -951,7 +967,7 @@ public class OperateActionUtil {
                     // 更新内容
                     updateContentText();
 
-                    loadThisChapterNextContent(bodyElement);
+                    loadThisChapterNextContent(chapterUrl, bodyElement);
 
                     // 设置数据加载模式
                     settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
@@ -1022,7 +1038,7 @@ public class OperateActionUtil {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     // 清空缓存
                     ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfoTemp.initLineNum(1,1,1);
+                    selectedChapterInfoTemp.initLineNum(1, 1, 1);
                     cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
 
                     // 获取工具窗口
@@ -1037,8 +1053,8 @@ public class OperateActionUtil {
                         if (isContentOriginalStyle) {
                             // 设置内容
                             chapterContent = String.format("""
-                                                <div class="%s" style="color:%s;font-size:%dpx;">%s</div>
-                                                """,
+                                            <div class="%s" style="color:%s;font-size:%dpx;">%s</div>
+                                            """,
                                     ConstUtil.NEW_FONT_CLASS_NAME, fontColorHex, fontSize, chapterContent);
 
                             // 构建完整html结构
@@ -1060,7 +1076,7 @@ public class OperateActionUtil {
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
                     ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfo.initLineNum(1,1,1);
+                    selectedChapterInfo.initLineNum(1, 1, 1);
                     WReaderStatusBarWidget.update(mProject, "");
                     break;
                 case Settings.DISPLAY_TYPE_TERMINAL:
@@ -1071,12 +1087,13 @@ public class OperateActionUtil {
         }
     }
 
+    private Task.Backgroundable nextContentTask;
     /**
-     * TODO: 待办
      * 加载本章节下一页的内容
+     *
      * @param bodyElement 文章内容html页面{@code <body></body>}部分的元素
      */
-    public void loadThisChapterNextContent(Element bodyElement) {
+    public void loadThisChapterNextContent(String chapterUrl, Element bodyElement) {
         if (settings.getDisplayType() != Settings.DATA_LOAD_TYPE_NETWORK) {
             return;
         }
@@ -1091,60 +1108,96 @@ public class OperateActionUtil {
             return;
         }
 
-        String chapterUrl = chapterRules.getUrl();
-        // 判断是否是动态代码配置
-        boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
-                chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
-        if (isCodeConfig) {
-            Task.Backgroundable task = new Task.Backgroundable(mProject, "【W-Reader】加载本章节下一页内容") {
+        boolean isCodeConfig = nextContentUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                nextContentUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
+        if (!isCodeConfig) {
+            return;
+        }
 
-                String returnResult = nextContentUrl;
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    // 在后台线程执行耗时操作
-                    progressIndicator.setText("【W-Reader】加载本章节下一页内容...");
-                    // 设置进度条为不确定模式
-                    progressIndicator.setIndeterminate(true);
+        if (nextContentTask != null) {
+            nextContentTask.onCancel();
+        }
 
-                    try {
-                        String preContentUrlTemp = "";
-                        while (StringUtils.isNotEmpty(returnResult)) {
-                            // 执行动态代码，获取结果；
-                            // 传递3个参数：1.章节链接，1.上一页链接（第一页传递空字符串），2.章节内容<body></body>部分html字符串
-                            returnResult = (String) DynamicCodeExecutor.executeMethod(
-                                    nextContentUrl,
-                                    "execute",
-                                    new Class[]{String.class, String.class, String.class},
-                                    new Object[]{chapterUrl, preContentUrlTemp, bodyElement.html()}
-                            );
+        nextContentTask = new Task.Backgroundable(mProject, "【W-Reader】加载本章节下一页内容") {
 
-                            preContentUrlTemp = returnResult;
+            private volatile boolean isRunning = true;
+            private String returnResult = nextContentUrl;
 
-                            String nextContent = requestContent(returnResult);
-                            ToolWindowUtil.insertContentText(mProject, nextContent);
+            final StringBuilder nextContent = new StringBuilder();
+
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                progressIndicator.setText("【W-Reader】加载本章节下一页内容...");
+                progressIndicator.setIndeterminate(true);
+
+                try {
+                    String preContentUrlTemp = "";
+                    AtomicReference<String> prePageContent = new AtomicReference<>(bodyElement.html());
+                    int pageCount = 0;
+                    while (isRunning && StringUtils.isNotEmpty(returnResult)) {
+                        // 检查用户是否取消了操作
+                        progressIndicator.checkCanceled();
+
+                        // 更新进度信息
+                        progressIndicator.setText2("正在加载第 " + (++pageCount) + " 页...");
+
+                        // 执行动态代码
+                        returnResult = (String) DynamicCodeExecutor.executeMethod(
+                                nextContentUrl,
+                                "execute",
+                                new Class[]{String.class, String.class, String.class},
+                                new Object[]{chapterUrl, preContentUrlTemp, prePageContent.get() }
+                        );
+
+                        preContentUrlTemp = returnResult;
+
+                        if (StringUtils.isNotEmpty(returnResult)) {
+                            // 在 UI 线程中插入内容
+                            nextContent.append(requestContent(returnResult, prePageContent::set));
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Messages.showErrorDialog("本章节下一页内容加载失败", "提示");
+
+                        // 添加小延迟，避免过于频繁的请求
+                        Thread.sleep(1000);
                     }
+                } catch (ProcessCanceledException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        Messages.showErrorDialog(
+                                "本章节下一页内容加载失败: " + e.getMessage(),
+                                "提示"
+                        );
+                    });
                 }
+            }
 
-                @Override
-                public void onSuccess() {
-                    NotificationInfo notificationInfo = new NotificationInfo(
-                            "W-Reader",
-                            "章节内容加载完成",
-                            "章节内容已加载完成！"
-                    );
-                }
+            @Override
+            public void onCancel() {
+                isRunning = false;
 
-                @Override
-                public void onThrowable(@NotNull Throwable error) {
+                super.onCancel();
+            }
+
+            @Override
+            public void onSuccess() {
+                ToolWindowUtil.updateContentText(mProject, contentTextPanel -> {
+                    String text = nextContent.toString();
+                    int caretPosition = contentTextPanel.getCaretPosition();
+                    text = getContent(text);
+                    contentTextPanel.setText(text);
+                    contentTextPanel.setCaretPosition(caretPosition);
+                });
+            }
+
+            @Override
+            public void onThrowable(@NotNull Throwable error) {
+                if (!(error instanceof ProcessCanceledException)) {
                     super.onThrowable(error);
                 }
-            };
-            task.queue();
-        }
+            }
+        };
+        nextContentTask.queue();
     }
 
     /**
@@ -1179,7 +1232,7 @@ public class OperateActionUtil {
             currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo, bodyElement);
             }
         });
     }
@@ -1210,7 +1263,7 @@ public class OperateActionUtil {
             currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo, null);
             }
         }
     }
@@ -1345,7 +1398,7 @@ public class OperateActionUtil {
     /**
      * 上一页
      */
-    public void prevPageChapter(Consumer<ChapterInfo> runnable) {
+    public void prevPageChapter(BiConsumer<ChapterInfo, Element> runnable) {
         try {
             // 判断是否是第一章
             if (currentChapterIndex <= 0) {
@@ -1379,7 +1432,7 @@ public class OperateActionUtil {
                     currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
 
-                    runnable.accept(currentChapterInfo);
+                    runnable.accept(currentChapterInfo, bodyElement);
                 });
             } else if (dataLoadType == Settings.DATA_LOAD_TYPE_LOCAL) {
                 chapterContentList = cacheService.getChapterContentList();
@@ -1396,7 +1449,7 @@ public class OperateActionUtil {
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
                 }
 
-                runnable.accept(currentChapterInfo);
+                runnable.accept(currentChapterInfo, null);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1406,7 +1459,7 @@ public class OperateActionUtil {
     /**
      * 下一页
      */
-    public void nextPageChapter(Consumer<ChapterInfo> runnable) {
+    public void nextPageChapter(BiConsumer<ChapterInfo, Element> runnable) {
         try {
             IS_SWITCH_NEXT_CHAPTER_SUCCESS = false;
             int dataLoadType = settings.getDataLoadType();
@@ -1444,7 +1497,7 @@ public class OperateActionUtil {
                     // 标记为已成功切换下一个章节
                     IS_SWITCH_NEXT_CHAPTER_SUCCESS = true;
 
-                    runnable.accept(currentChapterInfo);
+                    runnable.accept(currentChapterInfo, bodyElement);
                 });
             } else if (dataLoadType == Settings.DATA_LOAD_TYPE_LOCAL) {
                 // 获取章节内容列表
@@ -1474,7 +1527,7 @@ public class OperateActionUtil {
                     cacheService.setSelectedChapterInfo(currentChapterInfo);
                 }
 
-                runnable.accept(currentChapterInfo);
+                runnable.accept(currentChapterInfo, null);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1767,7 +1820,7 @@ public class OperateActionUtil {
         currentChapterInfo.setChapterContentList(chapterContentSplitList);
     }
 
-    private String requestContent(String url) {
+    private String requestContent(String url, Consumer<String> call) {
         String content = "";
         ChapterRules chapterRules = selectedSiteBean.getChapterRules();
         try {
@@ -1785,6 +1838,7 @@ public class OperateActionUtil {
                         Object readJson = JsonPath.read(resJson.toString(), chapterRules.getNextContentApiDataRule());
 
                         content = (String) readJson;
+                        call.accept(content);
                     }
                 } catch (Exception e) {
                     Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
@@ -1803,6 +1857,7 @@ public class OperateActionUtil {
 
                 // 页面展示主体
                 Element bodyElement = document.body();
+                call.accept(bodyElement.html());
                 // 获取小说内容
                 // 小说内容的HTML标签类型（class, id）
                 String chapterContentElementName = chapterRules.getContentElementName();
@@ -2113,5 +2168,16 @@ public class OperateActionUtil {
         // 反转列表以展示正确的嵌套顺序
         Collections.reverse(elements);
         return sb.toString();
+    }
+
+    private static @NotNull String getContent(String text) {
+        String fontFamily = cacheService.getFontFamily();
+        int fontSize = cacheService.getFontSize();
+        String fontColorHex = cacheService.getFontColorHex();
+        // 设置内容
+        String style = "font-family: '" + fontFamily + "'; " +
+                "font-size: " + fontSize + "px;" +
+                "color:" + fontColorHex + ";";
+        return "<div style=\"" + style + "\">" + text + "</div>";
     }
 }

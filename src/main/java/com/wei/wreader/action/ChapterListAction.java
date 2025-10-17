@@ -7,6 +7,8 @@ import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.utils.OperateActionUtil;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
+import org.jsoup.nodes.Element;
+
 import java.util.List;
 
 /**
@@ -25,10 +27,11 @@ public class ChapterListAction extends BaseAction {
              * @param position 下标
              * @param chapterList 章节列表
              * @param chapterInfo 章节内容
+             * @param element 文章内容html页面{@code <body></body>}部分的元素
              */
             @Override
-            public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo) {
-                super.onClickItem(position, chapterList, chapterInfo);
+            public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo, Element element) {
+                super.onClickItem(position, chapterList, chapterInfo, element);
 
                 OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
                 // 停止定时器
@@ -43,7 +46,9 @@ public class ChapterListAction extends BaseAction {
                         ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
                         selectedChapterInfoTemp.initLineNum(1,1,1);
                         operateAction.updateContentText();
-
+                        if (element != null) {
+                            operateAction.loadThisChapterNextContent(chapterInfo.getChapterUrl(), element);
+                        }
                     case Settings.DISPLAY_TYPE_STATUSBAR:
                         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
                         selectedChapterInfo.initLineNum(1,1,1);

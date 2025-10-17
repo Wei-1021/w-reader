@@ -23,7 +23,7 @@ public class NextChapterAction extends BaseAction {
 
         switch (settings.getDisplayType()) {
             case Settings.DISPLAY_TYPE_SIDEBAR:
-                operateActionUtil.nextPageChapter(nextPageChapter -> {
+                operateActionUtil.nextPageChapter((nextPageChapter, bodyElement) -> {
                     if (nextPageChapter == null) {
                         return;
                     }
@@ -32,6 +32,10 @@ public class NextChapterAction extends BaseAction {
                     selectedChapterInfoTemp.initLineNum(1, 1, 1);
 
                     operateActionUtil.updateContentText();
+
+                    if (bodyElement != null) {
+                        operateActionUtil.loadThisChapterNextContent(nextPageChapter.getChapterUrl(), bodyElement);
+                    }
                 });
 
                 break;

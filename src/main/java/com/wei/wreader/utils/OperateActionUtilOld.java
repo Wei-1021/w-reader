@@ -939,7 +939,7 @@ public class OperateActionUtilOld {
             // 缓存当前章节信息
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo, null);
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -974,7 +974,7 @@ public class OperateActionUtilOld {
             currentChapterInfo.setChapterContentStr(chapterContentText);
             cacheService.setSelectedChapterInfo(currentChapterInfo);
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo);
+                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo, null);
             }
         }
     }
