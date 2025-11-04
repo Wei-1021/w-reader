@@ -1,11 +1,16 @@
-package com.wei.wreader.utils.comm;
+package com.wei.wreader.utils.ui;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.wei.wreader.factory.WReaderToolWindowFactory;
+import com.wei.wreader.utils.WReaderIcons;
 import com.wei.wreader.utils.data.ConstUtil;
+import kotlin.Unit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,5 +119,53 @@ public class ToolWindowUtil {
             String oldContent = textPane.getText();
             textPane.setText(oldContent + content);
         });
+    }
+
+    /**
+     * 注册工具窗口
+     *
+     * @param project
+     * @param anchor
+     * @param canCloseContent
+     */
+    public static void registerCompatibleToolWindow(Project project,
+                                                    ToolWindowAnchor anchor,
+                                                    boolean canCloseContent) {
+        ApplicationInfo appInfo = ApplicationInfo.getInstance();
+        String version = appInfo.getBuild().asString();
+
+        // 检测基线版本 (221 = 2022.1, 222 = 2022.2)
+        int baselineVersion = appInfo.getBuild().getBaselineVersion();
+
+        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+
+        // 旧版注册方式 (IDEA 2022.1 及之前)
+        if (baselineVersion <= 221) {
+            try {
+                // 使用反射兼容旧API
+                ToolWindowManager.class
+                        .getMethod("registerToolWindow",
+                                String.class,
+                                boolean.class,
+                                ToolWindowAnchor.class)
+                        .invoke(toolWindowManager,
+                                ConstUtil.WREADER_TOOL_WINDOW_ID,
+                                canCloseContent,
+                                anchor);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to register toolwindow for legacy IDE", e);
+            }
+        }
+        // 新版注册方式 (IDEA 2022.2+)
+        else {
+            toolWindowManager.registerToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID, registerToolWindowTaskBuilder -> {
+                registerToolWindowTaskBuilder.anchor = anchor;
+                registerToolWindowTaskBuilder.canCloseContent = canCloseContent;
+                registerToolWindowTaskBuilder.icon = WReaderIcons.getMainIcon(project);
+                // 创建工具窗口内容
+                registerToolWindowTaskBuilder.contentFactory = new WReaderToolWindowFactory();
+                return Unit.INSTANCE;
+            });
+        }
     }
 }

@@ -36,6 +36,7 @@ import com.wei.wreader.utils.http.HttpUtil;
 import com.wei.wreader.utils.tts.EdgeTTS;
 import com.wei.wreader.utils.tts.VoiceRole;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
+import com.wei.wreader.utils.ui.ToolWindowUtil;
 import com.wei.wreader.utils.yml.ConfigYaml;
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import io.documentnode.epub4j.domain.Book;
@@ -160,6 +161,10 @@ public class OperateActionUtil {
      */
     private List<SiteBean> siteBeanList;
     /**
+     * 选中的站点分组名称
+     */
+    private static String selectSiteGroupName;
+    /**
      * 选中的站点信息(默认第一个)
      */
     private static SiteBean selectedSiteBean;
@@ -210,6 +215,7 @@ public class OperateActionUtil {
         if (instance == null || !project.equals(mProject) || mProject.isDisposed()) {
             instance = new OperateActionUtil(project);
         }
+        instance.initData();
         return instance;
     }
 
@@ -219,7 +225,6 @@ public class OperateActionUtil {
         customSiteUtil = CustomSiteUtil.getInstance(project);
         customSiteRuleCacheServer = CustomSiteRuleCacheServer.getInstance();
         mProject = project;
-        initData();
     }
 
     /**
@@ -259,7 +264,8 @@ public class OperateActionUtil {
             }
 
             String selectedCustomSiteRuleKey = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
-            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedCustomSiteRuleKey)) {
+            if (StringUtils.isBlank(selectedCustomSiteRuleKey) ||
+                    ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedCustomSiteRuleKey)) {
                 // 站点列表信息
                 siteBeanList = configYaml.getSiteList();
             } else {
@@ -277,6 +283,10 @@ public class OperateActionUtil {
                 selectedBookSiteIndex = selectedBookSiteIndexTemp;
             }
 
+            if (selectedBookSiteIndex > siteBeanList.size()) {
+                selectedBookSiteIndex = 0;
+                cacheService.setSelectedBookSiteIndex(0);
+            }
             selectedSiteBean = siteBeanList.get(selectedBookSiteIndex);
             if (selectedSiteBean == null) {
                 selectedSiteBean = siteBeanList.get(selectedBookSiteIndex);
@@ -311,7 +321,7 @@ public class OperateActionUtil {
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_INIT_ERROR, "Error");
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
@@ -359,11 +369,10 @@ public class OperateActionUtil {
                 selectedSiteGroupIndex = i;
             }
         }
-        comboBox.setSelectedItem(selectedSiteGroupIndex);
+        comboBox.setSelectedIndex(selectedSiteGroupIndex);
         comboBox.addItemListener(e -> {
-            String siteGroupName = (String) e.getItem();
-            siteBeanList = siteGroupMap.get(siteGroupName);
-            customSiteRuleCacheServer.setSelectedCustomSiteRuleKey(siteGroupName);
+            selectSiteGroupName = (String) e.getItem();
+            siteBeanList = siteGroupMap.get(selectSiteGroupName);
             // 刷新书源列表下拉框
             siteListComboBox.removeAllItems();
             for (SiteBean site : siteBeanList) {
@@ -371,6 +380,7 @@ public class OperateActionUtil {
             }
             siteListComboBox.setSelectedItem(0);
             selectedBookSiteIndex = 0;
+            siteListComboBox.setSelectedIndex(selectedBookSiteIndex);
         });
         return comboBox;
     }
@@ -2100,6 +2110,9 @@ public class OperateActionUtil {
         cacheService.setChapterUrlList(chapterUrlList);
         // 选择的小说章节缓存
         cacheService.setSelectedChapterInfo(currentChapterInfo);
+
+        // 自定义站点规则缓存
+        customSiteRuleCacheServer.setSelectedCustomSiteRuleKey(selectSiteGroupName);
     }
 
     /**

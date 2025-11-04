@@ -278,7 +278,8 @@
                 text="书籍信息"
                 icon="com.wei.wreader.utils.WReaderIcons.BOOK_INFO">
         </action>
-        <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction" text="自定义书源规则"
+        <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction"
+                text="自定义书源规则"
                 icon="AllIcons.Actions.EditSource">
             <keyboard-shortcut keymap="$default" first-keystroke="alt DECIMAL"/>
         </action>

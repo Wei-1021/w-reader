@@ -5,7 +5,7 @@ import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.utils.OperateActionUtil;
-import com.wei.wreader.utils.comm.ToolWindowUtil;
+import com.wei.wreader.utils.ui.ToolWindowUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

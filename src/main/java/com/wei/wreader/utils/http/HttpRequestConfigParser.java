@@ -167,6 +167,7 @@ public class HttpRequestConfigParser {
 
     /**
      * 获取请求头
+     *
      * @return
      */
     public Map<String, String> getHeader() {
@@ -203,20 +204,20 @@ public class HttpRequestConfigParser {
 //        String invalidConfig = "url=http://www.lianjianxsw.com/search;method=POST;body_params=keyword={key}";
         String invalidConfig =
                 """
-                        {
-                            'url': 'http://www.lianjianxsw.com/search',
-                            'method': 'POST',
-                            'queryParams': {
-                                'tt': '123456'
-                            },
-                            'bodyParams': {
-                                'keyword': '${key}'
-                            },
-                            'header': {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                        }
-                """;
+                                {
+                                    'url': 'http://www.lianjianxsw.com/search',
+                                    'method': 'POST',
+                                    'queryParams': {
+                                        'tt': '123456'
+                                    },
+                                    'bodyParams': {
+                                        'keyword': '${key}'
+                                    },
+                                    'header': {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                }
+                        """;
 
         HttpRequestConfigParser invalidParser = new HttpRequestConfigParser(invalidConfig);
         System.out.println(invalidParser);
@@ -227,6 +228,22 @@ public class HttpRequestConfigParser {
         System.out.println("Parsed Query Params: " + invalidParser.getQueryParams());
         System.out.println("Parsed Body Params: " + invalidParser.getBodyParams());
         System.out.println("Parsed Body Params: " + invalidParser.getHeader());
+    }
+
+    public String execute(String chapterUrl, String preContentUrlTemp, String bodyElement) {
+        return (bodyElement.contains("next.png") ?
+                (preContentUrlTemp == null || preContentUrlTemp.isEmpty() ?
+                        incrementPage(chapterUrl) : incrementPage(preContentUrlTemp)) :
+                "");
+    }
+
+    public String incrementPage(String url) {
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+)(?:_(\\d+))?(\\.html?)$");
+        java.util.regex.Matcher m = p.matcher(url);
+        if (!m.find()) return url;
+        int major = Integer.parseInt(m.group(1)), minor = m.group(2) == null ? 0 : Integer.parseInt(m.group(2));
+        minor++;
+        return m.replaceFirst(major + "_" + minor + m.group(3));
     }
 }
 

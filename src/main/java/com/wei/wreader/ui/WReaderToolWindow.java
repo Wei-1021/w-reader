@@ -48,10 +48,6 @@ public class WReaderToolWindow {
      */
     private JPanel contentPanel;
     /**
-     * 内容编辑器JEditorPane
-     */
-    private JEditorPane contentEditorPane1;
-    /**
      * 内容编辑器JTextPane
      */
     private JTextPane contentTextPane;
@@ -59,13 +55,7 @@ public class WReaderToolWindow {
      * 内容滚动面板
      */
     private JBScrollPane contentScrollPane;
-    /**
-     * 颜色显示面板
-     */
-    private JPanel colorShowPanel;
     private JPanel menuToolBarPanel;
-
-    private JToolBar menuToolBar;
     //endregion
     //region 自定义参数
     /**
@@ -187,6 +177,10 @@ public class WReaderToolWindow {
         });
     }
 
+    /**
+     * 初始化菜单工具栏
+     * @param toolWindow
+     */
     public void initMenuToolTabs(ToolWindow toolWindow) {
         menuToolBarPanel.setVisible(true);
         ActionManager actionManager = ActionManager.getInstance();
@@ -238,7 +232,6 @@ public class WReaderToolWindow {
                 fontColorHex = String.format("#%02x%02x%02x", defaultForeground.getRed(), defaultForeground.getGreen(),
                         defaultForeground.getBlue());
                 cacheService.setFontColorHex(fontColorHex);
-                colorShowPanel.setBackground(defaultForeground);
             }
 
             // 站点列表信息
@@ -401,7 +394,6 @@ public class WReaderToolWindow {
                     defaultForeground.getBlue());
             cacheService.setFontColorHex(fontColorHex);
             try {
-                colorShowPanel.setBackground(defaultForeground);
                 String style = "color:" + fontColorHex + ";" +
                         "font-family: '" + fontFamily + "';" +
                         "font-size: " + fontSize + "px;";

@@ -82,7 +82,12 @@ public class StringUtil {
         return result;
     }
 
-
+    /**
+     * 将字符串按最大长度进行分割
+     * @param input
+     * @param maxLength
+     * @return
+     */
     public static List<String> splitCompleteString(String input, int maxLength) {
         List<String> result = new ArrayList<>();
         if (input == null || input.isEmpty()) {
@@ -91,7 +96,7 @@ public class StringUtil {
         String[] words = input.split(" ");
         StringBuilder currentLine = new StringBuilder();
         for (String word : words) {
-            if (currentLine.isEmpty()) {
+            if (currentLine.length() == 0) {
                 // 如果当前行是空的，直接添加单词
                 currentLine.append(word);
             } else if (currentLine.length() + 1 + word.length() <= maxLength) {

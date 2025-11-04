@@ -471,7 +471,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  [
+      "contentRegexList": [
         "<p\\s*>\\s*</p>@replace:"
       ]
     },
