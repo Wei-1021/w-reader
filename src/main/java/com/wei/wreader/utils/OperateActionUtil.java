@@ -1589,8 +1589,10 @@ public class OperateActionUtil {
 
     /**
      * 加载本地文件
+     *
+     * @param regex 提取TXT文件中章节标题和章节内容的正则表达式
      */
-    public void loadLocalFile() {
+    public void loadLocalFile(String regex) {
         initData();
 
         // 文件选择器
@@ -1634,7 +1636,7 @@ public class OperateActionUtil {
 
                     // 读取文件内容
                     if (ConstUtil.FILE_TYPE_TXT.equalsIgnoreCase(fileExtension)) {
-                        loadFileTypeTxt(file);
+                        loadFileTypeTxt(file, regex);
                     } else if (ConstUtil.FILE_TYPE_EPUB.equalsIgnoreCase(fileExtension)) {
                         loadFileTypeEpub(file);
                     }
@@ -1670,18 +1672,20 @@ public class OperateActionUtil {
      * 加载本地文件--txt格式
      *
      * @param file
+     * @param regex 提取章节标题和章节内容的正则表达式
      */
-    public void loadFileTypeTxt(File file) {
+    public void loadFileTypeTxt(File file, String regex) {
+        String textRegex = StringUtils.isEmpty(regex) ? ConstUtil.TEXT_FILE_DIR_REGEX : regex;
         // 读取文件内容
         String charset = settings.getCharset();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
-            // 使用正则表达式(ConstUtil.TEXT_FILE_DIR_REGEX)提取章节标题和章节内容
+            // 使用正则表达式提取章节标题和章节内容
             StringBuilder contentBuilder = new StringBuilder();
             String line;
             List<String> chapterList = new ArrayList<>();
             List<String> chapterContentList = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                Pattern pattern = Pattern.compile(ConstUtil.TEXT_FILE_DIR_REGEX);
+                Pattern pattern = Pattern.compile(textRegex);
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     // 当前章节列表为空，说明contentBuilder缓存的内容不是小说的正文，非正文内容无需添加

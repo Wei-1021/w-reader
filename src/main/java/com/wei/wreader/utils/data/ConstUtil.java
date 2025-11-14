@@ -11,11 +11,11 @@ public class ConstUtil {
      */
     public static final String WORD_WRAP_CSS =
             "body {" +
-            "    width: 98%;" +
-            "    word-wrap:break-word;" +
-            "    word-break:break-all;" +
-            "    overflow-x: hidden;" +
-            "}";
+                    "    width: 98%;" +
+                    "    word-wrap:break-word;" +
+                    "    word-break:break-all;" +
+                    "    overflow-x: hidden;" +
+                    "}";
     public static final String WREADER_ID = "WReader";
     public static final String WREADER_STATUS_BAR_WIDGET_ID = "wreader.WReaderStatusBarWidget";
     public static final String WREADER_STATUS_BAR_ID = "wreader.WReaderStatusBar";
@@ -148,7 +148,7 @@ public class ConstUtil {
     /**
      * 正则表达式--文本文件内容小说目录匹配
      */
-    public static final String TEXT_FILE_DIR_REGEX = "(^\\s*第)(.{1,9})[章节卷集部篇回](\\s{1})(.*)($\\s*)";
+    public static final String TEXT_FILE_DIR_REGEX = "(^\\s*第)(.{1,9})[章节卷集部篇回](\\s*)(.*)($\\s*)";
     /**
      * 正则表达式--匹配HTML标签和空白符
      */
