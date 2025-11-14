@@ -7,17 +7,17 @@ import com.intellij.ui.components.JBScrollPane;
 import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.service.CustomSiteRuleCacheServer;
 import com.wei.wreader.utils.CustomSiteUtil;
+import com.wei.wreader.utils.data.ConstUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 自定义书源规则Action
@@ -150,6 +150,7 @@ public class CustomSiteRuleAction extends BaseAction {
             }
         });
 
+        AtomicReference<String> sourceGroupKeyName = new AtomicReference<>("");
         // "加载"按钮监听器
         loadButton.addActionListener(e -> {
             String groupKeyName = (String) comboBox.getSelectedItem();
@@ -157,6 +158,8 @@ public class CustomSiteRuleAction extends BaseAction {
                 Messages.showInfoMessage("请选择分组", "提示");
                 return;
             }
+
+            sourceGroupKeyName.set(groupKeyName);
 
             Map<String, String> customSiteRuleGroupMap = customSiteRuleCacheServer.getCustomSiteRuleOriginalStrMap();
             String siteBeanJson = customSiteRuleGroupMap.get(groupKeyName);
@@ -169,6 +172,11 @@ public class CustomSiteRuleAction extends BaseAction {
             String groupKeyName = (String) comboBox.getSelectedItem();
             if (groupKeyName == null || groupKeyName.isEmpty()) {
                 Messages.showInfoMessage("请选择分组", "提示");
+                return;
+            }
+
+            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(groupKeyName)) {
+                Messages.showInfoMessage("默认分组不能删除", "提示");
                 return;
             }
 
@@ -218,6 +226,12 @@ public class CustomSiteRuleAction extends BaseAction {
             String groupName = groupNameTextField.getText();
             if (groupName == null || groupName.isEmpty()) {
                 Messages.showInfoMessage("请输入分组名称", "提示");
+                return;
+            }
+
+            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(sourceGroupKeyName.get()) &&
+                    !ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(groupName)) {
+                Messages.showInfoMessage("不能修改默认分组的名称", "提示");
                 return;
             }
 
