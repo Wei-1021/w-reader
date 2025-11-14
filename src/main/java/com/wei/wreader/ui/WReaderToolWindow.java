@@ -287,6 +287,7 @@ public class WReaderToolWindow {
             chapterContentText = currentChapterInfo.getChapterContentStr();
             if (chapterContentHtml == null || chapterContentHtml.isEmpty()) {
                 chapterContentHtml = "<pre>" + ConstUtil.WREADER_TOOL_WINDOW_CONTENT_INIT_TEXT + "</pre>";
+                updateContentText(chapterContentHtml);
             } else {
                 updateContentText();
             }
@@ -362,11 +363,20 @@ public class WReaderToolWindow {
      * 更新内容
      */
     public void updateContentText() {
+        updateContentText(null);
+    }
+
+    /**
+     * 更新内容
+     */
+    public void updateContentText(String chapterContent) {
         // 设置内容
         String fontColorHex = cacheService.getFontColorHex();
         String fontFamily = cacheService.getFontFamily();
         int fontSize = cacheService.getFontSize();
-        String chapterContent = currentChapterInfo.getChapterContent();
+        if (StringUtils.isEmpty(chapterContent)) {
+            chapterContent = currentChapterInfo.getChapterContent();
+        }
         // 设置内容
         chapterContent = String.format(
                 """
