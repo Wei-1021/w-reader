@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.service.CustomSiteRuleCacheServer;
 import com.wei.wreader.utils.CustomSiteUtil;
@@ -35,6 +36,7 @@ public class CustomSiteRuleAction extends BaseAction {
     private JPanel secondLayer;
     private JPanel thirdLayer;
     private JPanel fourthLayer;
+    private JPanel fifthLayer;
     private ComboBox<String> comboBox;
     private JButton loadButton;
     private JButton deleteButton;
@@ -106,13 +108,26 @@ public class CustomSiteRuleAction extends BaseAction {
         thirdLayer.add(new JLabel("书源规则:"), BorderLayout.NORTH);
         thirdLayer.add(scrollPane, BorderLayout.CENTER);
 
-        // 第四层：校验和确定按钮
-        fourthLayer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // 第四层：提示文本区域
+        fourthLayer = new JPanel(new BorderLayout());
+        JTextArea noticeTextArea = new JTextArea();
+        noticeTextArea.setLineWrap(true);
+        noticeTextArea.setWrapStyleWord(true);
+        noticeTextArea.setEditable(false);
+        noticeTextArea.setBorder(JBUI.Borders.empty());
+        noticeTextArea.setText("提示：本功能规则比较简陋，目前只适合获取相对简单的书源，部分包括但不限于需要登录权限、字体加密等复杂的书源暂时是没法获取的。" +
+                "如您有更好的想法，欢迎email或github留言。");
+        // 设置背景色为主题背景色
+        noticeTextArea.setBackground(UIManager.getColor("Panel.background"));
+        fourthLayer.add(noticeTextArea, BorderLayout.CENTER);
+
+        // 第五层：校验和确定按钮
+        fifthLayer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         verifyButton = new JButton("校验");
         confirmButton = new JButton("确定");
-        fourthLayer.add(verifyButton);
-        fourthLayer.add(Box.createHorizontalStrut(5));
-        fourthLayer.add(confirmButton);
+        fifthLayer.add(verifyButton);
+        fifthLayer.add(Box.createHorizontalStrut(5));
+        fifthLayer.add(confirmButton);
 
         // 添加各层到主面板，并设置层间距
         mainPanel.add(firstLayer);
@@ -123,6 +138,8 @@ public class CustomSiteRuleAction extends BaseAction {
         mainPanel.add(thirdLayer);
         mainPanel.add(Box.createVerticalStrut(5));
         mainPanel.add(fourthLayer);
+        mainPanel.add(Box.createVerticalStrut(5));
+        mainPanel.add(fifthLayer);
 
         frame.add(mainPanel);
         frame.setVisible(true);
@@ -217,7 +234,7 @@ public class CustomSiteRuleAction extends BaseAction {
                 for (SiteBean siteBean : siteBeans) {
                     System.out.println(siteBean);
                 }
-                Messages.showInfoMessage("校验成功", "提示");
+                Messages.showInfoMessage("校验通过", "提示");
             }, null);
         });
         // "确定"按钮监听器

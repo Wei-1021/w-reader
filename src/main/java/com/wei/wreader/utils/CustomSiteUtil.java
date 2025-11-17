@@ -78,21 +78,27 @@ public class CustomSiteUtil {
     /**
      * 解析自定义书源规则字符串
      * @param jsonStr 自定义书源规则字符串
-     * @param successCallback 解析成功回调
+     * @param successCallback 解析成功回调。
      *                        Parameter: JsonValidator.ValidationResult
-     * @param failCallback 解析失败回调
+     * @param failCallback 解析失败回调。
      *                     Parameter: JsonValidator.ValidationResult
      */
     public void parseCustomSiteRule(String jsonStr,
                                     Consumer<JsonValidator.ValidationResult> successCallback,
                                     Consumer<JsonValidator.ValidationResult> failCallback) {
         if (jsonStr == null || jsonStr.isEmpty()) {
-            Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_ERROR, "错误");
+            Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_NULL_ERROR, "错误");
             return;
         }
         // 判断是否符合
-        if (!jsonStr.startsWith("[") || !jsonStr.endsWith("]")) {
-            Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_ERROR, "错误");
+        if (!jsonStr.startsWith("[")) {
+            Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_ERROR + "：“[”符号缺失", "错误");
+            return;
+        }
+
+        // 判断是否符合
+        if (!jsonStr.endsWith("]")) {
+            Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_ERROR + "：“]”符号缺失", "错误");
             return;
         }
 
@@ -105,11 +111,15 @@ public class CustomSiteUtil {
                 errorMsg.append(error.toString()).append("\n");
             }
             Messages.showErrorDialog(errorMsg.toString(), "错误");
-            failCallback.accept(validationResult);
+            if (failCallback != null) {
+                failCallback.accept(validationResult);
+            }
             return;
         }
 
-        successCallback.accept(validationResult);
+        if (successCallback != null) {
+            successCallback.accept(validationResult);
+        }
     }
 
     /**
