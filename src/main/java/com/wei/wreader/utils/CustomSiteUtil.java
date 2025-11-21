@@ -10,6 +10,7 @@ import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.data.JsonValidator;
 import com.wei.wreader.utils.file.FileUtil;
 import com.wei.wreader.utils.yml.ConfigYaml;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +91,10 @@ public class CustomSiteUtil {
             Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_NULL_ERROR, "错误");
             return;
         }
+
+        // 去除首尾空格，包括 \r \n \t
+        jsonStr = jsonStr.trim();
+
         // 判断是否符合
         if (!jsonStr.startsWith("[")) {
             Messages.showErrorDialog(ConstUtil.WREADER_DIY_SITE_JSON_ERROR + "：“[”符号缺失", "错误");

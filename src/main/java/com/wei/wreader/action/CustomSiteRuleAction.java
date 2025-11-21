@@ -39,10 +39,12 @@ public class CustomSiteRuleAction extends BaseAction {
     private JPanel fifthLayer;
     private ComboBox<String> comboBox;
     private JButton loadButton;
+    private JButton resetButton;
     private JButton deleteButton;
     private JTextField groupNameTextField;
     private JBScrollPane scrollPane;
     private JTextArea textArea;
+    private JButton guideButton;
     private JButton verifyButton;
     private JButton confirmButton;
 
@@ -81,10 +83,13 @@ public class CustomSiteRuleAction extends BaseAction {
         }
         comboBox.setSelectedItem(selectedKey);
         loadButton = new JButton("加载");
+        resetButton = new JButton("重置");
         deleteButton = new JButton("删除");
         firstLayer.add(comboBox);
         firstLayer.add(Box.createHorizontalStrut(5)); // 水平间距
         firstLayer.add(loadButton);
+        firstLayer.add(Box.createHorizontalStrut(5)); // 水平间距
+        firstLayer.add(resetButton);
         firstLayer.add(Box.createHorizontalStrut(5)); // 水平间距
         firstLayer.add(deleteButton);
 
@@ -121,10 +126,13 @@ public class CustomSiteRuleAction extends BaseAction {
         noticeTextArea.setBackground(UIManager.getColor("Panel.background"));
         fourthLayer.add(noticeTextArea, BorderLayout.CENTER);
 
-        // 第五层：校验和确定按钮
+        // 第五层：规则教程放左边，校验和确定按钮放右边
         fifthLayer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        guideButton = new JButton("规则教程");
         verifyButton = new JButton("校验");
         confirmButton = new JButton("确定");
+        fifthLayer.add(guideButton);
+        fifthLayer.add(Box.createHorizontalStrut(30));
         fifthLayer.add(verifyButton);
         fifthLayer.add(Box.createHorizontalStrut(5));
         fifthLayer.add(confirmButton);
@@ -160,10 +168,11 @@ public class CustomSiteRuleAction extends BaseAction {
                 int height = mainPanel.getHeight() - 200;
                 scrollPane.setPreferredSize(new Dimension(width, height));
                 //
-                firstLayer.setPreferredSize(new Dimension(width, 40));
-                secondLayer.setPreferredSize(new Dimension(width, 40));
+                firstLayer.setPreferredSize(new Dimension(width, 35));
+                secondLayer.setPreferredSize(new Dimension(width, 35));
                 thirdLayer.setPreferredSize(new Dimension(width, height));
-                fourthLayer.setPreferredSize(new Dimension(width, 40));
+                fourthLayer.setPreferredSize(new Dimension(width, 60));
+                fifthLayer.setPreferredSize(new Dimension(width, 40));
             }
         });
 
@@ -183,6 +192,12 @@ public class CustomSiteRuleAction extends BaseAction {
 
             groupNameTextField.setText(groupKeyName);
             textArea.setText(siteBeanJson);
+        });
+        // "重置"按钮监听器
+        resetButton.addActionListener(e -> {
+            comboBox.setSelectedIndex(0);
+            textArea.setText("");
+            groupNameTextField.setText("");
         });
         // "删除"按钮监听器
         deleteButton.addActionListener(e -> {
@@ -218,6 +233,10 @@ public class CustomSiteRuleAction extends BaseAction {
 
             // 提示
             Messages.showInfoMessage("删除成功", "提示");
+        });
+        // "规则教程"按钮监听器
+        guideButton.addActionListener(e -> {
+
         });
         // "校验"按钮监听器
         verifyButton.addActionListener(e -> {

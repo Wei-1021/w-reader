@@ -51,17 +51,25 @@ public final class CacheService implements PersistentStateComponent<CacheService
      */
     private Integer selectedBookSiteIndex;
     /**
-     * 选中的站点信息
+     * 选中的站点信息(旧版)
      */
     private BookSiteInfo selectedBookSiteInfo;
     /**
-     * 临时选中的站点信息
+     * 临时选中的站点信息(旧版)
      */
     private BookSiteInfo tempSelectedBookSiteInfo;
     /**
      * 选中的章节信息
      */
     private ChapterInfo selectedChapterInfo;
+    /**
+     * 临时选中的站点信息下标--搜索时使用
+     */
+    private Integer tempSelectedBookSiteIndex;
+    /**
+     * 临时选中的站点信息下标--搜索时使用
+     */
+    private BookInfo tempSelectedBookInfo;
     /**
      * 章节名称列表
      */
@@ -255,5 +263,21 @@ public final class CacheService implements PersistentStateComponent<CacheService
 
     public void setSelectedChapterRules(ChapterRules selectedChapterRules) {
         this.selectedChapterRules = selectedChapterRules;
+    }
+
+    public Integer getTempSelectedBookSiteIndex() {
+        return tempSelectedBookSiteIndex;
+    }
+
+    public void setTempSelectedBookSiteIndex(Integer tempSelectedBookSiteIndex) {
+        this.tempSelectedBookSiteIndex = tempSelectedBookSiteIndex;
+    }
+
+    public BookInfo getTempSelectedBookInfo() {
+        return tempSelectedBookInfo;
+    }
+
+    public void setTempSelectedBookInfo(BookInfo tempSelectedBookInfo) {
+        this.tempSelectedBookInfo = tempSelectedBookInfo;
     }
 }

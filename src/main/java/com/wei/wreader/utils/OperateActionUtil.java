@@ -24,7 +24,10 @@ import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.CustomSiteRuleCacheServer;
-import com.wei.wreader.utils.comm.*;
+import com.wei.wreader.utils.comm.DynamicCodeExecutor;
+import com.wei.wreader.utils.comm.MethodExecutor;
+import com.wei.wreader.utils.comm.StringTemplateEngine;
+import com.wei.wreader.utils.comm.UrlUtil;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.data.JsonUtil;
 import com.wei.wreader.utils.data.ListUtil;
@@ -72,7 +75,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -332,15 +337,15 @@ public class OperateActionUtil {
         SwingUtilities.invokeLater(() -> {
             // 创建一个搜索弹出窗
             // 书源列表下拉框
-            ComboBox<String> siteListComboBox = buildSiteComboBox();
+//            ComboBox<String> siteListComboBox = buildSiteComboBox();
             // 书源分组下拉框
-            ComboBox<String> siteGroupComboBox = buildSiteGroupComboBox(siteListComboBox);
+//            ComboBox<String> siteGroupComboBox = buildSiteGroupComboBox(siteListComboBox);
             // 搜索框
-            JTextField searchBookTextField = new JTextField(20);
-            Object[] objs = {"书源分组", siteGroupComboBox, ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, siteListComboBox, searchBookTextField};
-            searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
-                    () -> searchBookDialogOk(siteListComboBox, searchBookTextField),
-                    this::commCancelOperationHandle);
+//            JTextField searchBookTextField = new JTextField(20);
+//            Object[] objs = {"书源分组", siteGroupComboBox, ConstUtil.WREADER_SEARCH_BOOK_TIP_TEXT, siteListComboBox, searchBookTextField};
+//            searchBookDialogBuilder = MessageDialogUtil.showMessageDialog(project, ConstUtil.WREADER_SEARCH_BOOK_TITLE, objs,
+//                    () -> searchBookDialogOk(siteListComboBox, searchBookTextField),
+//                    this::commCancelOperationHandle);
         });
     }
 
@@ -355,7 +360,10 @@ public class OperateActionUtil {
         // 获取已选择的分组
         String selectedSiteGroupName = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
         if (selectedSiteGroupName == null) {
-            selectedSiteGroupName = siteGroupNameList.get(0);
+            // 获取分组名称列表中指定分组的索引
+            int selectedSiteGroupIndex = siteGroupNameList.indexOf(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY);
+            // 默认
+            selectedSiteGroupName = siteGroupNameList.get(selectedSiteGroupIndex);
         }
         siteBeanList = siteGroupMap.get(selectedSiteGroupName);
 
@@ -433,7 +441,11 @@ public class OperateActionUtil {
         }
 
         String searchBookUrl = "";
-        String searchUrl = selectedSearchRules.getUrl();
+        SiteBean thisTempSelectedSiteBean = cacheService.getTempSelectedSiteBean();
+        if (thisTempSelectedSiteBean == null) {
+            thisTempSelectedSiteBean = selectedSiteBean;
+        }
+        String searchUrl = thisTempSelectedSiteBean.getSearchRules().getUrl();
         if (StringUtils.isBlank(searchUrl)) {
             Messages.showMessageDialog(ConstUtil.WREADER_ERROR, "提示", Messages.getInformationIcon());
             return;
@@ -494,7 +506,7 @@ public class OperateActionUtil {
                     if (StringUtils.isBlank(searchBookResult) ||
                             ConstUtil.STR_ONE.equals(searchBookResult) ||
                             "[]".equals(searchBookResult)) {
-                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示", Messages.getInformationIcon());
+                        Messages.showInfoMessage(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示");
                     }
 
                     // 初始化数据
@@ -526,7 +538,14 @@ public class OperateActionUtil {
     public String searchBookList(String url) {
         String result = null;
 
-        String header = selectedSiteBean.getHeader();
+        SiteBean tempSearchSelectedSiteBean = cacheService.getTempSelectedSiteBean();
+        if (tempSearchSelectedSiteBean == null) {
+            tempSearchSelectedSiteBean = selectedSiteBean;
+        }
+        SearchRules tempSearchSearchRules = tempSearchSelectedSiteBean.getSearchRules();
+        BookInfoRules tempSearchBookInfoRules = tempSearchSelectedSiteBean.getBookInfoRules();
+
+        String header = tempSearchSelectedSiteBean.getHeader();
         Map<String, String> headerJson = new HashMap<>();
         if (StringUtils.isNotBlank(header)) {
             Gson gson = new Gson();
@@ -534,7 +553,7 @@ public class OperateActionUtil {
         }
 
         // 获取小说列表的接口返回的是否是html
-        boolean isHtml = selectedSiteBean.isHasHtml();
+        boolean isHtml = tempSearchSelectedSiteBean.isHasHtml();
         if (isHtml) {
             HttpRequestConfigParser parser = new HttpRequestConfigParser(url);
             String requestUrl = parser.getUrl();
@@ -572,11 +591,11 @@ public class OperateActionUtil {
                 throw new RuntimeException(e);
             }
             // 小说列表的HTML标签类型（class, id）
-            Elements elements = document.select(selectedSearchRules.getBookListElementName());
+            Elements elements = document.select(tempSearchSearchRules.getBookListElementName());
             JsonArray jsonArray = new JsonArray();
             String location = document.location();
             // 获取小说列表链接元素cssQuery
-            String bookListUrlElement = selectedSearchRules.getBookListUrlElement();
+            String bookListUrlElement = tempSearchSearchRules.getBookListUrlElement();
             bookListUrlElement = StringUtils.isBlank(bookListUrlElement) ? "a" : bookListUrlElement;
             // 获取小说列表链接元素cssQuery规则
             String[] bookListUrlElementRules = bookListUrlElement.split("@");
@@ -595,7 +614,7 @@ public class OperateActionUtil {
                 }
             }
             // 获取小说列表标题元素cssQuery
-            String bookListTitleElement = selectedSearchRules.getBookListTitleElement();
+            String bookListTitleElement = tempSearchSearchRules.getBookListTitleElement();
             for (Element itemElement : elements) {
                 if (itemElement != null) {
                     // url
@@ -618,11 +637,11 @@ public class OperateActionUtil {
                     }
 
                     JsonObject jsonObject = new JsonObject();
-                    jsonObject.addProperty(selectedBookInfoRules.getBookNameField(), bookName);
-                    jsonObject.addProperty(selectedBookInfoRules.getBookUrlField(), bookUrl);
-                    jsonObject.addProperty(selectedBookInfoRules.getBookAuthorField(), "");
-                    jsonObject.addProperty(selectedBookInfoRules.getBookDescField(), "");
-                    jsonObject.addProperty(selectedBookInfoRules.getBookImgUrlField(), "");
+                    jsonObject.addProperty(tempSearchBookInfoRules.getBookNameField(), bookName);
+                    jsonObject.addProperty(tempSearchBookInfoRules.getBookUrlField(), bookUrl);
+                    jsonObject.addProperty(tempSearchBookInfoRules.getBookAuthorField(), "");
+                    jsonObject.addProperty(tempSearchBookInfoRules.getBookDescField(), "");
+                    jsonObject.addProperty(tempSearchBookInfoRules.getBookImgUrlField(), "");
                     jsonArray.add(jsonObject);
                 }
             }
@@ -636,7 +655,7 @@ public class OperateActionUtil {
                     result = EntityUtils.toString(entity);
 
                     // 使用jsonpath提取小说列表
-                    Object readJsonObject = JsonPath.read(result, selectedSearchRules.getDataBookListRule());
+                    Object readJsonObject = JsonPath.read(result, tempSearchSearchRules.getDataBookListRule());
                     result = Objects.isNull(readJsonObject) ? "" : readJsonObject.toString();
                 }
             } catch (IOException e) {
@@ -655,8 +674,14 @@ public class OperateActionUtil {
      */
     public void handleBookList(String result) {
         if (!result.isEmpty()) {
-            JsonArray jsonArray = null;
+            SiteBean tempSearchSelectedSiteBean = cacheService.getTempSelectedSiteBean();
+            if (tempSearchSelectedSiteBean == null) {
+                tempSearchSelectedSiteBean = selectedSiteBean;
+            }
+            SearchRules tempSearchSearchRules = tempSearchSelectedSiteBean.getSearchRules();
+            BookInfoRules tempSearchBookInfoRules = tempSearchSelectedSiteBean.getBookInfoRules();
 
+            JsonArray jsonArray = null;
             try {
                 Gson gson = new Gson();
                 jsonArray = gson.fromJson(result, JsonArray.class);
@@ -665,18 +690,19 @@ public class OperateActionUtil {
                 Messages.showMessageDialog(ConstUtil.WREADER_ERROR, "提示", Messages.getInformationIcon());
             }
 
+            SiteBean searchSelectedSiteBean = tempSearchSelectedSiteBean;
             if (jsonArray != null && !jsonArray.isEmpty()) {
                 // 获取书本信息列表
                 for (int i = 0, len = jsonArray.size(); i < len; i++) {
                     JsonObject asJsonObject = jsonArray.get(i).getAsJsonObject();
 
                     // 获取信息
-                    String bookId = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookIdField());
-                    String articleName = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookNameField());
-                    String author = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookAuthorField());
-                    String intro = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookDescField());
-                    String urlImg = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookImgUrlField());
-                    String urlList = JsonUtil.getString(asJsonObject, selectedBookInfoRules.getBookUrlField());
+                    String bookId      = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookIdField());
+                    String articleName = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookNameField());
+                    String author      = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookAuthorField());
+                    String intro       = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookDescField());
+                    String urlImg      = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookImgUrlField());
+                    String urlList     = JsonUtil.getString(asJsonObject, tempSearchBookInfoRules.getBookUrlField());
 
                     // 设置bookInfo
                     BookInfo bookInfo = new BookInfo();
@@ -697,11 +723,12 @@ public class OperateActionUtil {
                 // 选择监听
                 searchBookList.addListSelectionListener(e -> {
                     if (!e.getValueIsAdjusting()) {
+
                         // 获取选择的小说信息
                         int selectedIndex = searchBookList.getSelectedIndex();
                         selectBookInfo = bookInfoList.get(selectedIndex);
                         // 小说目录链接
-                        ListMainRules tempListMainRules = selectedSiteBean.getListMainRules();
+                        ListMainRules tempListMainRules = searchSelectedSiteBean.getListMainRules();
                         if (tempListMainRules == null) {
                             Messages.showErrorDialog(ConstUtil.WREADER_CACHE_ERROR, "提示");
                             return;
@@ -719,7 +746,7 @@ public class OperateActionUtil {
                                 if (listMainUrl.contains("com.wei.wreader.pojo.BookInfo")) {
                                     paramTypes = new Class[]{BookInfo.class};
                                     params = new Object[]{selectBookInfo};
-                                } else  {
+                                } else {
                                     paramTypes = new Class[]{String.class};
                                     params = new Object[]{selectBookInfo.getBookId()};
                                 }
@@ -734,7 +761,7 @@ public class OperateActionUtil {
                             }
                         } else {
                             // 判断获取小说目录的方式：调用api接口或者html页面获取
-                            boolean isHtml = selectedSiteBean.isHasHtml();
+                            boolean isHtml = searchSelectedSiteBean.isHasHtml();
                             if (StringUtils.isNotBlank(listMainUrl) && !isHtml) {
                                 bookUrl = StringTemplateEngine.render(listMainUrl, new HashMap<>() {{
                                     put("bookId", selectBookInfo.getBookId());
@@ -744,17 +771,17 @@ public class OperateActionUtil {
                                 if (!selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTP_SCHEME) &&
                                         !selectBookInfo.getBookUrl().startsWith(ConstUtil.HTTPS_SCHEME) &&
                                         !JsonUtil.isValid(selectBookInfo.getBookUrl())) {
-                                    bookUrl = baseUrl + selectBookInfo.getBookUrl();
+                                    bookUrl = tempSearchSearchRules.getUrl() + selectBookInfo.getBookUrl();
                                 }
                             }
                         }
 
                         // 搜索小说目录
-                        chapterList = new ArrayList<>();
-                        chapterUrlList = new ArrayList<>();
                         String finalBookUrl = bookUrl;
                         new Task.Backgroundable(mProject, "【W-Reader】正在获取小说目录...") {
                             boolean isSuccess = false;
+                            List<String> tempChapterList = new ArrayList<>();
+                            List<String> tempChapterUrlList = new ArrayList<>();
 
                             @Override
                             public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -763,13 +790,18 @@ public class OperateActionUtil {
                                 // 设置进度条为不确定模式
                                 progressIndicator.setIndeterminate(true);
 
-                                isSuccess = searchBookDirectory(finalBookUrl);
+                                Map<String, List<String>> chapterMap = searchBookDirectory(finalBookUrl);
+                                if (chapterMap != null && !chapterMap.isEmpty()) {
+                                    isSuccess = true;
+                                    tempChapterList = chapterMap.get("chapterList");
+                                    tempChapterUrlList = chapterMap.get("chapterUrlList");
+                                }
                             }
 
                             @Override
                             public void onSuccess() {
                                 if (isSuccess) {
-                                    buildBookDirectoryDialog();
+                                    buildBookDirectoryDialog(tempChapterList, tempChapterUrlList);
                                 } else {
                                     Messages.showErrorDialog(ConstUtil.WREADER_ERROR, "提示");
                                 }
@@ -800,13 +832,17 @@ public class OperateActionUtil {
      * @param url
      * @throws IOException
      */
-    public boolean searchBookDirectory(String url) {
+    public Map<String, List<String>> searchBookDirectory(String url) {
         boolean isSuccess = false;
+        List<String> tempChapterList = new ArrayList<>();
+        List<String> tempChapterUrlList = new ArrayList<>();
         // 获取目录列表元素
         // 当使用api接口获取目录列表，且小说目录列表JSONPath规则不为空时，则使用api接口获取，
         // 反之使用html页面获取
-        String listMainUrl = selectedListMainRules.getUrl();
-        String listMainUrlDataRule = selectedListMainRules.getUrlDataRule();
+        SiteBean searchTempSelectedSiteBean = cacheService.getTempSelectedSiteBean();
+        ListMainRules searchTempListMainRules = searchTempSelectedSiteBean.getListMainRules();
+        String listMainUrl = searchTempListMainRules.getUrl();
+        String listMainUrlDataRule = searchTempListMainRules.getUrlDataRule();
         if (StringUtils.isNotBlank(listMainUrl) && StringUtils.isNotBlank(listMainUrlDataRule)) {
             HttpRequestBase requestBase = HttpUtil.commonRequest(url);
             requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
@@ -825,9 +861,10 @@ public class OperateActionUtil {
                     paramMap.put("dataJsonStr", result);
                     paramMap.put("menuListJsonStr", itemListStr);
 
-                    String listMainItemIdField = selectedListMainRules.getItemIdField();
-                    String listMainItemTitleField = selectedListMainRules.getItemTitleField();
-                    String chapterUrl = selectedChapterRules.getUrl();
+                    String listMainItemIdField = searchTempListMainRules.getItemIdField();
+                    String listMainItemTitleField = searchTempListMainRules.getItemTitleField();
+                    ChapterRules tempSelectedChapterRules = searchTempSelectedSiteBean.getChapterRules();
+                    String chapterUrl = tempSelectedChapterRules.getUrl();
                     boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
                             chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
 
@@ -842,15 +879,15 @@ public class OperateActionUtil {
                         if (isCodeConfig) {
                             itemIdList.add(itemId);
                             itemIndexList.add(i);
-                            chapterList.add(title);
+                            tempChapterList.add(title);
                         } else {
                             itemChapterUrl = StringTemplateEngine.render(chapterUrl, new HashMap<>() {{
                                 put("bookId", selectBookInfo.getBookId());
                                 put("itemId", itemId);
                             }});
 
-                            chapterList.add(title);
-                            chapterUrlList.add(itemChapterUrl);
+                            tempChapterList.add(title);
+                            tempChapterUrlList.add(itemChapterUrl);
                         }
                     }
 
@@ -858,7 +895,7 @@ public class OperateActionUtil {
                     if (isCodeConfig) {
                         try {
                             // 执行动态代码
-                            chapterUrlList = (List<String>) DynamicCodeExecutor.executeMethod(chapterUrl,
+                            tempChapterUrlList = (List<String>) DynamicCodeExecutor.executeMethod(chapterUrl,
                                     "execute",
                                     new Class[]{Map.class, List.class, String.class, List.class},
                                     new Object[]{paramMap, itemIndexList, selectBookInfo.getBookId(), itemIdList});
@@ -885,15 +922,15 @@ public class OperateActionUtil {
                 throw new RuntimeException(e);
             }
 
-            String listMainElementName = selectedListMainRules.getListMainElementName();
+            String listMainElementName = searchTempListMainRules.getListMainElementName();
             Elements listMainElement = document.select(listMainElementName);
             // 获取页面的地址
             String location = document.location();
             // 目录链接元素cssQuery
-            String chapterListUrlElement = selectedListMainRules.getUrlElement();
+            String chapterListUrlElement = searchTempListMainRules.getUrlElement();
             chapterListUrlElement = StringUtils.isBlank(chapterListUrlElement) ? "a" : chapterListUrlElement;
             // 目录标题元素cssQuery
-            String chapterListTitleElement = selectedListMainRules.getTitleElement();
+            String chapterListTitleElement = searchTempListMainRules.getTitleElement();
             for (Element element : listMainElement) {
                 // url
                 Element chapterUrlElement = element.selectFirst(chapterListUrlElement);
@@ -907,30 +944,34 @@ public class OperateActionUtil {
                 if (chapterTitleElement != null) {
                     chapterTitle = chapterTitleElement.text();
                 }
-                chapterList.add(chapterTitle);
+                tempChapterList.add(chapterTitle);
                 try {
                     // 转化url路径，将相对路径转化成绝对路径
                     chapterUrl = UrlUtil.buildFullURL(location, chapterUrl);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
-                chapterUrlList.add(chapterUrl);
+                tempChapterUrlList.add(chapterUrl);
             }
 
             isSuccess = true;
         }
 
-        return isSuccess;
+        List<String> finalTempChapterUrlList = tempChapterUrlList;
+        return new HashMap<>() {{
+            put("chapterList", tempChapterList);
+            put("chapterUrlList", finalTempChapterUrlList);
+        }};
     }
 
     /**
      * 构建搜索书籍目录列表窗口
      */
-    private void buildBookDirectoryDialog() {
+    private void buildBookDirectoryDialog(List<String> tempChapterList, List<String> tempChapterUrlList) {
         // 重置编辑器消息垂直滚动条位置
         cacheService.setEditorMessageVerticalScrollValue(0);
         // 构建目录列表组件
-        JBList<String> chapterListJBList = new JBList<>(chapterList);
+        JBList<String> chapterListJBList = new JBList<>(tempChapterList);
         // 设置单选模式
         chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // 选择监听
@@ -955,13 +996,14 @@ public class OperateActionUtil {
 
                 int selectedIndex = chapterListJBList.getSelectedIndex();
                 currentChapterIndex = selectedIndex;
-                String chapterTitle = chapterList.get(currentChapterIndex);
-                String chapterSuffixUrl = chapterUrlList.get(selectedIndex);
+                String chapterTitle = tempChapterList.get(currentChapterIndex);
+                String chapterSuffixUrl = tempChapterUrlList.get(selectedIndex);
                 String chapterUrl;
                 if (!chapterSuffixUrl.startsWith(ConstUtil.HTTP_SCHEME) &&
                         !chapterSuffixUrl.startsWith(ConstUtil.HTTPS_SCHEME) &&
                         !JsonUtil.isValid(selectBookInfo.getBookUrl())) {
-                    chapterUrl = baseUrl + chapterSuffixUrl;
+                    String tempBaseUrl = cacheService.getTempSelectedSiteBean().getBaseUrl();
+                    chapterUrl = tempBaseUrl + chapterSuffixUrl;
                 } else {
                     chapterUrl = chapterSuffixUrl;
                 }
@@ -972,6 +1014,10 @@ public class OperateActionUtil {
                     currentChapterInfo.setChapterContent(chapterContentHtml);
                     currentChapterInfo.setChapterContentStr(chapterContentText);
                     currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
+
+                    chapterList = tempChapterList;
+                    chapterUrlList = tempChapterUrlList;
+
                     // 缓存当前章节信息
                     handleCache();
                     // 更新内容
@@ -1137,7 +1183,6 @@ public class OperateActionUtil {
 
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setText("【W-Reader】加载本章节下一页内容...");
                 progressIndicator.setIndeterminate(true);
 
                 try {
@@ -1149,14 +1194,15 @@ public class OperateActionUtil {
                         progressIndicator.checkCanceled();
 
                         // 更新进度信息
-                        progressIndicator.setText2("正在加载第 " + (++pageCount) + " 页...");
+                        pageCount += 1;
+                        progressIndicator.setText("正在加载第 " + pageCount + " 页...");
 
                         // 执行动态代码
                         returnResult = (String) DynamicCodeExecutor.executeMethod(
                                 nextContentUrl,
                                 "execute",
-                                new Class[]{String.class, String.class, String.class},
-                                new Object[]{chapterUrl, preContentUrlTemp, prePageContent.get() }
+                                new Class[]{String.class, int.class, String.class, String.class},
+                                new Object[]{chapterUrl, pageCount, preContentUrlTemp, prePageContent.get(),}
                         );
 
                         preContentUrlTemp = returnResult;
@@ -1326,8 +1372,8 @@ public class OperateActionUtil {
                                 .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
                                 .get();
                     } catch (IOException e) {
-                        Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR + "\n" + e.getMessage(), "提示");
                     }
                     // 头部
                     Element headElement = document.head();
@@ -1356,7 +1402,7 @@ public class OperateActionUtil {
                     String chapterContentElementName = selectedChapterRules.getContentElementName();
                     Elements chapterContentElements = bodyElement.select(chapterContentElementName);
                     if (chapterContentElements.isEmpty()) {
-                        Messages.showMessageDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示", Messages.getInformationIcon());
+                        Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR, "提示");
                         return;
                     }
 
@@ -1852,7 +1898,7 @@ public class OperateActionUtil {
                         Object readJson = JsonPath.read(resJson.toString(), chapterRules.getNextContentApiDataRule());
 
                         content = (String) readJson;
-                        call.accept(content);
+                        call.accept(resJson.toString());
                     }
                 } catch (Exception e) {
                     Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
@@ -2063,12 +2109,26 @@ public class OperateActionUtil {
     public String handleContent(String content) throws Exception {
         String result = "";
         String chapterContentHandleRule = selectedChapterRules.getContentHandleRule();
-        if (chapterContentHandleRule.startsWith("<java>")) {
-            chapterContentHandleRule = StringTemplateEngine.render(chapterContentHandleRule, new HashMap<>() {{
-                put("content", content);
-            }});
-            // 执行配置中的方法
-            result = MethodExecutor.executeMethod(chapterContentHandleRule).toString();
+        if (chapterContentHandleRule.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
+                chapterContentHandleRule.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+
+            // 判断是否是新版的动态代码
+            if (chapterContentHandleRule.contains(ConstUtil.CODE_CONFIG_CODE_START) &&
+                    chapterContentHandleRule.contains(ConstUtil.CODE_CONFIG_CODE_END)) {
+                // 执行动态代码（新版）
+                result = (String) DynamicCodeExecutor.executeMethod(chapterContentHandleRule,
+                        "execute",
+                        new Class[]{String.class},
+                        new Object[]{content});
+            } else {
+                // 兼容旧版的动态代码执行器
+                chapterContentHandleRule = StringTemplateEngine.render(chapterContentHandleRule, new HashMap<>() {{
+                    put("content", content);
+                }});
+                // 执行配置中的方法
+                result = MethodExecutor.executeMethod(chapterContentHandleRule).toString();
+
+            }
 
             // 将换行符和制表符替换成html对应代码
             result = result.replaceAll("\\n", "<br/>")

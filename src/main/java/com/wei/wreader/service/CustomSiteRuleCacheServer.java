@@ -33,6 +33,11 @@ public final class CustomSiteRuleCacheServer implements PersistentStateComponent
      */
     private String selectedCustomSiteRuleKey;
 
+    /**
+     * 临时选择的自定义书源规则的Key--搜索时使用
+     */
+    private String tempSelectedCustomSiteRuleKey;
+
     public Map<String, List<SiteBean>> getCustomSiteRuleGroupMap() {
         return customSiteRuleGroupMap;
     }
@@ -55,6 +60,14 @@ public final class CustomSiteRuleCacheServer implements PersistentStateComponent
 
     public void setSelectedCustomSiteRuleKey(String selectedCustomSiteRuleKey) {
         this.selectedCustomSiteRuleKey = selectedCustomSiteRuleKey;
+    }
+
+    public String getTempSelectedCustomSiteRuleKey() {
+        return tempSelectedCustomSiteRuleKey;
+    }
+
+    public void setTempSelectedCustomSiteRuleKey(String tempSelectedCustomSiteRuleKey) {
+        this.tempSelectedCustomSiteRuleKey = tempSelectedCustomSiteRuleKey;
     }
 
     private static CustomSiteRuleCacheServer instance;

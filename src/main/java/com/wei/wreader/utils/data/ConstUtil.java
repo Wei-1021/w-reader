@@ -179,6 +179,24 @@ public class ConstUtil {
      */
     public static final String CODE_CONFIG_END_LABEL = "</java>";
     /**
+    /**
+     * 代码配置--导入包名开始标签
+     */
+    public static final String CODE_CONFIG_PACKAGE_IMPORT_START = "<package_import>";
+    /**
+     * 代码配置--导入包名结束标签
+     */
+    public static final String CODE_CONFIG_PACKAGE_IMPORT_END = "</package_import>";
+    /**
+    /**
+     * 代码配置--新版代码块开始标签
+     */
+    public static final String CODE_CONFIG_CODE_START = "<code>";
+    /**
+     * 代码配置--新版代码块结束标签
+     */
+    public static final String CODE_CONFIG_CODE_END = "</code>";
+    /**
      * 消息提示框宽度
      */
     public static final int HINT_MANAGER_DIALOG_WIDTH = 350;
@@ -210,5 +228,13 @@ public class ConstUtil {
      * 正则表达式替换规则分隔标识--@replace
      */
     public static final String SPLIT_REGEX_REPLACE_FLAG = "@replace:";
+
+    public String execute(String chapterUrl,int loadingPage,String preContentUrl,String prePageContent) {
+        if (!prePageContent.contains("next.png")) {
+            return "";
+        }
+
+        return chapterUrl.replaceAll(".html", String.format("_%s.html", loadingPage));
+    }
 
 }

@@ -349,7 +349,15 @@ wreader:
              </code>
            </java>'
         urlDataRule: '$.ChapterContent'
-        contentHandleRule: '<java>com.wei.wreader.utils.data.StringUtil.base64Decode(${content}, true)</java>'
+        contentHandleRule:
+          '<java>
+            <package_import>import com.wei.wreader.utils.data.*;</package_import>
+            <code>
+              public String execute(String content){
+                return StringUtil.base64Decode(content, true);
+              }
+            </code>
+          </java>'
         useContentOriginalStyle: false
         replaceContentOriginalRegex: ''
         contentElementName: ''
