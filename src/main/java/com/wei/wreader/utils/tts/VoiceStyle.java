@@ -36,7 +36,11 @@ public enum VoiceStyle {
     /**
      * 表达轻松随意的语气
      */
-    chat("chat", "聊天 - 休闲"),
+    chat("chat", "聊天"),
+    /**
+     * 表达轻松随意的语气
+     */
+    chatCasual("chat-casual", "聊天 - 休闲"),
     /**
      * 表达积极愉快的语气
      */
@@ -149,6 +153,14 @@ public enum VoiceStyle {
      * 表达一种冷淡无情的语气
      */
     unfriendly("unfriendly", "冷淡"),
+    /**
+     * 抱歉
+     */
+    sorry("sorry", "抱歉"),
+    /**
+     * 实时广告
+     */
+    livecommercial("livecommercial", "实时广告"),
     ;
 
     public final String value;

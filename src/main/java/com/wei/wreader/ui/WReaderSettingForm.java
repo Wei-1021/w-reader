@@ -15,6 +15,7 @@ import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.tts.VoiceRoleStyle;
 import com.wei.wreader.utils.yml.ConfigYaml;
 import com.wei.wreader.utils.ui.DecimalDocumentFilter;
 import com.wei.wreader.widget.GroupedComboBox.CharsetGroupComboBox;
@@ -251,11 +252,33 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // *** 音频管理 ***
         TitledBorder audioManageTitledBorder = new TitledBorder(border, "Audio Manage");
         audioManagePanel.setBorder(audioManageTitledBorder);
+
         // 音色
-        Map<String, List<String>> nicknameByLocale = VoiceRole.getNicknameByLocale();
+        Map<String, List<String>> nicknameByLocale = VoiceRole.getNicknameByLocaleGender();
         GroupedComboBox voiceRoleGroupedComboBox = new GroupedComboBox();
         voiceRoleGroupComboBox = voiceRoleGroupedComboBox.buildGroupedComboBox(nicknameByLocale);
         voiceRoleGroupedComboBox.setSelectedItem(settings.getVoiceRole());
+        voiceRoleGroupComboBox.addActionListener(e1 -> {
+            OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
+            if (voiceRoleSelectedItem != null) {
+                // 获取音色拥有的风格
+                VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRoleSelectedItem.getText());
+                if (voiceStyles.length == 0) {
+                    audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{VoiceStyle.style_default.name}));
+                } else {
+                    String[] voiceStyleStrs = new String[voiceStyles.length];
+                    for (int i = 0, len = voiceStyles.length; i < len; i++) {
+                        voiceStyleStrs[i] = voiceStyles[i].name;
+                    }
+                    // 更新音频风格下拉框选项
+                    audioStyleComboBox.setModel(new DefaultComboBoxModel<>(voiceStyleStrs));
+                }
+                audioStyleComboBox.setSelectedIndex(0);
+            } else {
+                audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{VoiceStyle.style_default.name}));
+                audioStyleComboBox.setSelectedIndex(0);
+            }
+        });
         GridConstraints voiceRoleGridConstraints = new GridConstraints();
         voiceRoleGridConstraints.setRow(0);
         voiceRoleGridConstraints.setColumn(0);
@@ -264,24 +287,36 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 音频超时
         timeoutTextField.setDocument(new NumberDocument());
         timeoutTextField.setText(String.valueOf(settings.getAudioTimeout()));
+
         // 语速
         Float[] rates = {0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f, 3.0f};
         rateComboBox.setModel(new DefaultComboBoxModel<>(rates));
         rateComboBox.setEditable(true);
         ComboBoxEditor rateEditor = rateComboBox.getEditor();
         rateEditor.setItem(settings.getRate());
+
         // 音量
         Integer[] volumes = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         volumeComboBox.setModel(new DefaultComboBoxModel<>(volumes));
         volumeComboBox.setEditable(true);
         ComboBoxEditor volumeEditor = volumeComboBox.getEditor();
         volumeEditor.setItem(settings.getVolume());
+
         // 音频风格
-        List<String> names = VoiceStyle.getNames();
-        for (String name : names) {
-            audioStyleComboBox.addItem(name);
+        String voiceRole = settings.getVoiceRole();
+        VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRole);
+        if (voiceStyles.length == 0) {
+            audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{VoiceStyle.style_default.name}));
+            audioStyleComboBox.setSelectedIndex(0);
+        } else {
+            String[] voiceStyleStrs = new String[voiceStyles.length];
+            for (int i = 0, len = voiceStyles.length; i < len; i++) {
+                voiceStyleStrs[i] = voiceStyles[i].name;
+            }
+            // 音频风格下拉框选项
+            audioStyleComboBox.setModel(new DefaultComboBoxModel<>(voiceStyleStrs));
+            audioStyleComboBox.setSelectedItem(settings.getAudioStyle());
         }
-        audioStyleComboBox.setSelectedItem(settings.getAudioStyle());
 
         return settingPanel;
     }

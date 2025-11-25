@@ -279,8 +279,8 @@
                 icon="com.wei.wreader.utils.WReaderIcons.BOOK_INFO">
         </action>
         <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction"
-                text="自定义书源规则"
-                icon="AllIcons.Actions.EditSource">
+                text="自定义书源规则(Beta)"
+                icon="com.wei.wreader.utils.WReaderIcons.CUSTOM_SITE">
             <keyboard-shortcut keymap="$default" first-keystroke="alt DECIMAL"/>
         </action>
         <!--endregion-->
@@ -305,6 +305,7 @@
             <reference id="wreader.ChangeFontColorAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.CustomSiteRuleAction"/>
             <reference id="wreader.HelpAction"/>
             <reference id="wreader.ShowBookInfoAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
@@ -342,12 +343,14 @@
             <reference id="wreader.ChangeFontColorAction"/>
             <reference id="wreader.LoadLocalFileAction"/>
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.CustomSiteRuleAction"/>
             <reference id="wreader.HelpAction"/>
             <reference id="wreader.ShowBookInfoAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
             <reference id="wreader.WReaderSetting"/>
+            <reference id="wreader.CustomSiteRuleAction"/>
             <reference id="wreader.HelpAction"/>
             <reference id="wreader.ShowBookInfoAction"/>
             <separator/>

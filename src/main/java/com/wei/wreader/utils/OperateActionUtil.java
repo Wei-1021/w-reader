@@ -1243,6 +1243,32 @@ public class OperateActionUtil {
                     text = getContent(text);
                     contentTextPanel.setText(text);
                     contentTextPanel.setCaretPosition(caretPosition);
+
+                    SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+                    ChapterRules chapterRules = selectedSiteBean.getChapterRules();
+                    // 剔除
+                    Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
+                    String chapterContentText = pattern.matcher(text).replaceAll("　");
+                    chapterContentText = StringUtils.normalizeSpace(chapterContentText);
+                    chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
+                    // 将换行符和制表符替换成html对应代码
+                    chapterContentText = chapterContentText.replaceAll("\\n", "<br/>")
+                            .replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+                    // 章节内容处理规则
+                    List<String> contentRegexList = chapterRules.getContentRegexList();
+                    if (ListUtil.isNotEmpty(contentRegexList)) {
+                        for (String contentRegex : contentRegexList) {
+                            String[] regulars = contentRegex.split(ConstUtil.SPLIT_REGEX_REPLACE_FLAG);
+                            String regex = regulars[0];
+                            String replacement = regulars.length > 1 ? regulars[1] : "";
+                            chapterContentText = chapterContentText.replaceAll(regex, replacement);
+                        }
+                    }
+
+                    ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+                    selectedChapterInfo.setChapterContent(text);
+                    selectedChapterInfo.setChapterContentStr(chapterContentText);
+                    cacheService.setSelectedChapterInfo(selectedChapterInfo);
                 });
             }
 
@@ -2251,10 +2277,14 @@ public class OperateActionUtil {
         String fontFamily = cacheService.getFontFamily();
         int fontSize = cacheService.getFontSize();
         String fontColorHex = cacheService.getFontColorHex();
+        ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
         // 设置内容
         String style = "font-family: '" + fontFamily + "'; " +
                 "font-size: " + fontSize + "px;" +
                 "color:" + fontColorHex + ";";
-        return "<div style=\"" + style + "\">" + text + "</div>";
+
+
+        return "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColorHex + ";\">" +
+                selectedChapterInfo.getChapterTitle() + "</h3>" + "<div style=\"" + style + "\">" + text + "</div>";
     }
 }

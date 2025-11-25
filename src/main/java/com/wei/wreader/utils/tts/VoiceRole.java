@@ -10,12 +10,38 @@ public enum VoiceRole {
      * 晓晓 活泼、温暖的声音，具有多种场景风格和情感
      */
     Xiaoxiao("zh-CN-XiaoxiaoNeural", "female", "zh-CN", "晓晓"),
-
+    /**
+     * 晓双 儿童--可爱、愉悦的声音，可应用于许多儿童相关场景。
+     */
+    Xiaoshuang("zh-CN-XiaoshuangNeural", "female", "zh-CN", "晓双"),
+    /**
+     * 晓悠 儿童--天使般的清晰声音，可以应用于许多儿童相关场景。
+     */
+    Xiaoyou("zh-CN-XiaoyouNeural", "female", "zh-CN", "晓悠"),
+    /**
+     * 晓辰--休闲、放松的声音，用于自发性对话和会议听录。
+     */
+    Xiaochen("zh-CN-XiaochenNeural", "female", "zh-CN", "晓辰"),
+    /**
+     * 晓涵 温暖、甜美、富有感情的声音，可用于许多对话场景。
+     */
+    Xiaohan("zh-CN-XiaohanNeural", "female", "zh-CN", "晓涵"),
+    /**
+     * 晓梦 温柔、积极、友好的声音，非常适合为每一次对话增添温暖和积极。
+     */
+    Xiaomeng("zh-CN-XiaomengNeural", "female", "zh-CN", "晓梦"),
     /**
      * 晓萱 自信、有能力的声音，具有丰富的角色扮演和情感，适合音频书籍
      */
     Xiaoxuan("zh-CN-XiaoxuanNeural", "female", "zh-CN", "晓萱"),
-
+    /**
+     * 晓柔 一个开朗、亲切且悦耳的声音，营造一个快乐且亲切的环境。
+     */
+    Xiaorou("zh-CN-XiaorouNeural", "female", "zh-CN", "晓柔"),
+    /**
+     * 晓秋--老年 知性、舒适的声音，适合阅读长篇内容。
+     */
+    Xiaoqiu("zh-CN-XiaoqiuNeural", "female", "zh-CN", "晓秋"),
     /**
      * 晓伊
      */ // <-- default
@@ -71,6 +97,11 @@ public enum VoiceRole {
      * 云扬 专业、流利的声音，具有多种场景风格
      */
     Yunyang("zh-CN-YunyangNeural", "male", "zh-CN", "云扬"),
+
+    /**
+     * 云奇 一位中年男性，带有浓重的华南粤语口音，说话声音尖细、戏剧化且唠叨，适合角色表演或喜剧
+     */
+    Yunqi("zh-CN-guangxi-YunqiNeural", "male", "zh-CN-guangxi", "云奇"),
 
     /**
      * 雲龍(WanLung),粤语male声
@@ -417,6 +448,33 @@ public enum VoiceRole {
             String locale = v.locale;
             // 获取指定 locale 对应的列表，如果不存在则创建新列表
             map.computeIfAbsent(locale, k -> new ArrayList<>()).add(v.nickname);
+        });
+
+        Map<String, List<String>> resMap = new LinkedHashMap<>();
+        List<String> other = new ArrayList<>();
+        map.forEach((k, v) -> {
+            if (k.startsWith("zh")) {
+                resMap.put(k, v);
+            } else {
+                other.addAll(v);
+            }
+        });
+        resMap.put("other", other);
+
+        return resMap;
+    }
+    /**
+     * 按语言分组获取音色-性别，非中文语言归为other分组
+     */
+    public static Map<String, List<String>> getNicknameByLocaleGender() {
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        // 遍历 VoiceRole 数组
+        Arrays.stream(values()).forEach(v -> {
+            String locale = v.locale;
+            String gender = v.gender;
+            String key = locale + "_" + ("female".equals(gender) ? "女" : "男");
+            // 获取指定 locale 对应的列表，如果不存在则创建新列表
+            map.computeIfAbsent(key, k -> new ArrayList<>()).add(v.nickname);
         });
 
         Map<String, List<String>> resMap = new LinkedHashMap<>();

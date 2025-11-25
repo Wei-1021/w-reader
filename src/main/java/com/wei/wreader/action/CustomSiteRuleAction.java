@@ -63,7 +63,7 @@ public class CustomSiteRuleAction extends BaseAction {
         List<String> customSiteKeyGroupList = customSiteUtil.getCustomSiteKeyGroupList();
         String selectedKey = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
 
-        JFrame frame = new JFrame("自定义书源规则");
+        JFrame frame = new JFrame("自定义书源规则(Beta)");
         frame.setSize(500, 700);
         // 让窗口处于屏幕中心
         frame.setLocationRelativeTo(null);
