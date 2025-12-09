@@ -229,12 +229,5 @@ public class ConstUtil {
      */
     public static final String SPLIT_REGEX_REPLACE_FLAG = "@replace:";
 
-    public String execute(String chapterUrl,int loadingPage,String preContentUrl,String prePageContent) {
-        if (!prePageContent.contains("next.png")) {
-            return "";
-        }
-
-        return chapterUrl.replaceAll(".html", String.format("_%s.html", loadingPage));
-    }
 
 }

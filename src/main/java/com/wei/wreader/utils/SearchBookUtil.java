@@ -506,7 +506,7 @@ public class SearchBookUtil {
                         // 获取选择的小说信息
                         int selectedIndex = searchBookList.getSelectedIndex();
                         BookInfo selectBookInfo = bookInfoList.get(selectedIndex);
-                        cacheService.setSelectedBookInfo(selectBookInfo);
+                        cacheService.setTempSelectedBookInfo(selectBookInfo);
 
                         // 小说目录链接
                         ListMainRules tempListMainRules = searchSelectedSiteBean.getListMainRules();
@@ -769,7 +769,7 @@ public class SearchBookUtil {
                 // 重置编辑器消息垂直滚动条位置
                 cacheService.setEditorMessageVerticalScrollValue(0);
 
-                BookInfo selectBookInfo = cacheService.getSelectedBookInfo();
+                BookInfo selectBookInfo = cacheService.getTempSelectedBookInfo();
                 ChapterInfo selectChapterInfo = cacheService.getSelectedChapterInfo();
                 int selectedIndex = chapterListJBList.getSelectedIndex();
                 String chapterTitle = tempChapterList.get(selectedIndex);

@@ -1,5 +1,6 @@
 package com.wei.wreader.action;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -121,7 +122,7 @@ public class CustomSiteRuleAction extends BaseAction {
         noticeTextArea.setEditable(false);
         noticeTextArea.setBorder(JBUI.Borders.empty());
         noticeTextArea.setText("提示：本功能规则比较简陋，目前只适合获取相对简单的书源，部分包括但不限于需要登录权限、字体加密等复杂的书源暂时是没法获取的。" +
-                "如您有更好的想法，欢迎email或github留言。");
+                "如您有更好的想法，欢迎email或github留言。“书源规则说明”请前往Gitee/GitHub仓库Wiki页查看，或者点击下方按钮跳转。");
         // 设置背景色为主题背景色
         noticeTextArea.setBackground(UIManager.getColor("Panel.background"));
         fourthLayer.add(noticeTextArea, BorderLayout.CENTER);
@@ -165,13 +166,13 @@ public class CustomSiteRuleAction extends BaseAction {
             public void componentResized(ComponentEvent e) {
                 // 重设内容面板的大小
                 int width = mainPanel.getWidth() - 50;
-                int height = mainPanel.getHeight() - 200;
+                int height = mainPanel.getHeight() - 220;
                 scrollPane.setPreferredSize(new Dimension(width, height));
                 //
                 firstLayer.setPreferredSize(new Dimension(width, 35));
                 secondLayer.setPreferredSize(new Dimension(width, 35));
                 thirdLayer.setPreferredSize(new Dimension(width, height));
-                fourthLayer.setPreferredSize(new Dimension(width, 60));
+                fourthLayer.setPreferredSize(new Dimension(width, 80));
                 fifthLayer.setPreferredSize(new Dimension(width, 40));
             }
         });
@@ -236,7 +237,8 @@ public class CustomSiteRuleAction extends BaseAction {
         });
         // "规则教程"按钮监听器
         guideButton.addActionListener(e -> {
-
+            // 跳转到规则教程页面
+            BrowserUtil.browse("https://gitee.com/weizhanjie/w-reader/wikis/%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B9%A6%E6%BA%90%E8%A7%84%E5%88%99%E8%AF%B4%E6%98%8E");
         });
         // "校验"按钮监听器
         verifyButton.addActionListener(e -> {
