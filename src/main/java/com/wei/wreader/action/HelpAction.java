@@ -7,7 +7,7 @@ import com.intellij.ui.jcef.*;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.file.ImagePreviewer;
-import com.wei.wreader.utils.jcef.JCEFUtil;
+//import com.wei.wreader.utils.jcef.JCEFUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,24 +71,24 @@ public class HelpAction extends BaseAction {
 //        // 统一外观模式
 //        JCEFUtil.injectTheme(jbCefBrowser);
 //        // JavaScript调用Java
-        JCEFUtil.addJSQuery(jbCefBrowser,
-                (query) -> {
-                    ImagePreviewer imagePreviewer = new ImagePreviewer(project, query);
-                    imagePreviewer.openImagePreview();
-                    return null;
-                },
-                """
-                document.addEventListener('click', function (e) {
-                    if (e.target.tagName === 'IMG') {
-                        let imgSrc = e.target.src;
-                        alert("图片被点击了：" + imgSrc);
-                        if (imgSrc && imgSrc != '') {
-                            window.jsCallJavaFunction(imgSrc);
-                        }
-                    }
-                });
-                """);
-        jbCefBrowser.loadHTML(html);
+//        JCEFUtil.addJSQuery(jbCefBrowser,
+//                (query) -> {
+//                    ImagePreviewer imagePreviewer = new ImagePreviewer(project, query);
+//                    imagePreviewer.openImagePreview();
+//                    return null;
+//                },
+//                """
+//                document.addEventListener('click', function (e) {
+//                    if (e.target.tagName === 'IMG') {
+//                        let imgSrc = e.target.src;
+//                        alert("图片被点击了：" + imgSrc);
+//                        if (imgSrc && imgSrc != '') {
+//                            window.jsCallJavaFunction(imgSrc);
+//                        }
+//                    }
+//                });
+//                """);
+//        jbCefBrowser.loadHTML(html);
 
 //        JCEFHelper jcefHelper = new JCEFHelper(project);
 //        // 注册默认方法

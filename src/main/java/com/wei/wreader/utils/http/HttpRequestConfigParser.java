@@ -109,15 +109,15 @@ public class HttpRequestConfigParser {
             this.url = jsonObject.get("url").getAsString();
             this.method = jsonObject.get("method").getAsString();
             JsonObject queryParamsJson = jsonObject.getAsJsonObject("queryParams");
-            if (queryParamsJson != null && !queryParamsJson.isEmpty()) {
+            if (queryParamsJson != null && queryParamsJson.size() > 0) {
                 this.queryParams = gson.fromJson(queryParamsJson, Map.class);
             }
             JsonObject bodyParamsJson = jsonObject.getAsJsonObject("bodyParams");
-            if (bodyParamsJson != null && !bodyParamsJson.isEmpty()) {
+            if (bodyParamsJson != null && queryParamsJson.size() > 0) {
                 this.bodyParams = gson.fromJson(bodyParamsJson, Map.class);
             }
             JsonObject headerJson = jsonObject.getAsJsonObject("header");
-            if (headerJson != null && !headerJson.isEmpty()) {
+            if (headerJson != null && queryParamsJson.size() > 0) {
                 this.header = gson.fromJson(headerJson, Map.class);
             }
         } else {
@@ -228,22 +228,6 @@ public class HttpRequestConfigParser {
         System.out.println("Parsed Query Params: " + invalidParser.getQueryParams());
         System.out.println("Parsed Body Params: " + invalidParser.getBodyParams());
         System.out.println("Parsed Body Params: " + invalidParser.getHeader());
-    }
-
-    public String execute(String chapterUrl, String preContentUrlTemp, String bodyElement) {
-        return (bodyElement.contains("next.png") ?
-                (preContentUrlTemp == null || preContentUrlTemp.isEmpty() ?
-                        incrementPage(chapterUrl) : incrementPage(preContentUrlTemp)) :
-                "");
-    }
-
-    public String incrementPage(String url) {
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+)(?:_(\\d+))?(\\.html?)$");
-        java.util.regex.Matcher m = p.matcher(url);
-        if (!m.find()) return url;
-        int major = Integer.parseInt(m.group(1)), minor = m.group(2) == null ? 0 : Integer.parseInt(m.group(2));
-        minor++;
-        return m.replaceFirst(major + "_" + minor + m.group(3));
     }
 }
 
