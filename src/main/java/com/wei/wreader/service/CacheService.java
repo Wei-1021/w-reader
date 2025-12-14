@@ -162,6 +162,9 @@ public final class CacheService implements PersistentStateComponent<CacheService
     }
 
     public ChapterInfo getSelectedChapterInfo() {
+        if (selectedChapterInfo == null) {
+            selectedChapterInfo = new ChapterInfo();
+        }
         return selectedChapterInfo;
     }
 

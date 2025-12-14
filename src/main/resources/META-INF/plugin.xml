@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -67,6 +67,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.1.1:
+        <ul>
+            <li>1.【修复】修复搜索小说时，无法获取章节内容的问题；</li>
+        </ul>
+    </div>
     <div>
         0.1.0:
         <ul>

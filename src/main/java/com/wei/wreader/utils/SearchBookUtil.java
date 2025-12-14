@@ -971,7 +971,7 @@ public class SearchBookUtil {
      */
     public String handleContent(String content) throws Exception {
         String result = "";
-        SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+        SiteBean selectedSiteBean = cacheService.getTempSelectedSiteBean();
         ChapterRules selectedChapterRules = selectedSiteBean.getChapterRules();
         String chapterContentHandleRule = selectedChapterRules.getContentHandleRule();
         if (chapterContentHandleRule.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
