@@ -76,6 +76,6 @@ W-Reader 内置语音播报功能，支持 多音色听书：
 部分功能没有设置快捷键，若没有小键盘或需要自定义快捷键，可通过`File → Settings → Keymap → Plugins → W-Reader`进行修改。
 ![快捷键](https://i-blog.csdnimg.cn/direct/c5e45ce99de547d8b308ae71fef22adf.png)
 ## 联系方式
-如果您有任何问题或建议，请通过以下方式联系： 
-Email: 1075542448@qq.com
+如果您有任何问题或建议，请通过以下方式联系： <br>
+Email: 1075542448@qq.com <br>
 QQ群：1060150904
