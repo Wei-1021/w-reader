@@ -46,7 +46,7 @@ W-Reader不仅内置了默认的书源，而且还支持通过编写自定义书
 - **编辑器提示消息模式**：在光标悬停或弹出提示时显示小说内容（适合碎片化阅读）
 - **代码注释块阅读模式**：将小说文本以注释形式插入任意代码文件中，IDE 自动高亮
 四种模式可随时切换，且阅读进度自动同步。
-![侧边栏模式](https://i-blog.csdnimg.cn/direct/caf50462339e494cbc4f2b54149a32ec.png)![请添加图片描述](https://i-blog.csdnimg.cn/direct/d7c034a0a49a451193d410e5eb65e757.png)
+![侧边栏模式](https://i-blog.csdnimg.cn/direct/caf50462339e494cbc4f2b54149a32ec.png)
 ![状态栏模式](https://i-blog.csdnimg.cn/direct/4ce3dbb5aea34b19a26b940746bdbe21.png)
 ![编辑器提示消息模式](https://i-blog.csdnimg.cn/direct/5ef7a0a294654cc39cf79c0d3910b360.png)
 ![代码注释块](https://i-blog.csdnimg.cn/direct/6cbead0e19504a2397056962541c91ff.png)
