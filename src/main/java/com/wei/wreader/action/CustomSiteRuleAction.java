@@ -2,14 +2,29 @@ package com.wei.wreader.action;
 
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.EditorSettings;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.service.CustomSiteRuleCacheServer;
 import com.wei.wreader.utils.CustomSiteUtil;
 import com.wei.wreader.utils.data.ConstUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -48,6 +63,14 @@ public class CustomSiteRuleAction extends BaseAction {
     private JButton guideButton;
     private JButton verifyButton;
     private JButton confirmButton;
+    private Document document;
+    private TextEditor editor;
+
+    // 参数
+    /**
+     * 加载书源规则的分组名称
+     */
+    private String loadSourceGroupKeyName = "";
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
@@ -56,7 +79,9 @@ public class CustomSiteRuleAction extends BaseAction {
         customSiteUtil = CustomSiteUtil.getInstance(project);
         customSiteRuleCacheServer = CustomSiteRuleCacheServer.getInstance();
 
-        buildWindow();
+        ApplicationManager.getApplication().invokeLater(() -> {
+            buildWindow();
+        });
     }
 
 
@@ -65,7 +90,7 @@ public class CustomSiteRuleAction extends BaseAction {
         String selectedKey = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
 
         JFrame frame = new JFrame("自定义书源规则(Beta)");
-        frame.setSize(500, 700);
+        frame.setSize(850, 700);
         // 让窗口处于屏幕中心
         frame.setLocationRelativeTo(null);
 
@@ -104,13 +129,32 @@ public class CustomSiteRuleAction extends BaseAction {
 
         // 第三层：滚动区域包含文本编辑区
         thirdLayer = new JPanel(new BorderLayout());
-        textArea = new JTextArea();
-        textArea.setLineWrap(true);
-        // 按单词换行
-        textArea.setWrapStyleWord(true);
-        scrollPane = new JBScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(400, 500));
-        scrollPane.setMinimumSize(new Dimension(350, 500));
+        // 代码编辑器
+        if (settings.getCustomSiteRuleTextAreaType() == 0 ||
+                settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR) {
+            // 创建一个 JSON 文件类型对象
+            FileType jsonFileType = FileTypeManager.getInstance().getFileTypeByExtension("json");
+            // 创建一个内存中的虚拟文件
+            LightVirtualFile virtualFile = new LightVirtualFile("w-reader-custom-rule.json", jsonFileType, "");
+            virtualFile.setWritable(true);
+            // 使用 TextEditorProvider 创建完整功能的编辑器
+            TextEditorProvider provider = TextEditorProvider.getInstance();
+            editor = (TextEditor) provider.createEditor(project, virtualFile);
+            document = editor.getEditor().getDocument();
+            // 放入滚动面板
+            scrollPane = new JBScrollPane(editor.getComponent());
+        }
+        // 普通文本框
+        else if (settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA) {
+            textArea = new JTextArea();
+            textArea.setLineWrap(true);
+            // 按单词换行
+            textArea.setWrapStyleWord(true);
+            // 放入滚动面板
+            scrollPane = new JBScrollPane(textArea);
+        }
+        scrollPane.setPreferredSize(new Dimension(800, 500));
+        scrollPane.setMinimumSize(new Dimension(600, 500));
         thirdLayer.add(new JLabel("书源规则:"), BorderLayout.NORTH);
         thirdLayer.add(scrollPane, BorderLayout.CENTER);
 
@@ -122,7 +166,7 @@ public class CustomSiteRuleAction extends BaseAction {
         noticeTextArea.setEditable(false);
         noticeTextArea.setBorder(JBUI.Borders.empty());
         noticeTextArea.setText("提示：本功能规则比较简陋，目前只适合获取相对简单的书源，部分包括但不限于需要登录权限、字体加密等复杂的书源暂时是没法获取的。" +
-                "如您有更好的想法，欢迎email或github留言。“书源规则说明”请前往Gitee/GitHub仓库Wiki页查看，或者点击下方按钮跳转。");
+                "如您有更好的想法，欢迎email或github留言。“书源规则说明”请前往Gitee/GitHub仓库Wiki页查看，或者点击下方按钮跳转。QQ群: 1060150904");
         // 设置背景色为主题背景色
         noticeTextArea.setBackground(UIManager.getColor("Panel.background"));
         fourthLayer.add(noticeTextArea, BorderLayout.CENTER);
@@ -161,6 +205,25 @@ public class CustomSiteRuleAction extends BaseAction {
      */
     private void addEventListeners() {
         // 添加窗口大小改变监听器
+        this.addMainPanelComponentListener();
+        // "加载"按钮监听器
+        this.addLoadBtnEventListeners();
+        // "重置"按钮监听器
+        this.addResetBtnEventListeners();
+        // "删除"按钮监听器
+        this.addDeleteBtnEventListeners();
+        // "规则教程"按钮监听器
+        this.addGuideBtnEventListeners();
+        // "校验"按钮监听器
+        this.addVerifyBtnEventListeners();
+        // "确定"按钮监听器
+        this.addConfirmBtnEventListeners();
+    }
+
+    /**
+     * 添加主面板的组件监听器
+     */
+    private void addMainPanelComponentListener() {
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -176,8 +239,12 @@ public class CustomSiteRuleAction extends BaseAction {
                 fifthLayer.setPreferredSize(new Dimension(width, 40));
             }
         });
+    }
 
-        AtomicReference<String> sourceGroupKeyName = new AtomicReference<>("");
+    /**
+     * 添加"加载"按钮监听器
+     */
+    private void addLoadBtnEventListeners() {
         // "加载"按钮监听器
         loadButton.addActionListener(e -> {
             String groupKeyName = (String) comboBox.getSelectedItem();
@@ -186,21 +253,67 @@ public class CustomSiteRuleAction extends BaseAction {
                 return;
             }
 
-            sourceGroupKeyName.set(groupKeyName);
+            loadSourceGroupKeyName = groupKeyName;
 
             Map<String, String> customSiteRuleGroupMap = customSiteRuleCacheServer.getCustomSiteRuleOriginalStrMap();
             String siteBeanJson = customSiteRuleGroupMap.get(groupKeyName);
+            if (StringUtils.isEmpty(siteBeanJson)) {
+                Messages.showInfoMessage("分组不存在", "提示");
+                return;
+            }
+
+            siteBeanJson = siteBeanJson.replace("\r\n", "\n").replace("\r", "\n");
 
             groupNameTextField.setText(groupKeyName);
-            textArea.setText(siteBeanJson);
+
+            // 代码编辑器
+            if (settings.getCustomSiteRuleTextAreaType() == 0 ||
+                    settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR) {
+                // 如果文本不大，直接写入
+                if (siteBeanJson.length() <= 8000) {
+                    String finalSiteBeanJson = siteBeanJson;
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        document.replaceString(0, document.getTextLength(), finalSiteBeanJson);
+                    });
+                    return;
+                }
+                // 分块写入：先清空，再追加
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    document.replaceString(0, document.getTextLength(), "");
+                });
+                final int CHUNK_SIZE = 5000;
+                for (int i = 0; i < siteBeanJson.length(); i += CHUNK_SIZE) {
+                    final int start = i;
+                    final int end = Math.min(i + CHUNK_SIZE, siteBeanJson.length());
+                    final String chunk = siteBeanJson.substring(start, end);
+                    // 每块单独一个 WriteCommand（可合并 Undo）
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        document.insertString(document.getTextLength(), chunk);
+                    });
+                }
+            }
+            // 普通文本框
+            else if (settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA) {
+                setCustomRuleTextArea(siteBeanJson);
+            }
         });
-        // "重置"按钮监听器
+    }
+
+    /**
+     * 添加"重置"按钮监听器
+     */
+    private void addResetBtnEventListeners() {
         resetButton.addActionListener(e -> {
             comboBox.setSelectedIndex(0);
-            textArea.setText("");
+            setCustomRuleTextArea("");
             groupNameTextField.setText("");
         });
-        // "删除"按钮监听器
+    }
+
+    /**
+     * 添加"删除"按钮监听器
+     */
+    private void addDeleteBtnEventListeners() {
         deleteButton.addActionListener(e -> {
             String groupKeyName = (String) comboBox.getSelectedItem();
             if (groupKeyName == null || groupKeyName.isEmpty()) {
@@ -213,7 +326,7 @@ public class CustomSiteRuleAction extends BaseAction {
                 return;
             }
 
-            if (Messages.showYesNoDialog("确定要删除吗？", "提示", Messages.getQuestionIcon()) != Messages.YES) {
+            if (Messages.showYesNoDialog("确定要删除分组【" + groupKeyName + "】吗？", "提示", Messages.getQuestionIcon()) != Messages.YES) {
                 return;
             }
 
@@ -230,20 +343,30 @@ public class CustomSiteRuleAction extends BaseAction {
             comboBox.removeItem(groupKeyName);
             // 清空文本框
             groupNameTextField.setText("");
-            textArea.setText("");
+            setCustomRuleTextArea("");
 
             // 提示
             Messages.showInfoMessage("删除成功", "提示");
         });
-        // "规则教程"按钮监听器
+    }
+
+    /**
+     * 添加"规则教程"按钮监听器
+     */
+    private void addGuideBtnEventListeners() {
         guideButton.addActionListener(e -> {
             // 跳转到规则教程页面
             BrowserUtil.browse("https://gitee.com/weizhanjie/w-reader/wikis/%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B9%A6%E6%BA%90%E8%A7%84%E5%88%99%E8%AF%B4%E6%98%8E");
         });
-        // "校验"按钮监听器
+    }
+
+    /**
+     * 添加"验证"按钮监听器
+     */
+    private void addVerifyBtnEventListeners() {
         verifyButton.addActionListener(e -> {
             // 获取输入的规则
-            String rule = textArea.getText();
+            String rule = getCustomRuleTextAreaContent();
             if (rule == null || rule.isEmpty()) {
                 Messages.showInfoMessage("请输入自定义书源规则", "提示");
                 return;
@@ -258,7 +381,12 @@ public class CustomSiteRuleAction extends BaseAction {
                 Messages.showInfoMessage("校验通过", "提示");
             }, null);
         });
-        // "确定"按钮监听器
+    }
+
+    /**
+     * 添加"保存"按钮监听器
+     */
+    private void addConfirmBtnEventListeners() {
         confirmButton.addActionListener(e -> {
             // 获取输入的分组名称
             String groupName = groupNameTextField.getText();
@@ -267,14 +395,14 @@ public class CustomSiteRuleAction extends BaseAction {
                 return;
             }
 
-            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(sourceGroupKeyName.get()) &&
+            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(loadSourceGroupKeyName) &&
                     !ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(groupName)) {
                 Messages.showInfoMessage("不能修改默认分组的名称", "提示");
                 return;
             }
 
             // 获取输入的规则
-            String rule = textArea.getText();
+            String rule = getCustomRuleTextAreaContent();
             if (rule == null || rule.isEmpty()) {
                 Messages.showInfoMessage("请输入自定义书源规则", "提示");
                 return;
@@ -305,5 +433,41 @@ public class CustomSiteRuleAction extends BaseAction {
                 Messages.showInfoMessage("保存成功", "提示");
             }, null);
         });
+    }
+
+
+    /**
+     * 设置自定义书源规则文本域的内容
+     * @param content
+     */
+    private void setCustomRuleTextArea(String content) {
+        // 代码编辑器
+        if (settings.getCustomSiteRuleTextAreaType() == 0 ||
+                settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR) {
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                document.replaceString(0, document.getTextLength(), content);
+            });
+        }
+        // 普通文本框
+        else if (settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA) {
+            textArea.setText(content);
+        }
+    }
+
+    /**
+     * 获取自定义书源规则文本域的内容
+     * @return
+     */
+    private String getCustomRuleTextAreaContent() {
+        // 代码编辑器
+        if (settings.getCustomSiteRuleTextAreaType() == 0 ||
+                settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR) {
+            return document.getText();
+        }
+        // 普通文本框
+        else if (settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA) {
+            return textArea.getText();
+        }
+        return "";
     }
 }

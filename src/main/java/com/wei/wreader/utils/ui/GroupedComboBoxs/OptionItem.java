@@ -1,4 +1,4 @@
-package com.wei.wreader.widget.GroupedComboBox;
+package com.wei.wreader.utils.ui.GroupedComboBoxs;
 
 /**
  * 组选项实体对象

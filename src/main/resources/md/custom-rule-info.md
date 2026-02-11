@@ -175,7 +175,7 @@
 >>```
 >> 那如果想要获取小说列表数据，则需要填写：`$.data[*]`  
 > 
-> ##### `bookListElementName`：用于获取搜索结果列表的`cssQuery`选择器语法，适用于HTML页面，例如：返回的页面结构为：
+> ##### `bookListElementName`：用于获取搜索结果列表的`CssSelector`选择器语法，适用于HTML页面，例如：返回的页面结构为：
 >> ```html
 >> <body>
 >> <div class="book-list">
@@ -198,7 +198,7 @@
 >> ```
 >> 要获取到结果的列表，则需要填写：`.book-list ul li`。其实等同于js的`document.querySelectorAll('.book-list ul li')`  
 > 
-> ##### `bookListUrlElement`： 用于获取搜索结果列表中每个结果的url（每本小说的链接）的`cssQuery`选择器语法，适用于HTML页面，注意：这里是以列表的单项的页面结构为基准，以上面的页面结构为例，则以：
+> ##### `bookListUrlElement`： 用于获取搜索结果列表中每个结果的url（每本小说的链接）的`CssSelector`选择器语法，适用于HTML页面，注意：这里是以列表的单项的页面结构为基准，以上面的页面结构为例，则以：
 >> ```html
 >> <li>
 >>     <div class="li-dd">
@@ -209,7 +209,7 @@
 >> ```
 >> 为基准，所以想要获取url信息，那么要填写：`.li-dd a`， 等同于js的`document.querySelectorAll('.book-list ul li')[0].querySelector('.li-dd a').href`。需要特别强调的是，获取的url信息是标签的`href`属性的值，所以最终需要定位的元素必须是a标签
 > 
-> ##### `bookListTitleElement`：用于获取搜索结果列表中每个结果的标题（每本小说的标题）的`cssQuery`选择器语法，适用于HTML页面，注意：这里是以列表的单项的页面结构为基准，以`bookListElementName`的页面结构为例，则以：
+> ##### `bookListTitleElement`：用于获取搜索结果列表中每个结果的标题（每本小说的标题）的`CssSelector`选择器语法，适用于HTML页面，注意：这里是以列表的单项的页面结构为基准，以`bookListElementName`的页面结构为例，则以：
 >> ```html
 >> <li>
 >>     <div class="li-dd">
@@ -281,7 +281,7 @@
 > 
 > ##### `itemTitleField`： 目录列表中各章节标题对应的字段名称。当获取目录返回的结果为JSON格式数据时，在`urlDataRule`规则获取到数据后，通过`itemTitleField`规则获取目录`每一个章节的标题`。 以上面的数据为例，获取目录列表中每个目录的章节标题，那么`itemTitleField`填写：`title`
 > 
-> ##### `listMainElementName`： 用于获取目录列表的`cssQuery`选择器语法，适用于HTML页面，例如页面结构为：
+> ##### `listMainElementName`： 用于获取目录列表的`CssSelector`选择器语法，适用于HTML页面，例如页面结构为：
 >> ```html
 >> <body>
 >> <div class="chapterList">
@@ -295,13 +295,13 @@
 >>``` 
 >>想要获取目录列表，那么`listMainElementName`填写：`.chapterList dl dd`，等同于js的`document.querySelectorAll('.chapterList dl dd')`。 
 > 
-> ##### `urlElement`：章节链接`cssQuery`语法，以目录列表的单项结构作为基准，以上面的页面结构为例，那么将以下面的html作为获取数据的基准结构：
+> ##### `urlElement`：章节链接`CssSelector`语法，以目录列表的单项结构作为基准，以上面的页面结构为例，那么将以下面的html作为获取数据的基准结构：
 >> ```html
 >> <dd><a href="/chapter/1.html">第一章 001</a></dd>
 >> ``` 
 >> 因此`urlElement`填写：`a`，等同于js的`document.querySelectorAll('.chapterList dl dd')[0].querySelector('a').href`
 > 
-> ##### `titleElement`：章节标题`cssQuery`语法，同`urlElement`一样，以目录列表的单项结构作为基准，以上面的页面结构为例，`titleElement`填写：`a`， 等同于js的`document.querySelectorAll('.chapterList dl dd')[0].querySelector('a').textContent`
+> ##### `titleElement`：章节标题`CssSelector`语法，同`urlElement`一样，以目录列表的单项结构作为基准，以上面的页面结构为例，`titleElement`填写：`a`， 等同于js的`document.querySelectorAll('.chapterList dl dd')[0].querySelector('a').textContent`
 >
 
 `chapterRules`：章节处理规则，用于处理章节数据，获取章节内容。
@@ -341,7 +341,7 @@
 > 
 > ##### `replaceContentOriginalRegex`（无效）：原始样式内容替换的正则表达式。
 > 
-> ##### `contentElementName`：用于获取章节内容，`cssQuery`选择器语法，只有当获取到的结果是一个`html页面`时才需要填写，例如：  
+> ##### `contentElementName`：用于获取章节内容，`CssSelector`选择器语法，只有当获取到的结果是一个`html页面`时才需要填写，例如：  
 >> ```html
 >> <body>
 >> <h3>chapter1 Hello World</h3>

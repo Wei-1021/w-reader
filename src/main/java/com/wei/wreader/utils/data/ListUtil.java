@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class ListUtil {
 
     /**
-     * 判断当前类似集合是否不为空
+     * 判断当前list集合是否不为空
      *
      * @param list
      * @return
@@ -24,7 +24,7 @@ public class ListUtil {
     }
 
     /**
-     * 判断当前类似集合是否为空
+     * 判断当前list集合是否为空
      *
      * @param list
      * @return
@@ -44,7 +44,7 @@ public class ListUtil {
     }
 
     /**
-     * 判断当前类似集合是否为空
+     * 判断当前Set集合是否为空
      *
      * @param set
      * @return

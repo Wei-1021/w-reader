@@ -6,12 +6,11 @@ import com.intellij.ui.components.JBCheckBox;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.OperateActionUtil;
-import com.wei.wreader.widget.GroupedComboBox.CharsetGroupComboBox;
-import com.wei.wreader.widget.GroupedComboBox.OptionItem;
+import com.wei.wreader.utils.ui.GroupedComboBoxs.CharsetGroupComboBox;
+import com.wei.wreader.utils.ui.GroupedComboBoxs.OptionItem;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * 加载本地文件

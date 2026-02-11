@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.1.1'
+  version: '0.1.2'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -17,6 +17,7 @@ wreader:
     mainIconStyle: 1 #主图标风格：1-默认，2-浅色
     editorHintWidth: 350 #编辑器提示消息框宽度
     editorHintHeight: 200 #编辑器提示消息框高度
+    customSiteRuleTextAreaType: 1 #自定义书源规则文本区域类型；2-普通文本框(只有读写，无其它额外功能); 1-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
     voiceRole: '晓晓' #音色
     audioTimeout: 3 #听书超时
     rate: 1.0 #语速

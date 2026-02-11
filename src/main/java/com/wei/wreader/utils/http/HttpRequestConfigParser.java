@@ -113,11 +113,11 @@ public class HttpRequestConfigParser {
                 this.queryParams = gson.fromJson(queryParamsJson, Map.class);
             }
             JsonObject bodyParamsJson = jsonObject.getAsJsonObject("bodyParams");
-            if (bodyParamsJson != null && queryParamsJson.size() > 0) {
+            if (bodyParamsJson != null && bodyParamsJson.size() > 0) {
                 this.bodyParams = gson.fromJson(bodyParamsJson, Map.class);
             }
             JsonObject headerJson = jsonObject.getAsJsonObject("header");
-            if (headerJson != null && queryParamsJson.size() > 0) {
+            if (headerJson != null && headerJson.size() > 0) {
                 this.header = gson.fromJson(headerJson, Map.class);
             }
         } else {

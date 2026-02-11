@@ -112,14 +112,14 @@ wreader:
   # searchBookNameParam: 搜索参数
   # searchDataBookListRule: 获取小说列表的JSONPath规则
   # searchDataBookListInfoDataRule: 获取小说列表每一列中书本信息的JSONPath规则
-  # bookListElementName: 书本列表区块元素cssQuery
-  # bookListUrlElement: 书本列表链接元素cssQuery, 规则分段，用@分隔,
+  # bookListElementName: 书本列表区块元素CssSelector
+  # bookListUrlElement: 书本列表链接元素CssSelector, 规则分段，用@分隔,
   #     @back:表示获取到的内容在后面加上@back:之后的内容
   #     @front:表示获取到的内容在前面加上@front:之后的内容
-  # bookListTitleElement: 书本标题列表元素cssQuery
+  # bookListTitleElement: 书本标题列表元素CssSelector
   # listMainUrl: 目录url
-  # listMainElementName: 目录区块元素cssQuery
-  # chapterListUrlElement: 目录链接元素cssQuery
+  # listMainElementName: 目录区块元素CssSelector
+  # chapterListUrlElement: 目录链接元素CssSelector
   # chapterContentUrl: 章节url
   # chapterContentHandleRule: 章节内容处理规则
   # isContentOriginalStyle: 是否使用原网页的css样式

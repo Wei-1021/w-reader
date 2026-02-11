@@ -121,6 +121,8 @@ public class ConstUtil {
     public static final String WREADER_LOAD_CHAPTER_LIST_ERROR = "未找到章节目录信息！";
     public static final String WREADER_LOAD_CONTENT_ERROR = "加载内容失败，请重新加载书本！";
     public static final String WREADER_ERROR = "出现异常，请重试！";
+    public static final String WREADER_JSCODE_EXECUTE_ERROR = "JS脚本执行出现异常，请重试！";
+    public static final String WREADER_JSCODE_EXECUTE_ERROR_MSG = "JS脚本执行出现异常：";
     public static final String WREADER_CACHE_ERROR = "缓存信息异常，请重试！";
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
@@ -171,22 +173,21 @@ public class ConstUtil {
      */
     public static final String LINE_COMMENT_COLOR = "#7A7E85";
     /**
-     * 代码配置--开始标签
+     * Java代码配置--开始标签
      */
-    public static final String CODE_CONFIG_START_LABEL = "<java>";
+    public static final String JAVA_CODE_CONFIG_START_LABEL = "<java>";
     /**
-     * 代码配置--结束标签
+     * Java代码配置--结束标签
      */
-    public static final String CODE_CONFIG_END_LABEL = "</java>";
+    public static final String JAVA_CODE_CONFIG_END_LABEL = "</java>";
     /**
-    /**
-     * 代码配置--导入包名开始标签
+     * Java代码配置--导入包名开始标签
      */
-    public static final String CODE_CONFIG_PACKAGE_IMPORT_START = "<package_import>";
+    public static final String JAVA_CODE_CONFIG_PACKAGE_IMPORT_START = "<package_import>";
     /**
-     * 代码配置--导入包名结束标签
+     * Java代码配置--导入包名结束标签
      */
-    public static final String CODE_CONFIG_PACKAGE_IMPORT_END = "</package_import>";
+    public static final String JAVA_CODE_CONFIG_PACKAGE_IMPORT_END = "</package_import>";
     /**
     /**
      * 代码配置--新版代码块开始标签
@@ -196,6 +197,18 @@ public class ConstUtil {
      * 代码配置--新版代码块结束标签
      */
     public static final String CODE_CONFIG_CODE_END = "</code>";
+    /**
+     * Js代码配置--开始标签
+     */
+    public static final String JS_CODE_CONFIG_START_LABEL = "<js>";
+    /**
+     * Js代码配置--结束标签
+     */
+    public static final String JS_CODE_CONFIG_END_LABEL = "</js>";
+    /**
+     * Js代码配置标签
+     */
+    public static final String JS_CODE_CONFIG_LABEL = "@js:";
     /**
      * 消息提示框宽度
      */
@@ -217,11 +230,11 @@ public class ConstUtil {
      */
     public static final int IMAGE_PREVIEW_HEIGHT = 600;
     /**
-     * cssQuery自定义规则标志--@back
+     * CssSelector自定义规则标志--@back
      */
     public static final String CSS_QUERY_BACK_FLAG = "back:";
     /**
-     * cssQuery自定义规则标志--@font
+     * CssSelector自定义规则标志--@font
      */
     public static final String CSS_QUERY_FONT_FLAG = "font:";
     /**

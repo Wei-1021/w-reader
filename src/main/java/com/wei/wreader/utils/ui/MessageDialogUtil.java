@@ -200,6 +200,23 @@ public class MessageDialogUtil {
                                                   Runnable cancelOperation) {
         return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation, 0, 0);
     }
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     * @param okRunnable      确认按钮点击事件
+     * @param cancelOperation 取消按钮点击事件
+     */
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  JComponent centerPanel,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation,
+                                                  Runnable finishOperation) {
+        return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation, finishOperation, 0, 0);
+    }
 
     /**
      * 显示消息对话框
@@ -216,6 +233,25 @@ public class MessageDialogUtil {
                                                   Runnable okRunnable,
                                                   Runnable cancelOperation,
                                                   int width, int height) {
+        return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation, null, width, height);
+    }
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     * @param okRunnable      确认按钮点击事件
+     * @param cancelOperation 取消按钮点击事件
+     */
+    public static DialogBuilder showMessageDialog(Project project,
+                                                  String title,
+                                                  JComponent centerPanel,
+                                                  Runnable okRunnable,
+                                                  Runnable cancelOperation,
+                                                  Runnable finishOperation,
+                                                  int width, int height) {
 
         DialogBuilder builder = new DialogBuilder(project);
         builder.centerPanel(centerPanel);
@@ -224,6 +260,9 @@ public class MessageDialogUtil {
         builder.addCancelAction();
         if (width > 0 || height > 0) {
             builder.getDialogWrapper().setSize(width, height);
+        }
+        if (finishOperation != null) {
+            finishOperation.run();
         }
         builder.show();
 

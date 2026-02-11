@@ -46,6 +46,30 @@ public class Settings {
      */
     public static final int DATA_LOAD_TYPE_LOCAL = 2;
     /**
+     * 自定义书源规则本文区域类型--2-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
+     */
+    public static final int CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR = 1;
+    /**
+     * 自定义书源规则本文区域类型--1-普通文本框(只有读写，无其它额外功能);
+     */
+    public static final int CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA = 2;
+    /**
+     * 自定义书源规则本文区域类型--1-普通文本框(只有读写，无其它额外功能);
+     */
+    public static final String CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA_TEXT = "普通文本框";
+    /**
+     * 自定义书源规则本文区域类型--2-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
+     */
+    public static final String CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR_TEXT = "代码编辑器";
+    /**
+     * 自定义书源规则本文区域类型--1-普通文本框(只有读写，无其它额外功能);
+     */
+    public static final String CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA_HINT = "只有读写，无其它额外功能";
+    /**
+     * 自定义书源规则本文区域类型--2-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
+     */
+    public static final String CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR_HINT = "拥有行数、高亮、报错、折叠等功能，但更消耗性能";
+    /**
      * 最大单行字数
      */
     private int singleLineChars;
@@ -85,6 +109,12 @@ public class Settings {
      * 编辑器提示消息框高度
      */
     private int editorHintHeight;
+    /**
+     * 自定义书源规则文本区域类型;<br>
+     * 1-普通文本框(只有读写，无其它额外功能);<br>
+     * 2-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
+     */
+    private int customSiteRuleTextAreaType;
 
     //--------------------------------------------
     //----------------  语音TTS  ------------------
@@ -231,6 +261,14 @@ public class Settings {
         this.audioStyle = audioStyle;
     }
 
+    public int getCustomSiteRuleTextAreaType() {
+        return customSiteRuleTextAreaType;
+    }
+
+    public void setCustomSiteRuleTextAreaType(int customSiteRuleTextAreaType) {
+        this.customSiteRuleTextAreaType = customSiteRuleTextAreaType;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -241,6 +279,10 @@ public class Settings {
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
                 ", showLocalImg=" + showLocalImg +
+                ", mainIconStyle=" + mainIconStyle +
+                ", editorHintWidth=" + editorHintWidth +
+                ", editorHintHeight=" + editorHintHeight +
+                ", customSiteRuleTextAreaType=" + customSiteRuleTextAreaType +
                 ", voiceRole='" + voiceRole + '\'' +
                 ", audioTimeout=" + audioTimeout +
                 ", rate=" + rate +

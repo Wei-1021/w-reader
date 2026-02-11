@@ -14,10 +14,11 @@
             font-family: "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 12px;
         }
+
         body {
             width: 98%;
-            word-wrap:break-word;
-            word-break:break-all;
+            word-wrap: break-word;
+            word-break: break-all;
             overflow-x: hidden;
         }
 
@@ -120,39 +121,32 @@
     <div id="faq">
         <div class="sub-title">常见问题</div>
         <ul>
-            <li>
-                <div class="li-label">1.侧边栏不小心关闭，不显示内容：</div>
+            <li class="mt-10">
+                <div class="li-label">1."编辑器提示消息"功能不起作用：</div>
                 <span>
-                        通过"File"->"Settings"->"Tools"->"W-Reader"进入设置页面，
-                        将类型切换至其它（点击Apply按钮）后再切换回"侧边栏"即可。
-                    </span>
+                    代码编辑器中必须有焦点，并且编辑器中要有文本插入符（闪烁的竖线）存在，才能使用此功能。<br>
+                    ps: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。
+                </span>
             </li>
             <li class="mt-10">
-                <div class="li-label">2."编辑器提示消息"功能不起作用：</div>
+                <div class="li-label">2."代码注释块"功能不起作用：</div>
                 <span>
-                        代码编辑器中必须有焦点，并且编辑器中要有文本插入符（闪烁的竖线）存在，才能使用此功能。<br>
-                        ps: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。
-                    </span>
+                    与问题2类似，但有一个额外的条件，就是当前编辑器所选择的文件处于可写状态。<br>
+                    ps1: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。<br>
+                    ps2: 文件提交至Git、SVN等版本控制系统前，请把注释块删除，或者在忽略文件中使用此功能。
+                </span>
             </li>
             <li class="mt-10">
-                <div class="li-label">3."代码注释块"功能不起作用：</div>
+                <div class="li-label">3.本地加载小说文件后不显示内容（包括目录不显示），或者内容文字出现乱码：</div>
                 <span>
-                        与问题2类似，但有一个额外的条件，就是当前编辑器所选择的文件处于可写状态。<br>
-                        ps1: 多个文本插入符存在时，最后设置的文本插入符为主文本插入符，只有主文本插入符才会起作用。<br>
-                        ps2: 文件提交至Git、SVN等版本控制系统前，请把注释块删除，或者在忽略文件中使用此功能。
-                    </span>
+                    这种情况大部分是字符集设置不正确所导致，请尝试修改字符集，如GBK、UTF-8等。
+                </span>
             </li>
             <li class="mt-10">
-                <div class="li-label">4.本地加载小说文件后不显示内容（包括目录不显示），或者内容文字出现乱码：</div>
+                <div class="li-label">4.听书功能失效：</div>
                 <span>
-                        这种情况大部分是字符集设置不正确所导致，请尝试修改字符集，如GBK、UTF-8等。
-                    </span>
-            </li>
-            <li class="mt-10">
-                <div class="li-label">5.听书功能失效：</div>
-                <span>
-                        听书功能无效，无法使用的原因是因为API发生变化，导致无法进行播放。
-                    </span>
+                    听书功能无效，无法使用的原因是因为API发生变化，导致无法进行播放。
+                </span>
             </li>
         </ul>
     </div>
@@ -162,7 +156,8 @@
         <p>如果您有任何问题或建议，请通过以下方式联系：</p>
         <ul>
             <li>Email: 1075542448@qq.com</li>
-            <li>qq: 1075542448</li>
+            <li>QQ: 1075542448</li>
+            <li>QQ群: 1060150904</li>
         </ul>
     </div>
 
@@ -189,7 +184,8 @@
             </li>
             <li>
                 <b>jlayer</b>:
-                <a href="https://web.archive.org/web/20210108055829/http://www.javazoom.net/javalayer/javalayer.html" target="_blank">
+                <a href="https://web.archive.org/web/20210108055829/http://www.javazoom.net/javalayer/javalayer.html"
+                   target="_blank">
                     https://web.archive.org/web/20210108055829/http://www.javazoom.net/javalayer/javalayer.html
                 </a>
             </li>

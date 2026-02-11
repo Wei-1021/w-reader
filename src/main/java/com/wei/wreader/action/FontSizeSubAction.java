@@ -1,6 +1,7 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
@@ -27,7 +28,7 @@ public class FontSizeSubAction extends BaseAction {
         }
 
 
-        SwingUtilities.invokeLater(() -> {
+        ApplicationManager.getApplication().invokeLater(() -> {
             switch (settings.getDisplayType()) {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     OperateActionUtil.getInstance(project).fontSizeSub();
@@ -64,7 +65,6 @@ public class FontSizeSubAction extends BaseAction {
         String style = "font-family: '" + fontFamily + "'; " +
                 "font-size: " + fontSize + "px;" +
                 "color:" + fontColorHex + ";";
-        String text = "<div style=\"" + style + "\">" + content + "</div>";
-        return text;
+        return "<div style=\"" + style + "\">" + content + "</div>";
     }
 }

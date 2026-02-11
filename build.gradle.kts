@@ -11,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.1.1"
+version = "0.1.2"
 
 repositories {
     maven {
@@ -117,6 +117,13 @@ intellijPlatform {
             }
         }
     }
+
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = providers.gradleProperty("pluginSinceBuild")
+            untilBuild = provider { null }
+        }
+    }
 }
 
 tasks {
@@ -138,10 +145,10 @@ tasks {
         kotlinOptions.jvmTarget = "17"
     }
 
-    patchPluginXml {
-        sinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
-        untilBuild.set(providers.gradleProperty("pluginUntilBuild"))
-    }
+//    patchPluginXml {
+//        sinceBuild = providers.gradleProperty("pluginSinceBuild")
+//        untilBuild = providers.gradleProperty("pluginUntilBuild")
+//    }
 
     signPlugin {
         certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))

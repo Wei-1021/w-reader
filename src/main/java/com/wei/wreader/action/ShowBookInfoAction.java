@@ -6,6 +6,7 @@ import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.wei.wreader.pojo.BookInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.SiteBean;
+import com.wei.wreader.utils.comm.script.RhinoJsEngine;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +49,7 @@ public class ShowBookInfoAction extends BaseAction {
             JTextPane bookInfoTextPane = new JTextPane();
             bookInfoTextPane.setContentType("text/html");
             bookInfoTextPane.setEditable(false);
-            bookInfoTextPane.setPreferredSize(new Dimension(450, 550));
+            bookInfoTextPane.setPreferredSize(new Dimension(450, 380));
             bookInfoTextPane.setMaximumSize(new Dimension(450, 550));
             bookInfoTextPane.setAlignmentX(Component.LEFT_ALIGNMENT);
             bookInfoTextPane.setEditorKit(new HTMLEditorKitBuilder().withWordWrapViewFactory().build());
@@ -59,6 +60,8 @@ public class ShowBookInfoAction extends BaseAction {
             };
 
             MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 500, 0, null);
+
+            RhinoJsEngine.test();
         });
     }
 }

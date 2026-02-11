@@ -14,17 +14,17 @@ public class SearchRules {
      */
     private String dataBookListRule;
     /**
-     * 书本列表区块元素cssQuery
+     * 书本列表区块元素CssSelector
      */
     private String bookListElementName;
     /**
-     * 书本列表URL元素cssQuery, 规则分段，用@分隔<br>
+     * 书本列表URL元素CssSelector, 规则分段，用@分隔<br>
      *  {@code @back}:表示在获取到的内容的后面加上@back:之后的内容<br>
      *  {@code @front}:表示在获取到的内容的前面加上@front:之后的内容
      */
     private String bookListUrlElement;
     /**
-     * 书本标题列表元素cssQuery
+     * 书本标题列表元素CssSelector
      */
     private String bookListTitleElement;
 

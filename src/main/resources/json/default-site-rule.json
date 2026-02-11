@@ -17,9 +17,14 @@
       "urlDataRule": "",
       "itemIdField": "",
       "itemTitleField": "",
+      "itemUrlField": "",
+      "urlDataHandleRule": "",
       "listMainElementName": "#list dl dd",
       "urlElement": "a",
-      "titleElement": "a"
+      "titleElement": "a",
+      "nextListMainUrl": "",
+      "useNextListMainApi": false,
+      "nextListMainApiDataRule": ""
     },
     "chapterRules": {
       "url": "",
@@ -75,7 +80,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "book_id",
@@ -119,7 +124,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "book_id",
@@ -163,7 +168,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "_id",
@@ -207,7 +212,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "id",
@@ -251,7 +256,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "bid",
@@ -295,7 +300,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "bookId",
@@ -339,7 +344,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "novelid",
@@ -383,7 +388,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "bookid",
@@ -427,7 +432,7 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList":  null
+      "contentRegexList": null
     },
     "bookInfoRules": {
       "bookIdField": "bookid",

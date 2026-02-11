@@ -331,7 +331,7 @@ public class OperateActionUtilOld {
             return;
         }
 
-        if (searchUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) && searchUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+        if (searchUrl.startsWith(ConstUtil.JAVA_CODE_CONFIG_START_LABEL) && searchUrl.endsWith(ConstUtil.JAVA_CODE_CONFIG_END_LABEL)) {
             try {
                 searchBookUrl = (String) DynamicCodeExecutor.executeMethod(
                         searchUrl,
@@ -425,11 +425,11 @@ public class OperateActionUtilOld {
             Elements elements = document.select(selectedBookSiteInfo.getBookListElementName());
             JsonArray jsonArray = new JsonArray();
             String location = document.location();
-            // 获取小说列表链接元素cssQuery
+            // 获取小说列表链接元素CssSelector
             String bookListUrlElement = selectedBookSiteInfo.getBookListUrlElement();
             bookListUrlElement = StringUtils.isBlank(bookListUrlElement) ? "a" : bookListUrlElement;
             String[] bookListUrlElementRules = bookListUrlElement.split("@");
-            String bookListUrlCssQueryRule = bookListUrlElementRules[0];
+            String bookListUrlCssSelectorRule = bookListUrlElementRules[0];
             String bookListUrlRuleBack = "";
             String bookListUrlRuleFront = "";
             if (bookListUrlElementRules.length > 1) {
@@ -443,12 +443,12 @@ public class OperateActionUtilOld {
                     }
                 }
             }
-            // 获取小说列表标题元素cssQuery
+            // 获取小说列表标题元素CssSelector
             String bookListTitleElement = selectedBookSiteInfo.getBookListTitleElement();
             for (Element itemElement : elements) {
                 if (itemElement != null) {
                     // url
-                    Element bookUrlElement = itemElement.selectFirst(bookListUrlCssQueryRule);
+                    Element bookUrlElement = itemElement.selectFirst(bookListUrlCssSelectorRule);
                     String bookUrl = "";
                     if (bookUrlElement != null) {
                         bookUrl = bookListUrlRuleFront + bookUrlElement.attr("href") + bookListUrlRuleBack;
@@ -555,8 +555,8 @@ public class OperateActionUtilOld {
                         String bookUrl = "";
 
                         // 判断是否是动态代码配置
-                        if (listMainUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
-                                listMainUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL)) {
+                        if (listMainUrl.startsWith(ConstUtil.JAVA_CODE_CONFIG_START_LABEL) &&
+                                listMainUrl.endsWith(ConstUtil.JAVA_CODE_CONFIG_END_LABEL)) {
                             try {
                                 bookUrl = (String) DynamicCodeExecutor.executeMethod(listMainUrl,
                                         "execute",
@@ -635,8 +635,8 @@ public class OperateActionUtilOld {
                     String listMainItemIdField = selectedBookSiteInfo.getListMainItemIdField();
                     String listMainItemTitleField = selectedBookSiteInfo.getListMainItemTitleField();
                     String chapterUrl = selectedBookSiteInfo.getChapterContentUrl();
-                    boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.CODE_CONFIG_START_LABEL) &&
-                            chapterUrl.endsWith(ConstUtil.CODE_CONFIG_END_LABEL);
+                    boolean isCodeConfig = chapterUrl.startsWith(ConstUtil.JAVA_CODE_CONFIG_START_LABEL) &&
+                            chapterUrl.endsWith(ConstUtil.JAVA_CODE_CONFIG_END_LABEL);
 
                     List<String> itemIdList = new ArrayList<>();
                     List<Integer> itemIndexList = new ArrayList<>();
@@ -693,10 +693,10 @@ public class OperateActionUtilOld {
             Elements listMainElement = document.select(tempSearchBookSiteInfo.getListMainElementName());
             // 获取页面的地址
             String location = document.location();
-            // 目录链接元素cssQuery
+            // 目录链接元素CssSelector
             String chapterListUrlElement = tempSearchBookSiteInfo.getChapterListUrlElement();
             chapterListUrlElement = StringUtils.isBlank(chapterListUrlElement) ? "a" : chapterListUrlElement;
-            // 目录标题元素cssQuery
+            // 目录标题元素CssSelector
             String chapterListTitleElement = tempSearchBookSiteInfo.getChapterListTitleElement();
             for (Element element : listMainElement) {
                 // url

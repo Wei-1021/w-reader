@@ -16,6 +16,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
 
+/**
+ * 工具窗口（侧边栏）工具类
+ */
 public class ToolWindowUtil {
     /**
      * 获取ToolWindow的根内容面板

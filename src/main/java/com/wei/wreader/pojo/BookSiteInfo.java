@@ -42,13 +42,13 @@ public class BookSiteInfo implements Serializable {
      */
     private String bookListElementName;
     /**
-     * 书本列表链接元素cssQuery，规则分段，用@分隔<br>
+     * 书本列表链接元素CssSelector，规则分段，用@分隔<br>
      * {@code @back}:表示获取到的内容在后面加上@back:之后的内容<br>
      * {@code @front}:表示获取到的内容在前面加上@front:之后的内容
      */
     private String bookListUrlElement;
     /**
-     * 小说标题列表元素cssQuery
+     * 小说标题列表元素CssSelector
      */
     private String bookListTitleElement;
     /**
@@ -72,11 +72,11 @@ public class BookSiteInfo implements Serializable {
      */
     private String listMainElementName;
     /**
-     * 目录链接元素cssQuery
+     * 目录链接元素CssSelector
      */
     private String chapterListUrlElement;
     /**
-     * 目录标题元素cssQuery
+     * 目录标题元素CssSelector
      */
     private String chapterListTitleElement;
     /**

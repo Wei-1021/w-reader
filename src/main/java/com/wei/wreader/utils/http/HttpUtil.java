@@ -35,6 +35,7 @@ public class HttpUtil {
         String requestMethod = parser.getMethod();
         Map<String, String> queryParam = parser.getQueryParams();
         Map<String, String> bodyParam = parser.getBodyParams();
+        Map<String, String> header = parser.getHeader();
 
         if (POST.equalsIgnoreCase(requestMethod)) {
             // 处理POST请求
@@ -62,6 +63,13 @@ public class HttpUtil {
                 }
             }
 
+            // 处理header
+            if (header != null && !header.isEmpty()) {
+                for (Map.Entry<String, String> entry : header.entrySet()) {
+                    httpPost.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
+
             return httpPost;
         } else if (GET.equalsIgnoreCase(requestMethod)) {
             // 处理GET请求
@@ -72,10 +80,17 @@ public class HttpUtil {
                 }
                 requestUrl += "?" + queryString.substring(0, queryString.length() - 1);
             }
-            return new HttpGet(requestUrl);
+            HttpGet httpGet = new HttpGet(requestUrl);
+            // 处理header
+            if (header != null && !header.isEmpty()) {
+                for (Map.Entry<String, String> entry : header.entrySet()) {
+                    httpGet.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            return httpGet;
+        } else {
+            throw new RuntimeException("不支持的请求方法");
         }
-
-        return new HttpGet(requestUrl);
     }
 }
 
