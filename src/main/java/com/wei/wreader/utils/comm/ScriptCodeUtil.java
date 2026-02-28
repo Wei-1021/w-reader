@@ -6,6 +6,7 @@ import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -65,7 +66,7 @@ public class ScriptCodeUtil {
     public static List<String> getScriptCodeExeListResult(String codeStr,
                                                          Class<?>[] javaParameterTypes,
                                                          Object[] javaParams,
-                                                         Map<String, Object> jsParams) throws Exception {
+                                                         Map<String, Object> jsParams) {
        return getScriptCodeExeListResult(codeStr, javaParameterTypes, javaParams, jsParams, String.class);
     }
 
@@ -84,7 +85,7 @@ public class ScriptCodeUtil {
                                                          Class<?>[] javaParameterTypes,
                                                          Object[] javaParams,
                                                          Map<String, Object> jsParams,
-                                                         Class<T> clazz) throws Exception {
+                                                         Class<T> clazz) {
         Object result = getScriptCodeExeResult(codeStr, "execute", javaParameterTypes,
                 javaParams, jsParams, null, null);
         List<T> list = new ArrayList<>();
@@ -111,7 +112,7 @@ public class ScriptCodeUtil {
     public static Object getScriptCodeExeResult(String codeStr,
                                                 Class<?>[] javaParameterTypes,
                                                 Object[] javaParams,
-                                                Map<String, Object> jsParams) throws Exception {
+                                                Map<String, Object> jsParams) {
         return getScriptCodeExeResult(codeStr, "execute", javaParameterTypes,
                 javaParams, jsParams, null, null);
     }
@@ -132,7 +133,7 @@ public class ScriptCodeUtil {
                                                 Class<?>[] javaParameterTypes,
                                                 Object[] javaParams,
                                                 Map<String, Object> jsParams,
-                                                Consumer<RhinoJsEngine.JsResult> errorCall) throws Exception {
+                                                Consumer<RhinoJsEngine.JsResult> errorCall) {
         return getScriptCodeExeResult(codeStr, "execute", javaParameterTypes,
                 javaParams, jsParams, null, errorCall);
     }
@@ -154,7 +155,7 @@ public class ScriptCodeUtil {
                                                 Object[] javaParams,
                                                 Map<String, Object> jsParams,
                                                 Consumer<RhinoJsEngine.JsResult> successCall,
-                                                Consumer<RhinoJsEngine.JsResult> errorCall) throws Exception {
+                                                Consumer<RhinoJsEngine.JsResult> errorCall) {
         return getScriptCodeExeResult(codeStr, "execute", javaParameterTypes,
                 javaParams, jsParams, successCall, errorCall);
     }
@@ -178,9 +179,9 @@ public class ScriptCodeUtil {
                                                 Object[] javaParams,
                                                 Map<String, Object> jsParams,
                                                 Consumer<RhinoJsEngine.JsResult> successCall,
-                                                Consumer<RhinoJsEngine.JsResult> errorCall) throws Exception {
+                                                Consumer<RhinoJsEngine.JsResult> errorCall) {
         Object result = null;
-        // **** 判断代码配置类型，并获取请求链接 ****
+        // **** 判断代码配置类型，并获取请求结果 ****
         // 是否Java代码配置
         boolean isJavaCodeConfig = codeStr.startsWith(ConstUtil.JAVA_CODE_CONFIG_START_LABEL) &&
                 codeStr.endsWith(ConstUtil.JAVA_CODE_CONFIG_END_LABEL);
@@ -216,8 +217,13 @@ public class ScriptCodeUtil {
             }
 
             try {
+                // 因Map.of()创建的Map集合无法修改，所以这里需要复制jsParams
+                Map<String, Object> jsParamsCopy = new HashMap<>(jsParams);
+                // 注入全局参数：UrlUtil对象
+                jsParamsCopy.put("urlUtil", new UrlUtil());
+
                 RhinoJsEngine rhinoJsEngine = new RhinoJsEngine();
-                RhinoJsEngine.JsResult executeResult = rhinoJsEngine.execute(jsCode, jsParams);
+                RhinoJsEngine.JsResult executeResult = rhinoJsEngine.execute(jsCode, jsParamsCopy);
                 if (executeResult.isSuccess()) {
                     result = executeResult.getValue();
                     if (successCall != null) {

@@ -316,7 +316,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         }
 
         // 获取上一章
-        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
+        OperateActionRefactored operateAction = OperateActionRefactored.getInstance(project);
         operateAction.prevPageChapter((chapterInfo, bodyElement)  -> {
             selectedChapterInfoTemp.setLastReadLineNum(1);
             selectedChapterInfoTemp.setPrevReadLineNum(1);
@@ -352,7 +352,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (selectedChapterIndex == chapterListTemp.size() - 1) {
             return;
         }
-        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
+        OperateActionRefactored operateAction = OperateActionRefactored.getInstance(project);
         operateAction.nextPageChapter((chapterInfo, bodyElement) -> {
             selectedChapterInfoTemp.setLastReadLineNum(1);
             selectedChapterInfoTemp.setPrevReadLineNum(1);

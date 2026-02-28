@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.OperateActionRefactored;
 import com.wei.wreader.utils.yml.ConfigYaml;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +25,7 @@ public abstract class BaseAction extends AnAction {
      */
     protected Settings settings;
     protected Project project;
+    protected OperateActionRefactored operateAction;
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         cacheService = CacheService.getInstance();
@@ -57,6 +59,7 @@ public abstract class BaseAction extends AnAction {
 
         project = anActionEvent.getProject();
 
+        operateAction = OperateActionRefactored.getInstance(project);
 
     }
 }

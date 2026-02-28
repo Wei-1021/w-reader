@@ -3,7 +3,7 @@ package com.wei.wreader.action;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +15,6 @@ public class PrevChapterAction extends BaseAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
-        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
         // 停止定时器
         operateAction.executorServiceShutdown();
         // 停止语音
@@ -29,9 +28,6 @@ public class PrevChapterAction extends BaseAction {
                     if (prevPageChapter == null) {
                         return;
                     }
-
-                    ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfoTemp.initLineNum(1, 1, 1);
 
                     operateAction.updateContentText();
 

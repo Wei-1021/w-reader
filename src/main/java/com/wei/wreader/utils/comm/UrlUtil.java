@@ -21,7 +21,7 @@ public class UrlUtil {
         if (!href.contains(ConstUtil.HTTP_SCHEME) && !href.contains(ConstUtil.HTTPS_SCHEME)) {
             if (location.startsWith("/")) {
                 href = baseUrl + href;
-            } else if (location.startsWith("./") ) {
+            } else if (location.startsWith("./")) {
                 href = href.replace("./", "");
                 href = location + href;
             } else if (location.startsWith("../")) {
@@ -36,7 +36,7 @@ public class UrlUtil {
     /**
      * 根据基础URL和相对路径构建完整的URL。
      *
-     * @param baseUrl 基础URL（应包含协议、域名和可能的端口）
+     * @param baseUrl      基础URL（应包含协议、域名和可能的端口）
      * @param relativePath 相对路径（可以包含`/`、`./`、`../`）
      * @return 完整的URL字符串
      * @throws MalformedURLException 如果基础URL格式不正确
@@ -75,15 +75,43 @@ public class UrlUtil {
         return fullUri.toString();
     }
 
+    // -------------------------------------------------------------------------------
+    // 非静态方法，主要是用于将其注入到Rhino js引擎中
+    // -------------------------------------------------------------------------------
+
+    /**
+     * 转化html中href的链接，转化成完整的url
+     *
+     * @param href
+     * @param location
+     * @param baseUrl
+     * @return
+     */
+    public String hrefInvert2(String href, String location, String baseUrl) {
+        if (!href.contains(ConstUtil.HTTP_SCHEME) && !href.contains(ConstUtil.HTTPS_SCHEME)) {
+            if (location.startsWith("/")) {
+                href = baseUrl + href;
+            } else if (location.startsWith("./")) {
+                href = href.replace("./", "");
+                href = location + href;
+            } else if (location.startsWith("../")) {
+
+            }
+        }
+
+        return href;
+    }
+
+
     /**
      * 根据基础URL和相对路径构建完整的URL。
      *
-     * @param baseUrl 基础URL（应包含协议、域名和可能的端口）
+     * @param baseUrl      基础URL（应包含协议、域名和可能的端口）
      * @param relativePath 相对路径（可以包含`/`、`./`、`../`）
      * @return 完整的URL字符串
      * @throws MalformedURLException 如果基础URL格式不正确
      */
-    public static String buildFullURL2(String baseUrl, String relativePath) {
+    public String getFullURL(String baseUrl, String relativePath) {
         if (relativePath.contains(ConstUtil.HTTP_SCHEME) ||
                 relativePath.contains(ConstUtil.HTTPS_SCHEME) ||
                 relativePath.startsWith("file://")) {

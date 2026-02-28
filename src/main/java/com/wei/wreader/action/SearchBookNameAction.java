@@ -1,8 +1,7 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.wei.wreader.utils.OperateActionUtil;
-import com.wei.wreader.utils.SearchBookUtil;
+import com.wei.wreader.utils.SearchBookRefactored;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -17,7 +16,10 @@ public class SearchBookNameAction extends BaseAction {
 //            OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
 //            operateAction.buildSearchBookDialog(project);
 
-            SearchBookUtil searchBookUtil = new SearchBookUtil(project);
+//            SearchBookUtil searchBookUtil = new SearchBookUtil(project);
+//            searchBookUtil.buildSearchBookDialog();
+
+            SearchBookRefactored searchBookUtil = new SearchBookRefactored(project);
             searchBookUtil.buildSearchBookDialog();
         });
     }

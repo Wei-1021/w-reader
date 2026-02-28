@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import com.wei.wreader.utils.ui.ToolWindowUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +26,7 @@ public class ChangeFontColorAction extends BaseAction {
         }
 
         SwingUtilities.invokeLater(() -> {
-            OperateActionUtil.getInstance(project).changeFontColor();
+            operateAction.changeFontColor();
             switch (settings.getDisplayType()) {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     ToolWindowUtil.updateContentText(project, (textPanel) -> {

@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
@@ -20,7 +20,6 @@ public class ChapterListAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
-        OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
         operateAction.showBookDirectory(new BookDirectoryListener() {
             /**
              * 点击章节目录选项
@@ -33,7 +32,6 @@ public class ChapterListAction extends BaseAction {
             public void onClickItem(int position, List<String> chapterList, ChapterInfo chapterInfo, Element element) {
                 super.onClickItem(position, chapterList, chapterInfo, element);
 
-                OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
                 // 停止定时器
                 operateAction.executorServiceShutdown();
                 // 停止语音
@@ -43,15 +41,17 @@ public class ChapterListAction extends BaseAction {
 
                 switch (settings.getDisplayType()) {
                     case Settings.DISPLAY_TYPE_SIDEBAR:
-                        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                        selectedChapterInfoTemp.initLineNum(1,1,1);
+//                        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
+                        chapterInfo.initLineNum(1, 1, 1);
+                        cacheService.setSelectedChapterInfo(chapterInfo);
+
                         operateAction.updateContentText();
                         if (element != null) {
                             operateAction.loadThisChapterNextContent(chapterInfo.getChapterUrl(), element);
                         }
                     case Settings.DISPLAY_TYPE_STATUSBAR:
                         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                        selectedChapterInfo.initLineNum(1,1,1);
+                        selectedChapterInfo.initLineNum(1, 1, 1);
                         WReaderStatusBarWidget.update(project, "");
                         break;
                     case Settings.DISPLAY_TYPE_TERMINAL:

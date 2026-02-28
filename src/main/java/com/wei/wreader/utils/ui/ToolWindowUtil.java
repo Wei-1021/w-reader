@@ -17,7 +17,7 @@ import java.awt.*;
 import java.util.function.Consumer;
 
 /**
- * 工具窗口（侧边栏）工具类
+ * 工具窗口ToolWindow（侧边栏）工具类
  */
 public class ToolWindowUtil {
     /**

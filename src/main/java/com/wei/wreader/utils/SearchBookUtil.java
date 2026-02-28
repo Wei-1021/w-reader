@@ -1,5 +1,7 @@
 package com.wei.wreader.utils;
 
+import java.util.ArrayList;
+
 import com.google.gson.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -821,7 +823,8 @@ public class SearchBookUtil {
 
     /**
      * 获取目录列表--API
-     * @param url 请求链接
+     *
+     * @param url                     请求链接
      * @param searchTempListMainRules 目录规则
      * @return
      */
@@ -1013,129 +1016,177 @@ public class SearchBookUtil {
      * @return 返回结果
      */
     public Map<String, List<String>> requestNextListMain(String url, Consumer<SearchBookCallParam> call) {
-        BookInfo tempSelectedBookInfo = cacheService.getTempSelectedBookInfo();
         SiteBean selectedSiteBean = cacheService.getTempSelectedSiteBean();
         ListMainRules listMainRule = selectedSiteBean.getListMainRules();
+        try {
+            // 使用API接口请求下一页目录
+            if (listMainRule.isUseNextListMainApi()) {
+                return this.requestNextListMainApi(url, listMainRule, call);
+            }
+            // 解析HTML页面，请求下一页目录
+            else {
+                return this.requestNextListMainHtml(url, listMainRule, call);
+            }
+        } catch (Exception e) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+            call.accept(new SearchBookCallParam());
+            e.printStackTrace();
+        }
+
+        return Map.of(
+                "chapterList", new ArrayList<>(),
+                "chapterUrlList", new ArrayList<>()
+        );
+    }
+
+    /**
+     * 请求下一页目录--API接口方式
+     *
+     * @param url
+     * @param listMainRule
+     * @param call
+     * @return
+     */
+    private Map<String, List<String>> requestNextListMainApi(String url,
+                                                             ListMainRules listMainRule,
+                                                             Consumer<SearchBookCallParam> call) {
         List<String> tempChapterTitleList = new ArrayList<>();
         List<String> tempChapterUrlList = new ArrayList<>();
         String bodyElementStr = "";
         Element bodyElement = null;
         SearchBookCallParam callParam = new SearchBookCallParam();
-        try {
-            // 使用API接口请求下一页目录
-            if (listMainRule.isUseNextListMainApi()) {
-                HttpRequestBase requestBase = HttpUtil.commonRequest(url);
-                requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
-                try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(requestBase)) {
-                    if (httpResponse.getStatusLine().getStatusCode() == 200) {
-                        HttpEntity entity = httpResponse.getEntity();
-                        String result = EntityUtils.toString(entity);
-                        // 返回结果
-                        bodyElementStr = result;
-                        // 字符串转换JSON对象
-                        Gson gson = new Gson();
-                        JsonObject resJson = gson.fromJson(result, JsonObject.class);
 
-                        // 使用jsonpath对获取到的json进行处理
-                        List<Map<String, Object>> readJson = JsonPath.read(resJson.toString(), listMainRule.getNextListMainApiDataRule());
-                        for (Map<String, Object> itemMap : readJson) {
-                            // 获取当前章节的数据
-                            String itemId = (String) itemMap.get(listMainRule.getItemIdField());
-                            String title = (String) itemMap.get(listMainRule.getItemTitleField());
-                            String itemUrl = (String) itemMap.get(listMainRule.getItemUrlField());
-                            // 获取当前章节的链接
-                            if (StringUtils.isNotBlank(itemUrl)) {
-                                tempChapterUrlList.add(itemUrl);
-                            } else {
-                                // 若itemUrl为空，则使用urlDataHandleRule执行动态代码，对数据进行处理，从而获取章节链接
-                                String urlDataHandleRule = listMainRule.getUrlDataHandleRule();
-                                itemUrl = (String) ScriptCodeUtil.getScriptCodeExeResult(
-                                        urlDataHandleRule,
-                                        new Class[]{String.class, Map.class, String.class},
-                                        new Object[]{result, itemMap, itemId},
-                                        new HashMap<>() {{
-                                            put("result", result);
-                                            put("itemMap", itemMap);
-                                            put("itemId", itemId);
-                                        }}
-                                );
-                                tempChapterUrlList.add(itemUrl);
-                            }
-                            tempChapterTitleList.add(title);
-                        }
-                    }
-                } catch (Exception e) {
-                    Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-                    call.accept(callParam);
-                    throw new RuntimeException(e);
-                }
-            }
-            // 解析HTML页面，请求下一页目录
-            else {
-                Document document = null;
-                try {
-                    document = Jsoup.connect(url)
-                            .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                            .get();
-                } catch (IOException e) {
-                    Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-                    call.accept(callParam);
-                    throw new RuntimeException(e);
-                }
+        HttpRequestBase requestBase = HttpUtil.commonRequest(url);
+        requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
+        try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(requestBase)) {
+            if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                HttpEntity entity = httpResponse.getEntity();
+                String result = EntityUtils.toString(entity);
+                // 返回结果
+                bodyElementStr = result;
+                // 字符串转换JSON对象
+                Gson gson = new Gson();
+                JsonObject resJson = gson.fromJson(result, JsonObject.class);
 
-                // 获取页面的地址
-                String location = document.location();
-                // 页面展示主体
-                bodyElement = document.body();
-                bodyElementStr = bodyElement.toString();
-                // 获取小说目录
-                String listMainElementName = listMainRule.getListMainElementName();
-                Elements listMainElements = bodyElement.select(listMainElementName);
-                if (listMainElements.isEmpty()) {
-                    return new HashMap<>();
-                }
-
-                // 获取目录的链接和标题
-                String urlElementName = listMainRule.getUrlElement();
-                urlElementName = StringUtils.isBlank(urlElementName) ? "a" : urlElementName;
-                String titleElementName = listMainRule.getTitleElement();
-                for (Element element : listMainElements) {
-                    // url
-                    Element chapterUrlElement = element.selectFirst(urlElementName);
-                    String chapterUrl = "";
-                    if (chapterUrlElement != null) {
-                        chapterUrl = chapterUrlElement.attr("href");
+                // 使用jsonpath对获取到的json进行处理
+                List<Map<String, Object>> readJson = JsonPath.read(resJson.toString(), listMainRule.getNextListMainApiDataRule());
+                for (Map<String, Object> itemMap : readJson) {
+                    // 获取当前章节的数据
+                    String itemId = (String) itemMap.get(listMainRule.getItemIdField());
+                    String title = (String) itemMap.get(listMainRule.getItemTitleField());
+                    String itemUrl = (String) itemMap.get(listMainRule.getItemUrlField());
+                    // 获取当前章节的链接
+                    if (StringUtils.isNotBlank(itemUrl)) {
+                        tempChapterUrlList.add(itemUrl);
+                    } else {
+                        // 若itemUrl为空，则使用urlDataHandleRule执行动态代码，对数据进行处理，从而获取章节链接
+                        String urlDataHandleRule = listMainRule.getUrlDataHandleRule();
+                        itemUrl = (String) ScriptCodeUtil.getScriptCodeExeResult(
+                                urlDataHandleRule,
+                                new Class[]{String.class, Map.class, String.class},
+                                new Object[]{result, itemMap, itemId},
+                                new HashMap<>() {{
+                                    put("result", result);
+                                    put("itemMap", itemMap);
+                                    put("itemId", itemId);
+                                }}
+                        );
+                        tempChapterUrlList.add(itemUrl);
                     }
-                    // title
-                    Element chapterTitleElement = element.selectFirst(titleElementName);
-                    String chapterTitle = "";
-                    if (chapterTitleElement != null) {
-                        chapterTitle = chapterTitleElement.text();
-                    }
-                    tempChapterTitleList.add(chapterTitle);
-                    try {
-                        // 转化url路径，将相对路径转化成绝对路径
-                        chapterUrl = UrlUtil.buildFullURL(location, chapterUrl);
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    tempChapterUrlList.add(chapterUrl);
+                    tempChapterTitleList.add(title);
                 }
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
             call.accept(callParam);
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         callParam.setBodyElement(bodyElement);
         callParam.setBodyContentStr(bodyElementStr);
         call.accept(callParam);
 
-        return new HashMap<>() {{
-            put("chapterList", tempChapterTitleList);
-            put("chapterUrlList", tempChapterUrlList);
-        }};
+        return Map.of(
+                "chapterList", tempChapterTitleList,
+                "chapterUrlList", tempChapterUrlList
+        );
+    }
+
+    /**
+     * 请求下一页目录--解析HTML页面方式
+     *
+     * @param url
+     * @param listMainRule
+     * @param call
+     * @return
+     */
+    private Map<String, List<String>> requestNextListMainHtml(String url,
+                                                              ListMainRules listMainRule,
+                                                              Consumer<SearchBookCallParam> call) {
+        List<String> tempChapterTitleList = new ArrayList<>();
+        List<String> tempChapterUrlList = new ArrayList<>();
+        String bodyElementStr = "";
+        Element bodyElement = null;
+        SearchBookCallParam callParam = new SearchBookCallParam();
+        Document document = null;
+        try {
+            document = Jsoup.connect(url)
+                    .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                    .get();
+        } catch (IOException e) {
+            Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+            call.accept(callParam);
+            throw new RuntimeException(e);
+        }
+
+        // 获取页面的地址
+        String location = document.location();
+        // 页面展示主体
+        bodyElement = document.body();
+        bodyElementStr = bodyElement.toString();
+        // 获取小说目录
+        String listMainElementName = listMainRule.getListMainElementName();
+        Elements listMainElements = bodyElement.select(listMainElementName);
+        if (listMainElements.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // 获取目录的链接和标题
+        String urlElementName = listMainRule.getUrlElement();
+        urlElementName = StringUtils.isBlank(urlElementName) ? "a" : urlElementName;
+        String titleElementName = listMainRule.getTitleElement();
+        for (Element element : listMainElements) {
+            // url
+            Element chapterUrlElement = element.selectFirst(urlElementName);
+            String chapterUrl = "";
+            if (chapterUrlElement != null) {
+                chapterUrl = chapterUrlElement.attr("href");
+            }
+            // title
+            Element chapterTitleElement = element.selectFirst(titleElementName);
+            String chapterTitle = "";
+            if (chapterTitleElement != null) {
+                chapterTitle = chapterTitleElement.text();
+            }
+            tempChapterTitleList.add(chapterTitle);
+            try {
+                // 转化url路径，将相对路径转化成绝对路径
+                chapterUrl = UrlUtil.buildFullURL(location, chapterUrl);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            tempChapterUrlList.add(chapterUrl);
+        }
+
+
+        callParam.setBodyElement(bodyElement);
+        callParam.setBodyContentStr(bodyElementStr);
+        call.accept(callParam);
+
+        return Map.of(
+                "chapterList", tempChapterTitleList,
+                "chapterUrlList", tempChapterUrlList
+        );
     }
 
     /**

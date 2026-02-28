@@ -91,7 +91,7 @@ public final class JsonValidator {
                 beanList = getCollectionType(json, List.class, clazz);
             } catch (JsonProcessingException e) {
                 isValid = false;
-                errorDetailList.add(new ErrorDetail(0, 0, "List conversion failed."));
+                errorDetailList.add(new ErrorDetail(0, 0, e.getMessage()));
             }
         }
         return new ValidationResult(isValid, errorDetailList, beanList);

@@ -157,12 +157,15 @@ public class WReaderToolWindow {
 
     private CacheService cacheService;
     private Settings settings;
+    private OperateActionRefactored operateAction;
     //endregion
     //endregion
 
     public WReaderToolWindow(ToolWindow toolWindow) {
         configYaml = new ConfigYaml();
         cacheService = CacheService.getInstance();
+
+        operateAction = OperateActionRefactored.getInstance(toolWindow.getProject());
 
         menuToolBarPanel.setVisible(false);
         SwingUtilities.invokeLater(() -> {
@@ -320,13 +323,13 @@ public class WReaderToolWindow {
         contentTextPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                int pos = OperateActionUtil.getClickedPosition(contentTextPane, mouseEvent);
+                int pos = operateAction.getClickedPosition(contentTextPane, mouseEvent);
                 if (pos == -1) {
                     return;
                 }
 
                 // 获取点击位置处的HTML标签
-                String htmlTag = OperateActionUtil.getHTMLTagAtPosition(contentTextPane, pos);
+                String htmlTag = operateAction.getHTMLTagAtPosition(contentTextPane, pos);
                 if (StringUtils.isNotBlank(htmlTag) && htmlTag.contains("<img")) {
                     // 提取img标签中的src属性
                     Matcher matcher = Pattern.compile("src=\"([^\"]+)\"").matcher(htmlTag);

@@ -1,6 +1,8 @@
 package com.wei.wreader.utils.comm.script;
 
 import com.wei.wreader.pojo.BookInfo;
+import com.wei.wreader.utils.comm.UrlUtil;
+import org.jsoup.nodes.Element;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -270,6 +272,15 @@ public class RhinoJsEngine {
             }
             return map;
         }
+        // 处理 NativeJavaObject 包装的 Java 对象
+        if (obj instanceof Wrapper) {
+            Object wrapped = ((Wrapper) obj).unwrap();
+            if (wrapped instanceof String) {
+                return wrapped;
+            }
+            // 其他类型的包装对象也转为字符串
+            return wrapped.toString();
+        }
         // 其他对象转为字符串（或保留原样）
         return obj.toString();
     }
@@ -464,16 +475,51 @@ public class RhinoJsEngine {
         bookInfo.setBookAuthor("");
         bookInfo.setBookDesc("");
         bookInfo.setBookImgUrl("");
+
+        Element element = new Element("div");
+        element.append("""
+                <div id="pagination">
+                    <ul class="pagination pagination-sm pagination-chap">
+                        <li><a href="/novel2541/">First</a></li>
+                        <li><a href="/novel2541/?p=26">Prev</a></li>
+                        &nbsp;
+                        <li><a href="/novel2541/?p=25">25</a></li>
+                        &nbsp;
+                        <li><a href="/novel2541/?p=26">26</a></li>
+                        &nbsp;
+                        <li class="active"><a>27</a></li>
+                        <li class="active"><a href="/novel2541/?p=29">Next</a></li>
+                        <li class="active"><a>Last</a></li>
+                    </ul>
+                </div>
+                """);
+        Element nextLiHtmlElement = element.selectFirst(".pagination li:nth-last-child(2)");
+
         String jsCode8 = """   
                 let tt = new Date().getTime();
                 let key = bookInfo.getBookName();
                 let bookId = bookInfo.getBookId();
-                let url = `https://www.8xsk.info/e/search/index.php?keyboard=${key}&show=&searchget=1&tt=${tt}&bookId=${bookId}`;
-                (url)
+                let baseUrl = "https://www.8xsk.info";
+                let url = `/e/search/index.php?keyboard=${key}&show=&searchget=1&tt=${tt}&bookId=${bookId}`;
+                
+                let newUrl = urlUtil.getFullURL(baseUrl, url);
+                
+                let nextLiHtmlElement = element.selectFirst(".pagination li:nth-last-of-type(2)");
+                let nextLiHtml = nextLiHtmlElement != null ? nextLiHtmlElement.html() : "";
+                let href = nextLiHtmlElement.selectFirst("a").attr("href");
+                ({
+                    url1: url,
+                    newUrl1: newUrl.toString(),
+                    nextLiHtml1: nextLiHtml,
+                    href1: href,
+                })
                 """;
+
         var result8 = engine.execute(jsCode8, new HashMap<>() {{
             put("bookInfo", bookInfo);
+            put("urlUtil", new UrlUtil());
+            put("element", element);
         }});
-        System.out.println(result8.getValue());
+        System.out.println(result8.getValue() + ", " + result8.getErrorMessage());
     }
 }

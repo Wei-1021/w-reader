@@ -166,4 +166,19 @@ public class ChapterInfo implements Serializable {
         this.setLastReadLineNum(lastReadLineNum);
         this.setChapterContentList(null);
     }
+
+    @Override
+    public String toString() {
+        return "ChapterInfo{" +
+                "chapterUrl='" + chapterUrl + '\'' +
+                ", chapterTitle='" + chapterTitle + '\'' +
+                ", chapterContent='" + chapterContent + '\'' +
+                ", chapterContentStr='" + chapterContentStr + '\'' +
+                ", selectedChapterIndex=" + selectedChapterIndex +
+                ", lastReadLineNum=" + lastReadLineNum +
+                ", prevReadLineNum=" + prevReadLineNum +
+                ", nextReadLineNum=" + nextReadLineNum +
+                ", chapterContentList=" + chapterContentList +
+                '}';
+    }
 }

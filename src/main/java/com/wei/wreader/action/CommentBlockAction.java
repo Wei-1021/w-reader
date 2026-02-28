@@ -10,7 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.utils.yml.ConfigYaml;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -77,7 +77,6 @@ public class CommentBlockAction extends BaseAction {
         String finalCommentEndSymbol = commentEndSymbol;
         String finalCommentLineSymbol = commentLineSymbol;
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            OperateActionUtil operateAction = OperateActionUtil.getInstance(project);
             operateAction.splitChapterContent();
 
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();

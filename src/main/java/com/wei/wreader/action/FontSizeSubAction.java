@@ -5,7 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import com.wei.wreader.utils.ui.ToolWindowUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +31,7 @@ public class FontSizeSubAction extends BaseAction {
         ApplicationManager.getApplication().invokeLater(() -> {
             switch (settings.getDisplayType()) {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
-                    OperateActionUtil.getInstance(project).fontSizeSub();
+                    operateAction.fontSizeSub();
 
                     ToolWindowUtil.updateContentText(project, contentTextPanel -> {
                         int caretPosition = contentTextPanel.getCaretPosition();

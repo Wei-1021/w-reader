@@ -5,7 +5,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBCheckBox;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
-import com.wei.wreader.utils.OperateActionUtil;
+
 import com.wei.wreader.utils.ui.GroupedComboBoxs.CharsetGroupComboBox;
 import com.wei.wreader.utils.ui.GroupedComboBoxs.OptionItem;
 import org.jetbrains.annotations.NotNull;
@@ -67,7 +67,7 @@ public class LoadLocalFileAction extends BaseAction {
         Object[] objs = {charsetLabel, charsetTipLabel, charsetComboBox, isShowImgPanel, textRegexPanel};
         MessageDialogUtil.showMessageDialog(project, "请选择字符集", objs, () -> {
             // 打开文件选择器，并处理文件
-            OperateActionUtil.getInstance(project).loadLocalFile(textRegexTextField.getText());
+            operateAction.loadLocalFile(textRegexTextField.getText());
         });
     }
 }

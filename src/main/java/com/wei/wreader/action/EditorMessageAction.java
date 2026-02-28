@@ -10,7 +10,6 @@ import com.intellij.util.ui.JBUI;
 import com.wei.wreader.pojo.ChapterInfo;
 import com.wei.wreader.utils.data.ConstUtil;
 import com.wei.wreader.utils.file.ImagePreviewer;
-import com.wei.wreader.utils.OperateActionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -82,13 +81,13 @@ public class EditorMessageAction extends BaseAction {
         contentTextPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                int pos = OperateActionUtil.getClickedPosition(contentTextPane, mouseEvent);
+                int pos = operateAction.getClickedPosition(contentTextPane, mouseEvent);
                 if (pos == -1) {
                     return;
                 }
 
                 // 获取点击位置处的HTML标签
-                String htmlTag = OperateActionUtil.getHTMLTagAtPosition(contentTextPane, pos);
+                String htmlTag = operateAction.getHTMLTagAtPosition(contentTextPane, pos);
                 if (StringUtils.isNotBlank(htmlTag) && htmlTag.contains("<img")) {
                     // 提取img标签中的src属性
                     Matcher matcher = Pattern.compile("src=\"([^\"]+)\"").matcher(htmlTag);
