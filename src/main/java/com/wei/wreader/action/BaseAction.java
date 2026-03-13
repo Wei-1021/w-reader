@@ -26,6 +26,7 @@ public abstract class BaseAction extends AnAction {
     protected Settings settings;
     protected Project project;
     protected OperateActionRefactored operateAction;
+    protected boolean isInitOperateAction = true;
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         cacheService = CacheService.getInstance();
@@ -59,7 +60,9 @@ public abstract class BaseAction extends AnAction {
 
         project = anActionEvent.getProject();
 
-        operateAction = OperateActionRefactored.getInstance(project);
+        if (isInitOperateAction) {
+            operateAction = OperateActionRefactored.getInstance(project);
+        }
 
     }
 }

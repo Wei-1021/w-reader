@@ -134,7 +134,7 @@ public class ConstUtil {
     public static final String WREADER_BOOK = "BOOK";
     public static final String WREADER_DIRECTORY = "directory";
     public static final String WREADER_CONTENT = "content";
-    public static final String WREADER_LOAD_LOCAL_TIP = "若目录未加载成功或文字乱码，请尝试修改字符集，然后重新加载文件";
+    public static final String WREADER_LOAD_LOCAL_TIP = "仅支持EPUB和TXT文件，若未加载成功或文字乱码，请尝试修改字符集后重试！";
     public static final String WREADER_AUDIO_READING_ERROR = "音频播放异常！";
     public static final String WREADER_DIY_SITE_JSON_NULL_ERROR = "自定义书源规则字符串为空";
     public static final String WREADER_DIY_SITE_JSON_ERROR = "自定义书源规则字符串格式错误";

@@ -5,8 +5,10 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.*;
+import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBRadioButton;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -15,9 +17,11 @@ import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.WReaderIcons;
 import com.wei.wreader.utils.tts.VoiceRoleStyle;
 import com.wei.wreader.utils.ui.GroupedComboBoxs.CharsetGroupComboBox;
 import com.wei.wreader.utils.ui.GroupedComboBoxs.GroupedComboBox;
+import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.ui.RadioButtonUtil;
 import com.wei.wreader.utils.yml.ConfigYaml;
 import com.wei.wreader.utils.ui.DecimalDocumentFilter;
@@ -81,6 +85,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JLabel editorMessageWindosHeightLabel;
     private JPanel customSiteRuleTextAreaTypePanel;
     private JPanel customSiteRuleTextAreaTypeLabelPanel;
+    private JPanel footerTipPanel;
     private ButtonGroup selectIconStyleRadioButtonGroup;
     private ButtonGroup displayTypeRadioGroup;
     private ButtonGroup customSiteRuleTextAreaTypeRadioGroup;
@@ -201,6 +206,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         createUIVolume();
         // 音频风格
         createUIAudioStyle();
+
+        // 底部提示
+        createUIFooterTipPanel();
 
         return settingPanel;
     }
@@ -613,5 +621,33 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
     }
 
+    /**
+     * 底部提示--联系方式
+     */
+    private void createUIFooterTipPanel() {
+        ActionLink actionLink = new ActionLink();
+        actionLink.setIcon(WReaderIcons.LINK_WAY);
+        actionLink.setText("联系方式");
+        actionLink.addActionListener(e -> {
+            Project project = ProjectManager.getInstance().getDefaultProject();
+            DialogBuilder dialogBuilder = MessageDialogUtil.showMessageHTML(project, "联系方式",
+                    """
+                    <h3>如果您有任何问题或好的建议，请通过以下方式联系：</h3>
+                    <span style="color: #589DF6;">Email: 1075542448@qq.com</span><br>
+                    <span style="color: #589DF6;">QQ: 1075542448</span><br>
+                    <span style="color: #589DF6;">QQ群: 1060150904</span><br>
+                    """);
+            dialogBuilder.setOkActionEnabled(false);
+        });
+
+        footerTipPanel.setLayout(new GridLayoutManager(1, 1));
+        GridConstraints labelGrid = new GridConstraints();
+        labelGrid.setRow(0);
+        labelGrid.setColumn(0);
+        // 设置水平位置--左边（ANCHOR_WEST：西，按照上北下南左西右东的顺序，西对应左边）
+        labelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        footerTipPanel.add(actionLink, labelGrid);
+
+    }
 }
 

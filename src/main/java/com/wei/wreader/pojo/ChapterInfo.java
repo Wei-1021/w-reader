@@ -1,5 +1,9 @@
 package com.wei.wreader.pojo;
 
+import com.wei.wreader.service.CacheService;
+import com.wei.wreader.utils.data.StringUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -151,7 +155,11 @@ public class ChapterInfo implements Serializable {
         this.setPrevReadLineNum(1);
         this.setNextReadLineNum(2);
         this.setLastReadLineNum(1);
-        this.setChapterContentList(null);
+
+        CacheService cacheService = CacheService.getInstance();
+        Settings settings = cacheService.getSettings();
+        List<String> contentArr = StringUtil.splitStringByMaxCharList(chapterContentText, settings.getSingleLineChars());
+        this.setChapterContentList(contentArr);
     }
 
     /**
@@ -164,7 +172,15 @@ public class ChapterInfo implements Serializable {
         this.setPrevReadLineNum(prevReadLineNum);
         this.setNextReadLineNum(nextReadLineNum);
         this.setLastReadLineNum(lastReadLineNum);
-        this.setChapterContentList(null);
+
+        if (StringUtils.isNotBlank(chapterContentStr)) {
+            CacheService cacheService = CacheService.getInstance();
+            Settings settings = cacheService.getSettings();
+            List<String> contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, settings.getSingleLineChars());
+            this.setChapterContentList(contentArr);
+        } else {
+            this.setChapterContentList(null);
+        }
     }
 
     @Override

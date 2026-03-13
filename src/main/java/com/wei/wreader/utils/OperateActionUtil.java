@@ -381,7 +381,7 @@ public class OperateActionUtil {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     // 清空缓存
                     ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfoTemp.initLineNum(1, 1, 1);
+                    selectedChapterInfoTemp.initLineNum(1, 2, 1);
                     cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
 
                     // 获取工具窗口
@@ -419,7 +419,7 @@ public class OperateActionUtil {
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
                     ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfo.initLineNum(1, 1, 1);
+                    selectedChapterInfo.initLineNum(1, 2, 1);
                     WReaderStatusBarWidget.update(mProject, "");
                     break;
                 case Settings.DISPLAY_TYPE_TERMINAL:
@@ -1263,7 +1263,7 @@ public class OperateActionUtil {
         };
 
         long autoReadTimeMillis = (long) (autoReadTime * 1000);
-        // 调度任务，每过autoReadTime秒执行一次
+        // 调度任务，每隔指定的时间执行一次
         executorService.scheduleAtFixedRate(readNextLineTask, autoReadTimeMillis, autoReadTimeMillis, TimeUnit.MILLISECONDS);
     }
 

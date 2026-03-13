@@ -18,6 +18,7 @@ public class WReaderIcons {
     public static final Icon LISTEN_BOOK = IconLoader.getIcon("/icon/listen_book.svg", WReaderIcons.class);
     public static final Icon BOOK_INFO = IconLoader.getIcon("/icon/book_info.svg", WReaderIcons.class);
     public static final Icon CUSTOM_SITE = IconLoader.getIcon("/icon/custom_site.svg", WReaderIcons.class);
+    public static final Icon LINK_WAY = IconLoader.getIcon("/icon/link_way.svg", WReaderIcons.class);
 
     /**
      * 获取主图标

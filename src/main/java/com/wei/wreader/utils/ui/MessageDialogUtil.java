@@ -200,6 +200,7 @@ public class MessageDialogUtil {
                                                   Runnable cancelOperation) {
         return showMessageDialog(project, title, centerPanel, okRunnable, cancelOperation, 0, 0);
     }
+
     /**
      * 显示消息对话框
      *
@@ -300,6 +301,7 @@ public class MessageDialogUtil {
         dialogPanel.setLayout(flowLayout);
 
         JTextPane messageLabel = new JTextPane();
+        messageLabel.setEditable(false);
         messageLabel.setText(message);
 
         dialogPanel.add(messageLabel);
@@ -323,6 +325,7 @@ public class MessageDialogUtil {
 
         JTextPane messageLabel = new JTextPane();
         messageLabel.setContentType("text/html");
+        messageLabel.setEditable(false);
         messageLabel.setText(message);
 
         dialogPanel.add(messageLabel);

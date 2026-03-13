@@ -34,7 +34,6 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     private ConfigYaml configYaml;
     private CacheService cacheService;
     private BookInfo selectedBookInfo;
-    private ChapterInfo selectedChapterInfo;
     private Settings settings;
     private List<String> contentArr;
     public String currentContentStr;
@@ -63,7 +62,6 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         cacheService = CacheService.getInstance();
 
         selectedBookInfo = cacheService.getSelectedBookInfo();
-        selectedChapterInfo = cacheService.getSelectedChapterInfo();
         settings = cacheService.getSettings();
         if (settings == null) {
             settings = configYaml.getSettings();
@@ -75,6 +73,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
     }
 
     public String getTooltipText() {
+        ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
         if (selectedBookInfo == null || selectedChapterInfo == null) {
             return configYaml.getNameHump();
         }
@@ -112,6 +111,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         }
 
         if (!isHideText) {
+            ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
             if (selectedChapterInfo != null) {
                 String chapterContentStr = selectedChapterInfo.getChapterContentStr();
                 contentArr = selectedChapterInfo.getChapterContentList();
@@ -121,8 +121,9 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
                 // 当contentArr为空时, 按照单行最大字数将字符串分割成数组
                 if (contentArr == null || contentArr.isEmpty()) {
                     contentArr = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
+                    selectedChapterInfo.setChapterContentList(contentArr);
+                    cacheService.setSelectedChapterInfo(selectedChapterInfo);
                 }
-                selectedChapterInfo.setChapterContentList(contentArr);
                 if (contentArr != null && !contentArr.isEmpty() && lastReadLineNum <= contentArr.size()) {
                     lastReadLineNum = lastReadLineNum <= 0 ? 1 : lastReadLineNum;
                     currentContentStr = contentArr.get(lastReadLineNum - 1);
@@ -245,8 +246,8 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * @param project
      */
     public static void prevLine(@NotNull Project project) {
-        CacheService cacheTemp = CacheService.getInstance();
-        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        CacheService cacheService = CacheService.getInstance();
+        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfoTemp == null) {
             return;
         }
@@ -257,9 +258,21 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
                 !chapterContentList.isEmpty() &&
                 lastReadLineNum > 1) {
             int updateLastReadLineNum = lastReadLineNum - 1;
-            selectedChapterInfoTemp.setLastReadLineNum(updateLastReadLineNum);
-            selectedChapterInfoTemp.setPrevReadLineNum(updateLastReadLineNum <= 1 ? 1 : updateLastReadLineNum - 1);
-            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum);
+
+            // 创建新的 ChapterInfo 对象，而不是修改旧对象
+            ChapterInfo newChapterInfo = new ChapterInfo();
+            newChapterInfo.setChapterUrl(selectedChapterInfoTemp.getChapterUrl());
+            newChapterInfo.setChapterTitle(selectedChapterInfoTemp.getChapterTitle());
+            newChapterInfo.setChapterContent(selectedChapterInfoTemp.getChapterContent());
+            newChapterInfo.setChapterContentStr(selectedChapterInfoTemp.getChapterContentStr());
+            newChapterInfo.setSelectedChapterIndex(selectedChapterInfoTemp.getSelectedChapterIndex());
+            newChapterInfo.setLastReadLineNum(updateLastReadLineNum);
+            newChapterInfo.setPrevReadLineNum(updateLastReadLineNum <= 1 ? 1 : updateLastReadLineNum - 1);
+            newChapterInfo.setNextReadLineNum(lastReadLineNum);
+            newChapterInfo.setChapterContentList(selectedChapterInfoTemp.getChapterContentList());
+
+            cacheService.setSelectedChapterInfo(newChapterInfo);
+
             String chapterContent = chapterContentList.get(updateLastReadLineNum - 1);
             hide(project);
             update(project, chapterContent);
@@ -272,8 +285,8 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * @param project
      */
     public static void nextLine(@NotNull Project project) {
-        CacheService cacheTemp = CacheService.getInstance();
-        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        CacheService cacheService = CacheService.getInstance();
+        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfoTemp == null) {
             return;
         }
@@ -283,9 +296,21 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         if (chapterContentList != null && !chapterContentList.isEmpty() &&
                 lastReadLineNum <= chapterContentList.size()) {
             lastReadLineNum = lastReadLineNum == chapterContentList.size() ? lastReadLineNum : lastReadLineNum + 1;
-            selectedChapterInfoTemp.setLastReadLineNum(lastReadLineNum);
-            selectedChapterInfoTemp.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
-            selectedChapterInfoTemp.setNextReadLineNum(lastReadLineNum);
+
+            // 创建新的 ChapterInfo 对象，而不是修改旧对象
+            ChapterInfo newChapterInfo = new ChapterInfo();
+            newChapterInfo.setChapterUrl(selectedChapterInfoTemp.getChapterUrl());
+            newChapterInfo.setChapterTitle(selectedChapterInfoTemp.getChapterTitle());
+            newChapterInfo.setChapterContent(selectedChapterInfoTemp.getChapterContent());
+            newChapterInfo.setChapterContentStr(selectedChapterInfoTemp.getChapterContentStr());
+            newChapterInfo.setSelectedChapterIndex(selectedChapterInfoTemp.getSelectedChapterIndex());
+            newChapterInfo.setLastReadLineNum(lastReadLineNum);
+            newChapterInfo.setPrevReadLineNum(lastReadLineNum <= 1 ? 1 : lastReadLineNum - 1);
+            newChapterInfo.setNextReadLineNum(lastReadLineNum + 1);
+            newChapterInfo.setChapterContentList(selectedChapterInfoTemp.getChapterContentList());
+
+            cacheService.setSelectedChapterInfo(newChapterInfo);
+
             String chapterContent = chapterContentList.get(lastReadLineNum - 1);
             hide(project);
             update(project, chapterContent);
@@ -296,15 +321,15 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * 上一章
      */
     public static void prevChapter(@NotNull Project project) {
-        CacheService cacheTemp = CacheService.getInstance();
+        CacheService cacheService = CacheService.getInstance();
         // 获取章节列表
-        List<String> chapterListTemp  = cacheTemp.getChapterList();
+        List<String> chapterListTemp  = cacheService.getChapterList();
         if (chapterListTemp == null || chapterListTemp.isEmpty()) {
             return;
         }
 
         // 获取当前章节
-        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfoTemp == null) {
             return;
         }
@@ -320,8 +345,14 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         operateAction.prevPageChapter((chapterInfo, bodyElement)  -> {
             selectedChapterInfoTemp.setLastReadLineNum(1);
             selectedChapterInfoTemp.setPrevReadLineNum(1);
-            selectedChapterInfoTemp.setNextReadLineNum(1);
-            selectedChapterInfoTemp.setChapterContentList(null);
+            selectedChapterInfoTemp.setNextReadLineNum(2);
+
+            Settings settings = cacheService.getSettings();
+            List<String> contentArr = StringUtil.splitStringByMaxCharList(
+                    chapterInfo.getChapterContentStr(),
+                    settings.getSingleLineChars()
+            );
+            selectedChapterInfoTemp.setChapterContentList(contentArr);
             hide(project);
             update(project, "");
             if (bodyElement != null) {
@@ -334,15 +365,15 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
      * 下一章
      */
     public static void nextChapter(@NotNull Project project) {
-        CacheService cacheTemp = CacheService.getInstance();
+        CacheService cacheService = CacheService.getInstance();
         // 获取章节列表
-        List<String> chapterListTemp  = cacheTemp.getChapterList();
+        List<String> chapterListTemp = cacheService.getChapterList();
         if (chapterListTemp == null || chapterListTemp.isEmpty()) {
             return;
         }
 
         // 获取当前章节
-        ChapterInfo selectedChapterInfoTemp = cacheTemp.getSelectedChapterInfo();
+        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
         if (selectedChapterInfoTemp == null) {
             return;
         }
@@ -356,8 +387,14 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         operateAction.nextPageChapter((chapterInfo, bodyElement) -> {
             selectedChapterInfoTemp.setLastReadLineNum(1);
             selectedChapterInfoTemp.setPrevReadLineNum(1);
-            selectedChapterInfoTemp.setNextReadLineNum(1);
-            selectedChapterInfoTemp.setChapterContentList(null);
+            selectedChapterInfoTemp.setNextReadLineNum(2);
+
+            Settings settings = cacheService.getSettings();
+            List<String> contentArr = StringUtil.splitStringByMaxCharList(
+                    chapterInfo.getChapterContentStr(),
+                    settings.getSingleLineChars()
+            );
+            selectedChapterInfoTemp.setChapterContentList(contentArr);
             hide(project);
             update(project, "");
 

@@ -1817,7 +1817,7 @@ public class SearchBookUtil {
                 case Settings.DISPLAY_TYPE_SIDEBAR:
                     // 清空缓存
                     ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfoTemp.initLineNum(1, 1, 1);
+                    selectedChapterInfoTemp.initLineNum(1, 2, 1);
                     cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
 
                     // 获取工具窗口
@@ -1857,7 +1857,7 @@ public class SearchBookUtil {
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
                     ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                    selectedChapterInfo.initLineNum(1, 1, 1);
+                    selectedChapterInfo.initLineNum(1, 2, 1);
                     WReaderStatusBarWidget.update(mProject, "");
                     break;
                 case Settings.DISPLAY_TYPE_TERMINAL:

@@ -119,7 +119,7 @@ public class OperateActionRefactored {
     // ==================== 依赖服务 ====================
     // 核心服务依赖（通过构造函数注入）
     private final ConfigYaml configYaml;
-    private final CacheService cacheService;
+    private CacheService cacheService;
     private final CustomSiteRuleCacheServer customSiteRuleCacheServer;
     private final CustomSiteUtil customSiteUtil;
     private final Project project;
@@ -139,6 +139,7 @@ public class OperateActionRefactored {
     private List<String> chapterUrlList = new ArrayList<>();
     private List<String> chapterContentList = new ArrayList<>();
     private int currentChapterIndex = 0;
+    private int autoReadLastReadLineNum = 0;
 
     // 字体和样式设置
     private String fontFamily = DEFAULT_FONT_FAMILY;
@@ -187,9 +188,10 @@ public class OperateActionRefactored {
      * @return OperateActionUtilRefactored实例
      */
     public static OperateActionRefactored getInstance(Project project) {
-        if (instance == null || !project.equals(mProject) || mProject.isDisposed()) {
-            instance = new OperateActionRefactored(project);
-        }
+//        if (instance == null || !project.equals(mProject) || mProject.isDisposed()) {
+//            instance = new OperateActionRefactored(project);
+//        }
+        instance = new OperateActionRefactored(project);
         instance.initData();
         return instance;
     }
@@ -913,20 +915,10 @@ public class OperateActionRefactored {
     /**
      * 加载本章节下一页的内容
      *
-     * @param chapterUrl  章节URL
-     * @param bodyElement 页面body元素
+     * @param chapterUrl     章节URL
+     * @param bodyElement 页面body元素字符串
      */
     public void loadThisChapterNextContent(String chapterUrl, Element bodyElement) {
-        loadThisChapterNextContent(chapterUrl, bodyElement.html());
-    }
-
-    /**
-     * 加载本章节下一页的内容
-     *
-     * @param chapterUrl     章节URL
-     * @param bodyElementStr 页面body元素字符串
-     */
-    public void loadThisChapterNextContent(String chapterUrl, String bodyElementStr) {
         // 检查显示类型
         if (settings.getDisplayType() != Settings.DISPLAY_TYPE_SIDEBAR) {
             return;
@@ -950,7 +942,7 @@ public class OperateActionRefactored {
             nextContentTask.onCancel();
         }
 
-        nextContentTask = new NextContentLoadTask(chapterUrl, bodyElementStr);
+        nextContentTask = new NextContentLoadTask(chapterUrl, bodyElement);
         nextContentTask.queue();
     }
 
@@ -959,16 +951,18 @@ public class OperateActionRefactored {
      */
     private class NextContentLoadTask extends Task.Backgroundable {
         private final String chapterUrl;
-        private final String initialBodyContent;
+        private String initialBodyContent;
+        private Element initialBodyElement;
         private volatile boolean isRunning = true;
         private String returnResult;
         private final String nextContentUrl;
         private final StringBuilder nextContent = new StringBuilder();
 
-        public NextContentLoadTask(String chapterUrl, String bodyContent) {
+        public NextContentLoadTask(String chapterUrl, Element bodyContent) {
             super(project, LOAD_NEXT_CONTENT_TITLE);
             this.chapterUrl = chapterUrl;
-            this.initialBodyContent = bodyContent;
+            this.initialBodyContent = bodyContent.html();
+            this.initialBodyElement = bodyContent;
             this.nextContentUrl = getNextContentUrl();
             this.returnResult = nextContentUrl;
         }
@@ -986,7 +980,6 @@ public class OperateActionRefactored {
             try {
                 String baseUrl = selectedSiteBean.getBaseUrl();
                 String previousContentUrl = "";
-                AtomicReference<String> previousPageContent = new AtomicReference<>(initialBodyContent);
                 int pageCount = 0;
 
                 while (isRunning) {
@@ -996,7 +989,7 @@ public class OperateActionRefactored {
 
                     // 执行动态代码获取下一页URL
                     returnResult = executeNextContentScript(chapterUrl, pageCount,
-                            previousContentUrl, previousPageContent.get());
+                            previousContentUrl, initialBodyContent, initialBodyElement);
 
                     // 如果没有更多内容则停止
                     if (StringUtils.isBlank(returnResult)) {
@@ -1008,7 +1001,10 @@ public class OperateActionRefactored {
                     previousContentUrl = returnResult;
 
                     // 请求并追加内容
-                    nextContent.append(requestContent(returnResult, previousPageContent::set));
+                    nextContent.append(requestContent(returnResult, (resContent, resElement) -> {
+                        initialBodyContent = resContent;
+                        initialBodyElement = resElement;
+                    }));
 
                     Thread.sleep(1000); // 添加延迟避免请求过于频繁
                 }
@@ -1028,8 +1024,8 @@ public class OperateActionRefactored {
         /**
          * 执行下一页内容脚本
          */
-        private String executeNextContentScript(String chapterUrl, int pageCount,
-                                                String previousUrl, String previousContent) {
+        private String executeNextContentScript(String chapterUrl, int pageCount, String previousUrl,
+                                                String previousContent, Element previousElement) {
             try {
                 return (String) ScriptCodeUtil.getScriptCodeExeResult(
                         nextContentUrl,
@@ -1039,7 +1035,8 @@ public class OperateActionRefactored {
                                 "chapterUrl", chapterUrl,
                                 "loadingPage", pageCount,
                                 "preContentUrl", previousUrl,
-                                "prePageContent", previousContent
+                                "prePageContent", previousContent,
+                                "prePageElement", previousElement // js脚本插入页面元素对象
                         )
                 );
             } catch (Exception e) {
@@ -1193,7 +1190,19 @@ public class OperateActionRefactored {
             settings.setDataLoadType(Settings.DATA_LOAD_TYPE_LOCAL);
             cacheService.setSettings(settings);
 
-            ToolWindowUtil.updateContentText(project, "");
+            // 加载章节内容
+            chapterContentList = cacheService.getChapterContentList();
+            String chapterTitle = chapterList.get(currentChapterIndex);
+            currentChapterInfo.setChapterTitle(chapterTitle);
+            if (!chapterContentList.isEmpty()) {
+                chapterContentHtml = chapterContentList.get(currentChapterIndex);
+                chapterContentText = processChapterContentText(chapterContentHtml);
+                currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
+                cacheService.setSelectedChapterInfo(currentChapterInfo);
+                IS_SWITCH_NEXT_CHAPTER_SUCCESS = true;
+            }
+            updateContentText();
+//            ToolWindowUtil.updateContentText(project, chapterContentHtml);
             Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
         }
 
@@ -1400,6 +1409,14 @@ public class OperateActionRefactored {
         // 如果已经在运行则停止
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
+            ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
+            int size = selectedChapterInfoTemp.getChapterContentList().size();
+            selectedChapterInfoTemp.initLineNum(
+                    autoReadLastReadLineNum == 1 ? 1 : autoReadLastReadLineNum - 1,
+                    autoReadLastReadLineNum == size ? size : autoReadLastReadLineNum + 1,
+                    autoReadLastReadLineNum
+            );
+            cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
             return;
         }
 
@@ -1441,11 +1458,11 @@ public class OperateActionRefactored {
      */
     private Runnable createAutoReadTask(ChapterInfo selectedChapterInfo) {
         return () -> {
-            int lastReadLineNum = selectedChapterInfo.getLastReadLineNum();
+            autoReadLastReadLineNum = selectedChapterInfo.getLastReadLineNum();
             int contentLength = selectedChapterInfo.getChapterContentList() == null ?
                     0 : selectedChapterInfo.getChapterContentList().size();
 
-            if (lastReadLineNum < contentLength) {
+            if (autoReadLastReadLineNum < contentLength) {
                 IS_SWITCH_NEXT_CHAPTER_SUCCESS = false;
                 WReaderStatusBarWidget.nextLine(project);
             } else {
@@ -1622,7 +1639,7 @@ public class OperateActionRefactored {
                     updateStatusBarContent();
                     break;
                 case Settings.DISPLAY_TYPE_TERMINAL:
-                    // 终端显示暂未实现
+                    // TODO: 终端显示暂未实现
                     break;
             }
         } catch (Exception e) {
@@ -1634,10 +1651,6 @@ public class OperateActionRefactored {
      * 更新侧边栏内容
      */
     private void updateSidebarContent() {
-        ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-        selectedChapterInfoTemp.initLineNum(1, 1, 1);
-        cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
-
         ToolWindowUtil.updateContentText(project, textPane -> {
             SiteBean siteBean = cacheService.getSelectedSiteBean();
             ChapterRules chapterRules = siteBean.getChapterRules();
@@ -1679,8 +1692,8 @@ public class OperateActionRefactored {
      * 更新状态栏内容
      */
     private void updateStatusBarContent() {
-        ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-        selectedChapterInfo.initLineNum(1, 1, 1);
+//        ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+//        selectedChapterInfo.initLineNum(1, 2, 1);
         WReaderStatusBarWidget.update(project, "");
     }
 
@@ -1704,7 +1717,7 @@ public class OperateActionRefactored {
     /**
      * 请求内容（用于下一页加载）
      */
-    private String requestContent(String url, Consumer<String> call) {
+    private String requestContent(String url, BiConsumer<String, Element> call) {
         String content = "";
         ChapterRules chapterRules = selectedSiteBean.getChapterRules();
 
@@ -1724,7 +1737,7 @@ public class OperateActionRefactored {
     /**
      * 通过API请求内容
      */
-    private String requestContentViaApi(String url, Consumer<String> call, ChapterRules rules) {
+    private String requestContentViaApi(String url, BiConsumer<String, Element> call, ChapterRules rules) {
         HttpRequestBase requestBase = HttpUtil.commonRequest(url);
         requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
 
@@ -1735,11 +1748,12 @@ public class OperateActionRefactored {
                 JsonObject resJson = new Gson().fromJson(result, JsonObject.class);
 
                 Object readJson = JsonPath.read(resJson.toString(), rules.getNextContentApiDataRule());
-                call.accept(resJson.toString());
+                call.accept(resJson.toString(), null);
                 return (String) readJson;
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+            call.accept("",  null);
             throw new RuntimeException(e);
         }
         return "";
@@ -1748,14 +1762,14 @@ public class OperateActionRefactored {
     /**
      * 通过HTML请求内容
      */
-    private String requestContentViaHtml(String url, Consumer<String> call, ChapterRules rules) {
+    private String requestContentViaHtml(String url, BiConsumer<String, Element> call, ChapterRules rules) {
         try {
             Document document = Jsoup.connect(url)
                     .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
                     .get();
 
             Element bodyElement = document.body();
-            call.accept(bodyElement.html());
+            call.accept(bodyElement.html(), bodyElement);
 
             Elements chapterContentElements = bodyElement.select(rules.getContentElementName());
             if (chapterContentElements.isEmpty()) {
@@ -1775,6 +1789,7 @@ public class OperateActionRefactored {
 
         } catch (IOException e) {
             Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
+            call.accept("",  null);
             throw new RuntimeException(e);
         }
     }

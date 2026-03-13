@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -207,8 +208,8 @@ public class SearchBookRefactored {
         // 根据配置决定使用API还是HTML方式获取目录
         boolean useApi = StringUtils.isNotBlank(listMainUrl) && StringUtils.isNotBlank(listMainUrlDataRule);
         return useApi ?
-                searchBookDirectoryHtml(url, siteBean, listMainRules) :
-                searchBookDirectoryApi(url, listMainRules);
+                searchBookDirectoryApi(url, listMainRules) :
+                searchBookDirectoryHtml(url, siteBean, listMainRules);
     }
 
     /**
@@ -271,9 +272,9 @@ public class SearchBookRefactored {
      * 加载本章节的下一页内容
      *
      * @param chapterUrl     当前章节URL
-     * @param bodyElementStr 页面内容
+     * @param bodyElement 页面内容
      */
-    public void loadThisChapterNextContent(String chapterUrl, String bodyElementStr) {
+    public void loadThisChapterNextContent(String chapterUrl, Element bodyElement) {
         // 检查显示类型
         if (settings.getDisplayType() != Settings.DISPLAY_TYPE_SIDEBAR) {
             return;
@@ -294,7 +295,7 @@ public class SearchBookRefactored {
 
         // 取消之前任务并启动新任务
         cancelPreviousTask(nextContentTask);
-        nextContentTask = new NextContentTask(chapterUrl, bodyElementStr);
+        nextContentTask = new NextContentTask(chapterUrl, bodyElement);
         nextContentTask.queue();
     }
 
@@ -1086,7 +1087,7 @@ public class SearchBookRefactored {
 
         // 更新显示内容
         updateContentText();
-        loadThisChapterNextContent(chapterInfo.getChapterUrl(), param.getBodyContentStr());
+        loadThisChapterNextContent(chapterInfo.getChapterUrl(), param.getBodyElement());
 
         // 设置数据加载模式
         settings.setDataLoadType(Settings.DATA_LOAD_TYPE_NETWORK);
@@ -1115,7 +1116,7 @@ public class SearchBookRefactored {
     private void updateToolWindowContent() {
         // 初始化章节行号信息
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
-        chapterInfo.initLineNum(1, 1, 1);
+        chapterInfo.initLineNum(1, 2, 1);
         cacheService.setSelectedChapterInfo(chapterInfo);
 
         // 更新工具窗口内容
@@ -1132,7 +1133,7 @@ public class SearchBookRefactored {
      */
     private void updateStatusBarContent() {
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
-        chapterInfo.initLineNum(1, 1, 1);
+        chapterInfo.initLineNum(1, 2, 1);
         WReaderStatusBarWidget.update(project, "");
     }
 
@@ -1654,16 +1655,18 @@ public class SearchBookRefactored {
      */
     private class NextContentTask extends Task.Backgroundable {
         private final String chapterUrl;
-        private final String initialBodyContent;
+        private String initialBodyContent;
+        private Element initialBodyElement;
         private volatile boolean isRunning = true;
         private String returnResult;
         private final String nextContentUrl;
         private final StringBuilder nextContent = new StringBuilder();
 
-        public NextContentTask(String chapterUrl, String bodyContent) {
+        public NextContentTask(String chapterUrl, Element bodyContent) {
             super(project, NEXT_PAGE_CONTENT_TITLE);
             this.chapterUrl = chapterUrl;
-            this.initialBodyContent = bodyContent;
+            this.initialBodyContent = bodyContent.html();
+            this.initialBodyElement = bodyContent;
             this.nextContentUrl = getNextContentUrl();
             this.returnResult = nextContentUrl;
         }
@@ -1680,7 +1683,6 @@ public class SearchBookRefactored {
             try {
                 String baseUrl = cacheService.getSelectedSiteBean().getBaseUrl();
                 String previousContentUrl = "";
-                AtomicReference<String> previousPageContent = new AtomicReference<>(initialBodyContent);
                 int pageCount = 0;
 
                 // 循环加载下一页内容
@@ -1691,7 +1693,7 @@ public class SearchBookRefactored {
 
                     // 执行脚本获取下一页URL
                     returnResult = executeNextContentScript(chapterUrl, pageCount,
-                            previousContentUrl, previousPageContent.get());
+                            previousContentUrl, initialBodyContent, initialBodyElement);
 
                     // 如果没有更多内容则停止
                     if (StringUtils.isBlank(returnResult)) {
@@ -1703,7 +1705,10 @@ public class SearchBookRefactored {
                     previousContentUrl = returnResult;
 
                     // 请求并追加内容
-                    nextContent.append(requestContent(returnResult, previousPageContent::set));
+                    nextContent.append(requestContent(returnResult, (resContent, resElement) -> {
+                        initialBodyContent = resContent;
+                        initialBodyElement = resElement;
+                    }));
 
                     // 添加延迟避免请求过于频繁
                     Thread.sleep(1000);
@@ -1720,8 +1725,8 @@ public class SearchBookRefactored {
         /**
          * 执行下一页内容脚本
          */
-        private String executeNextContentScript(String chapterUrl, int pageCount,
-                                                String previousUrl, String previousContent) {
+        private String executeNextContentScript(String chapterUrl, int pageCount, String previousUrl,
+                                                String previousContent, Element previousElement) {
             try {
                 return (String) ScriptCodeUtil.getScriptCodeExeResult(
                         nextContentUrl,
@@ -1731,7 +1736,8 @@ public class SearchBookRefactored {
                                 "chapterUrl", chapterUrl,
                                 "loadingPage", pageCount,
                                 "preContentUrl", previousUrl,
-                                "prePageContent", previousContent
+                                "prePageContent", previousContent,
+                                "prePageElement", previousElement // js脚本插入页面元素对象
                         )
                 );
             } catch (Exception e) {
@@ -1808,7 +1814,12 @@ public class SearchBookRefactored {
         Map<String, String> headers = parser.getHeader();
 
         // 执行HTTP请求
-        Document document = executeHtmlRequest(requestUrl, requestMethod, queryParams, bodyParams, headers);
+        Document document = HttpUtil.requestHtml(requestUrl, requestMethod, queryParams, bodyParams, headers);
+//        Document document = executeHtmlRequest(requestUrl, requestMethod, queryParams, bodyParams, headers);
+
+        if (document == null) {
+            return null;
+        }
 
         // 从HTML中提取书籍列表
         return extractBookListFromHtml(document, searchRules, bookInfoRules);
@@ -1848,7 +1859,13 @@ public class SearchBookRefactored {
     private Document executeHtmlRequest(String url, String method, Map<String, String> queryParams,
                                         Map<String, String> bodyParams, Map<String, String> headers) {
         try {
-            Connection connection = Jsoup.connect(url);
+            Connection connection = Jsoup.connect(url)
+                    .timeout(10000)  // 设置10秒超时
+                    .ignoreContentType(true)  // 忽略内容类型检查
+                    .ignoreHttpErrors(true);  // 忽略HTTP错误
+
+            // 禁用GZIP压缩以避免EOFException
+            connection.header("Accept-Encoding", "identity");
             // 设置请求头
             if (headers != null && !headers.isEmpty()) {
                 connection.headers(headers);
@@ -1869,6 +1886,7 @@ public class SearchBookRefactored {
 
             return connection.execute().parse();
         } catch (IOException e) {
+            e.printStackTrace();
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
             throw new RuntimeException(e);
         }
@@ -2421,7 +2439,7 @@ public class SearchBookRefactored {
      * @param callback 回调函数
      * @return 内容字符串
      */
-    private String requestContent(String url, Consumer<String> callback) {
+    private String requestContent(String url, BiConsumer<String, Element> callback) {
         String content = "";
         SiteBean siteBean = cacheService.getSelectedSiteBean();
         ChapterRules chapterRules = siteBean.getChapterRules();
@@ -2450,7 +2468,7 @@ public class SearchBookRefactored {
      * @param rules    章节规则
      * @return 内容字符串
      */
-    private String requestContentViaApi(String url, Consumer<String> callback, ChapterRules rules) {
+    private String requestContentViaApi(String url, BiConsumer<String, Element> callback, ChapterRules rules) {
         HttpRequestBase request = HttpUtil.commonRequest(url);
         request.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
 
@@ -2461,12 +2479,12 @@ public class SearchBookRefactored {
                 JsonObject resultJson = new Gson().fromJson(result, JsonObject.class);
 
                 Object contentObj = JsonPath.read(resultJson.toString(), rules.getNextContentApiDataRule());
-                callback.accept(result);
+                callback.accept(result, null);
                 return (String) contentObj;
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-            callback.accept("");
+            callback.accept("",  null);
             throw new RuntimeException(e);
         }
 
@@ -2481,14 +2499,14 @@ public class SearchBookRefactored {
      * @param rules    章节规则
      * @return 内容字符串
      */
-    private String requestContentViaHtml(String url, Consumer<String> callback, ChapterRules rules) {
+    private String requestContentViaHtml(String url, BiConsumer<String, Element> callback, ChapterRules rules) {
         try {
             Document document = Jsoup.connect(url)
                     .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
                     .get();
 
             Element bodyElement = document.body();
-            callback.accept(bodyElement.html());
+            callback.accept(bodyElement.html(), bodyElement);
 
             Elements contentElements = bodyElement.select(rules.getContentElementName());
             if (contentElements.isEmpty()) {
@@ -2508,7 +2526,7 @@ public class SearchBookRefactored {
             return contentHtml.toString();
         } catch (IOException e) {
             Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-            callback.accept("");
+            callback.accept("", null);
             throw new RuntimeException(e);
         }
     }
