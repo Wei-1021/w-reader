@@ -208,8 +208,8 @@ public class SearchBookRefactored {
         // 根据配置决定使用API还是HTML方式获取目录
         boolean useApi = StringUtils.isNotBlank(listMainUrl) && StringUtils.isNotBlank(listMainUrlDataRule);
         return useApi ?
-                searchBookDirectoryApi(url, listMainRules) :
-                searchBookDirectoryHtml(url, siteBean, listMainRules);
+                searchBookDirectoryApi(url, siteBean, listMainRules) :
+                searchBookDirectoryHtml(url, listMainRules);
     }
 
     /**
@@ -1318,7 +1318,8 @@ public class SearchBookRefactored {
                 tempChapterList = (List<String>) chapterMap.get("chapterList");
                 tempChapterUrlList = (List<String>) chapterMap.get("chapterUrlList");
                 bodyStr = (String) chapterMap.get("bodyStr");
-                bodyElement = (Element) chapterMap.get("bodyElement");
+                Object bodyElementObj = chapterMap.get("bodyElement");
+                bodyElement = bodyElementObj instanceof Element ? (Element) bodyElementObj : null;
             }
         }
 
@@ -2044,7 +2045,7 @@ public class SearchBookRefactored {
      * @param listMainRules 目录规则
      * @return 目录信息Map
      */
-    private Map<String, Object> searchBookDirectoryHtml(String url, SiteBean siteBean, ListMainRules listMainRules) {
+    private Map<String, Object> searchBookDirectoryApi(String url, SiteBean siteBean, ListMainRules listMainRules) {
         String bodyStr = "";
         List<String> chapterList = new ArrayList<>();
         List<String> chapterUrlList = new ArrayList<>();
@@ -2208,7 +2209,7 @@ public class SearchBookRefactored {
      * @param listMainRules 目录规则
      * @return 目录信息Map
      */
-    private Map<String, Object> searchBookDirectoryApi(String url, ListMainRules listMainRules) {
+    private Map<String, Object> searchBookDirectoryHtml(String url, ListMainRules listMainRules) {
         String bodyStr = "";
         Element bodyElement = null;
         List<String> chapterList = new ArrayList<>();
