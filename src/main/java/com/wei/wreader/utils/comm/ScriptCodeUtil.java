@@ -49,7 +49,7 @@ public class ScriptCodeUtil {
         // 是否代码配置: <code></code>
         boolean isCodeTagConfig = codeStr.contains(ConstUtil.CODE_CONFIG_CODE_START) &&
                 codeStr.contains(ConstUtil.CODE_CONFIG_CODE_END);
-        // 当有{@code <java></java>}中却没有{@code <code></code>}标签时，代表旧版配置
+        // 当有<java></java>中却没有<code></code>标签时，代表旧版配置
         return isJavaCodeConfig && !isCodeTagConfig;
     }
 
@@ -64,10 +64,10 @@ public class ScriptCodeUtil {
      * @throws Exception
      */
     public static List<String> getScriptCodeExeListResult(String codeStr,
-                                                         Class<?>[] javaParameterTypes,
-                                                         Object[] javaParams,
-                                                         Map<String, Object> jsParams) {
-       return getScriptCodeExeListResult(codeStr, javaParameterTypes, javaParams, jsParams, String.class);
+                                                          Class<?>[] javaParameterTypes,
+                                                          Object[] javaParams,
+                                                          Map<String, Object> jsParams) {
+        return getScriptCodeExeListResult(codeStr, javaParameterTypes, javaParams, jsParams, String.class);
     }
 
     /**
@@ -251,4 +251,23 @@ public class ScriptCodeUtil {
 
         return result;
     }
+
+//    public List<String> execute(Map<String, Object> paramMap, List<Object> indexList, String bookId, List<Object> itemIdList) {
+//        List<String> list = new ArrayList<>();
+//        String dataJsonStr = (String) paramMap.get("dataJsonStr");
+//        String freeContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.freeContUrlPrefix");
+//        String shortContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.shortContUrlPrefix");
+//        String menuListJsonStr = (String) paramMap.get("menuListJsonStr");
+//        for (Object indexObj : indexList) {
+//            int index = Integer.parseInt(indexObj.toString());
+//            String contUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].contUrlSuffix");
+//            if (!contUrlSuffix.contains("reqEncryptParam")) {
+//                list.add(freeContUrlPrefix + contUrlSuffix);
+//            } else {
+//                String shortContUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].shortContUrlSuffix");
+//                list.add(shortContUrlPrefix + shortContUrlSuffix);
+//            }
+//        }
+//        return list;
+//    }
 }

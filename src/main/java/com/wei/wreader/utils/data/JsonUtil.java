@@ -1,9 +1,9 @@
 package com.wei.wreader.utils.data;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonUtil {
 
@@ -52,6 +52,7 @@ public class JsonUtil {
 
     /**
      * 判断是否为有效得的JSON字符串
+     *
      * @param jsonString
      * @return
      */
@@ -65,4 +66,62 @@ public class JsonUtil {
             return false;
         }
     }
+
+    /**
+     * 将 JsonObject 转换为 Map
+     *
+     * @param jsonObject JsonObject 对象
+     * @return Map<String, Object>
+     */
+    public static Map<String, Object> convertJsonObjectToMap(JsonObject jsonObject) {
+        Map<String, Object> map = new HashMap<>();
+        for (String key : jsonObject.keySet()) {
+            map.put(key, jsonObject.get(key));
+        }
+        return map;
+    }
+
+    /**
+     * 将 String 转换为 Map
+     *
+     * @param jsonStr
+     * @return Map<String, Object>
+     */
+    public static Map<String, Object> convertStringToMap(String jsonStr) {
+        JsonObject jsonObject = getJsonObject(jsonStr);
+        return jsonObject != null ? convertJsonObjectToMap(jsonObject) : null;
+    }
+
+    /**
+     * 将 Json 字符串转换为 JsonObject
+     *
+     * @param jsonString
+     * @return
+     */
+    public static JsonObject getJsonObject(String jsonString) {
+        try {
+            Gson gson = new Gson();
+            return gson.fromJson(jsonString, JsonObject.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 将 Json 字符串转换为 JsonArray
+     *
+     * @param jsonString
+     * @return
+     */
+    public static JsonArray getJsonArray(String jsonString) {
+        try {
+            Gson gson = new Gson();
+            return gson.fromJson(jsonString, JsonArray.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

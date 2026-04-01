@@ -1,6 +1,4 @@
-package com.wei.wreader.utils.tts;
-
-import com.wei.wreader.utils.tts.VoiceRole;
+package com.wei.wreader.utils.tts.edge;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;

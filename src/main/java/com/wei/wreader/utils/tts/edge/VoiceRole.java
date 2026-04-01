@@ -1,4 +1,4 @@
-package com.wei.wreader.utils.tts;
+package com.wei.wreader.utils.tts.edge;
 
 import java.util.*;
 import java.util.stream.Collectors;

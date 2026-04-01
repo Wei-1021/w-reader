@@ -8,6 +8,7 @@ import com.wei.wreader.pojo.Settings;
 import com.wei.wreader.pojo.SiteBean;
 import com.wei.wreader.utils.comm.script.RhinoJsEngine;
 import com.wei.wreader.utils.data.ConstUtil;
+import com.wei.wreader.utils.tts.mimo.v2.TTSExample;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
@@ -60,8 +61,8 @@ public class ShowBookInfoAction extends BaseAction {
             };
 
             MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 500, 0, null);
-
-            RhinoJsEngine.test();
         });
+
+//        TTSExample.main(null);
     }
 }

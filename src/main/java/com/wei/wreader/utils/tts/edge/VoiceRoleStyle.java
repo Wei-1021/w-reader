@@ -1,7 +1,6 @@
-package com.wei.wreader.utils.tts;
+package com.wei.wreader.utils.tts.edge;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.wei.wreader.utils.file.FileUtil;

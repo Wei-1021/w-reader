@@ -16,10 +16,7 @@ import com.wei.wreader.pojo.*;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.CustomSiteRuleCacheServer;
 import com.wei.wreader.utils.comm.*;
-import com.wei.wreader.utils.data.ConstUtil;
-import com.wei.wreader.utils.data.JsonUtil;
-import com.wei.wreader.utils.data.ListUtil;
-import com.wei.wreader.utils.data.StringUtil;
+import com.wei.wreader.utils.data.*;
 import com.wei.wreader.utils.http.HttpRequestConfigParser;
 import com.wei.wreader.utils.http.HttpUtil;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
@@ -246,7 +243,8 @@ public class SearchBookRefactored {
      * @param bodyElement    页面DOM元素
      * @param callback       加载完成后的回调
      */
-    public void loadNextListMain(String bodyElementStr, Element bodyElement, Runnable callback) {
+    public void loadNextListMain(String bodyElementStr, Element bodyElement,
+                                 String listMainUrl, Runnable callback) {
         SiteBean siteBean = cacheService.getTempSelectedSiteBean();
         ListMainRules listMainRules = siteBean.getListMainRules();
 
@@ -264,7 +262,7 @@ public class SearchBookRefactored {
 
         // 取消之前的任务并启动新任务
         cancelPreviousTask(nextListMainTask);
-        nextListMainTask = new NextListMainTask(bodyElementStr, bodyElement, callback);
+        nextListMainTask = new NextListMainTask(bodyElementStr, bodyElement, listMainUrl, callback);
         nextListMainTask.queue();
     }
 
@@ -899,12 +897,14 @@ public class SearchBookRefactored {
      * @param chapterUrlList 章节URL列表
      * @param bodyElement    HTML页面body元素
      * @param bodyContentStr 页面内容字符串
+     * @param listMainUrl    目录URL
      * @param isUpdate       是否为更新操作
      */
     private void buildBookDirectoryDialog(List<String> chapterList,
                                           List<String> chapterUrlList,
                                           Element bodyElement,
                                           String bodyContentStr,
+                                          String listMainUrl,
                                           boolean isUpdate) {
         // 重置编辑器滚动位置
         cacheService.setEditorMessageVerticalScrollValue(0);
@@ -916,7 +916,7 @@ public class SearchBookRefactored {
             // 创建模式：创建新的列表组件
             createChapterList(chapterList, chapterUrlList);
             // 加载下一页目录并在完成后显示对话框
-            loadNextListMain(bodyContentStr, bodyElement, () -> showChapterDialog());
+            loadNextListMain(bodyContentStr, bodyElement, listMainUrl, () -> showChapterDialog());
         }
     }
 
@@ -1327,6 +1327,7 @@ public class SearchBookRefactored {
         public void onSuccess() {
             if (isSuccess) {
                 SearchBookCallParam callParam = new SearchBookCallParam();
+                callParam.setUrl(url);
                 callParam.setBodyElement(bodyElement);
                 callParam.setBodyContentStr(bodyStr);
                 callParam.setTempChapterList(tempChapterList);
@@ -1542,14 +1543,17 @@ public class SearchBookRefactored {
         private final Runnable callback;
         private volatile boolean isRunning = true;
         private String returnResult;
+        private String listMainUrl;
         private final List<String> tempChapterList = new ArrayList<>();
         private final List<String> tempChapterUrlList = new ArrayList<>();
 
-        public NextListMainTask(String bodyElementStr, Element bodyElement, Runnable callback) {
+        public NextListMainTask(String bodyElementStr, Element bodyElement,
+                                String listMainUrl, Runnable callback) {
             super(project, NEXT_PAGE_DIRECTORY_TITLE);
             this.bodyElementStrRef = new AtomicReference<>(bodyElementStr);
             this.initialBodyElement = bodyElement;
             this.callback = callback;
+            this.listMainUrl = listMainUrl;
             this.returnResult = getNextListMainUrl();
         }
 
@@ -1563,8 +1567,9 @@ public class SearchBookRefactored {
             indicator.setIndeterminate(true);
 
             try {
-                String baseUrl = cacheService.getTempSelectedSiteBean().getBaseUrl();
-                String previousUrl = "";
+                SiteBean tempSelectedSiteBean = cacheService.getTempSelectedSiteBean();
+                String baseUrl = tempSelectedSiteBean.getBaseUrl();
+                String previousUrl = listMainUrl;
                 int pageIndex = 1;
                 AtomicReference<Element> currentBodyElement = new AtomicReference<>(initialBodyElement);
 
@@ -2062,12 +2067,13 @@ public class SearchBookRefactored {
                 String result = EntityUtils.toString(entity);
 
                 // 使用JSONPath提取目录数据
-                Object jsonResult = JsonPath.read(result, dataRule);
-                Gson gson = new Gson();
-                String itemListStr = gson.toJson(jsonResult);
-                JsonArray jsonArray = gson.fromJson(itemListStr, JsonArray.class);
+                ArrayList<Map<String, Object>> resultMapList = JsonPath.read(result, dataRule);
+                String itemListStr = resultMapList.toString();
+//                Gson gson = new Gson();
+//                String itemListStr = gson.toJson(jsonResult);
+//                JsonArray jsonArray = gson.fromJson(itemListStr, JsonArray.class);
 
-                Map<String, String> paramMap = Map.of(
+                Map<String, Object> paramMap = Map.of(
                         "dataJsonStr", result,
                         "menuListJsonStr", itemListStr
                 );
@@ -2078,9 +2084,10 @@ public class SearchBookRefactored {
 
                 List<String> itemIdList = new ArrayList<>();
                 List<Integer> itemIndexList = new ArrayList<>();
+                List<Integer> itemUrlList = new ArrayList<>();
 
                 // 处理目录项
-                processDirectoryItems(jsonArray, listMainRules, chapterRules, bookInfo,
+                processDirectoryItems(resultMapList, listMainRules, chapterRules, bookInfo,
                         itemIdList, itemIndexList, chapterList, chapterUrlList, paramMap, useJavaCode);
 
                 // 如果使用Java代码配置，则执行脚本生成URL
@@ -2118,19 +2125,26 @@ public class SearchBookRefactored {
      * @param paramMap       参数映射
      * @param useJavaCode    是否使用Java代码
      */
-    private void processDirectoryItems(JsonArray jsonArray, ListMainRules listMainRules,
+    private void processDirectoryItems(ArrayList<Map<String, Object>> jsonArray, ListMainRules listMainRules,
                                        ChapterRules chapterRules, BookInfo bookInfo,
                                        List<String> itemIdList, List<Integer> itemIndexList,
                                        List<String> chapterList, List<String> chapterUrlList,
-                                       Map<String, String> paramMap, boolean useJavaCode) {
+                                       Map<String, Object> paramMap, boolean useJavaCode) throws MalformedURLException {
         String itemIdField = listMainRules.getItemIdField();
         String itemTitleField = listMainRules.getItemTitleField();
         String chapterUrlTemplate = chapterRules.getUrl();
 
+        String apiResult = MapUtil.getString(paramMap, "dataJsonStr");
+        JsonObject apiResultJsonObject = JsonUtil.getJsonObject(apiResult);
+        Map<String, Object> apiResultMap = new HashMap<>();
+        if (apiResultJsonObject != null) {
+            apiResultMap = JsonUtil.convertJsonObjectToMap(apiResultJsonObject);
+        }
+
         for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject itemJson = jsonArray.get(i).getAsJsonObject();
-            String itemId = itemJson.get(itemIdField).getAsString();
-            String title = itemJson.get(itemTitleField).getAsString();
+            Map<String, Object> itemJson = jsonArray.get(i);
+            String itemId = MapUtil.getString(itemJson, itemIdField);
+            String title = MapUtil.getString(itemJson, itemTitleField);
 
             if (useJavaCode) {
                 // Java代码配置模式
@@ -2139,11 +2153,13 @@ public class SearchBookRefactored {
                 chapterList.add(title);
             } else {
                 // 模板配置模式
-                String itemUrl = buildItemUrl(chapterUrlTemplate, bookInfo.getBookId(), itemId, itemJson, listMainRules);
+                String itemUrl = buildItemUrl(chapterUrlTemplate, bookInfo.getBookId(), itemId,
+                        apiResultMap, itemJson, listMainRules);
                 chapterList.add(title);
                 chapterUrlList.add(itemUrl);
             }
         }
+
     }
 
     /**
@@ -2156,13 +2172,22 @@ public class SearchBookRefactored {
      * @param listMainRules      目录规则
      * @return 完整的项目URL
      */
-    private String buildItemUrl(String chapterUrlTemplate, String bookId, String itemId,
-                                JsonObject itemJson, ListMainRules listMainRules) {
+    private String buildItemUrl(String chapterUrlTemplate, String bookId, String itemId, Map<String, Object> apiResultMap,
+                                Map<String, Object> itemJson, ListMainRules listMainRules) throws MalformedURLException {
         if (StringUtils.isNotBlank(chapterUrlTemplate)) {
             return StringTemplateEngine.render(chapterUrlTemplate, Map.of("bookId", bookId, "itemId", itemId));
         } else {
+            SiteBean tempSelectedSiteBean = cacheService.getTempSelectedSiteBean();
             String itemUrlField = listMainRules.getItemUrlField();
-            return itemJson.get(itemUrlField).getAsString();
+            String itemUrl = MapUtil.getString(itemJson, itemUrlField);
+
+            if (StringUtils.isNotBlank(itemUrl)) {
+                itemUrl = UrlUtil.buildFullURL(tempSelectedSiteBean.getBaseUrl(), itemUrl.trim());
+            } else {
+                itemUrl = executeUrlDataHandleScript(listMainRules.getUrlDataHandleRule(), apiResultMap, itemJson, itemId);
+            }
+
+            return itemUrl;
         }
     }
 
@@ -2176,7 +2201,7 @@ public class SearchBookRefactored {
      * @param itemIdList    项目ID列表
      * @return 章节URL列表
      */
-    private List<String> executeChapterUrlScript(String script, Map<String, String> paramMap,
+    private List<String> executeChapterUrlScript(String script, Map<String, Object> paramMap,
                                                  List<Integer> itemIndexList, String bookId,
                                                  List<String> itemIdList) {
         try {
@@ -2240,7 +2265,7 @@ public class SearchBookRefactored {
 
         } catch (IOException e) {
             Messages.showWarningDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
         return Map.of(
@@ -2304,12 +2329,9 @@ public class SearchBookRefactored {
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
                 bodyContent = result;
-
-                JsonObject resultJson = new Gson().fromJson(result, JsonObject.class);
-                List<Map<String, Object>> items = JsonPath.read(resultJson.toString(),
-                        rules.getNextListMainApiDataRule());
-
-                processApiDirectoryItems(items, rules, result, chapterTitles, chapterUrls);
+                Map<String, Object> resultMap = JsonUtil.convertStringToMap(result);
+                List<Map<String, Object>> items = JsonPath.read(result, rules.getNextListMainApiDataRule());
+                processApiDirectoryItems(items, rules, resultMap, chapterTitles, chapterUrls);
             }
         } catch (Exception e) {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_NETWORK_ERROR, "提示");
@@ -2334,7 +2356,7 @@ public class SearchBookRefactored {
      * @param urls   URL列表
      */
     private void processApiDirectoryItems(List<Map<String, Object>> items, ListMainRules rules,
-                                          String result, List<String> titles, List<String> urls) {
+                                          Map<String, Object> result, List<String> titles, List<String> urls) {
         for (Map<String, Object> itemMap : items) {
             String itemId = (String) itemMap.get(rules.getItemIdField());
             String title = (String) itemMap.get(rules.getItemTitleField());
@@ -2359,12 +2381,12 @@ public class SearchBookRefactored {
      * @param itemId  项目ID
      * @return 处理后的URL
      */
-    private String executeUrlDataHandleScript(String script, String result,
+    private String executeUrlDataHandleScript(String script, Map<String, Object> result,
                                               Map<String, Object> itemMap, String itemId) {
         try {
             return (String) ScriptCodeUtil.getScriptCodeExeResult(
                     script,
-                    new Class[]{String.class, Map.class, String.class},
+                    new Class[]{Map.class, Map.class, String.class},
                     new Object[]{result, itemMap, itemId},
                     Map.of("result", result, "itemMap", itemMap, "itemId", itemId)
             );
@@ -2548,6 +2570,7 @@ public class SearchBookRefactored {
                 param.getTempChapterUrlList(),
                 param.getBodyElement(),
                 param.getBodyContentStr(),
+                param.getUrl(),
                 false
         );
     }
@@ -2570,7 +2593,7 @@ public class SearchBookRefactored {
      * @param isUpdate       是否为更新操作
      */
     private void buildBookDirectoryDialog(List<String> chapterList, List<String> chapterUrlList, boolean isUpdate) {
-        buildBookDirectoryDialog(chapterList, chapterUrlList, null, null, isUpdate);
+        buildBookDirectoryDialog(chapterList, chapterUrlList, null, null, "",  isUpdate);
     }
     //endregion
 

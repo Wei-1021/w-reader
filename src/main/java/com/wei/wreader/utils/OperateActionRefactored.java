@@ -30,8 +30,12 @@ import com.wei.wreader.utils.data.StringUtil;
 import com.wei.wreader.utils.file.EpubReaderComplete;
 import com.wei.wreader.utils.file.FileUtil;
 import com.wei.wreader.utils.http.HttpUtil;
-import com.wei.wreader.utils.tts.EdgeTTS;
-import com.wei.wreader.utils.tts.VoiceRole;
+import com.wei.wreader.utils.tts.edge.EdgeTTS;
+import com.wei.wreader.utils.tts.edge.VoiceRole;
+import com.wei.wreader.utils.tts.mimo.v2.MiMoTTSClient;
+import com.wei.wreader.utils.tts.mimo.v2.MimoTTS;
+import com.wei.wreader.utils.tts.mimo.v2.TTSConfig;
+import com.wei.wreader.utils.tts.mimo.v2.player.StreamTTSPlayer;
 import com.wei.wreader.utils.ui.MessageDialogUtil;
 import com.wei.wreader.utils.ui.ToolWindowUtil;
 import com.wei.wreader.utils.yml.ConfigYaml;
@@ -1486,12 +1490,20 @@ public class OperateActionRefactored {
 
     // ==================== TTS语音功能 ====================
 
+    private static MiMoTTSClient mimoTTSClient;
+    private static StreamTTSPlayer play;
+    private static MimoTTS mimoTTS;
+
+    public void ttsChapterContent() {
+        edgeTTSChapterContent();
+    }
+
     /**
      * 小说内容文本转语音
      *
      * @throws Exception TTS处理异常
      */
-    public void ttsChapterContent() throws Exception {
+    public void edgeTTSChapterContent() {
         String chapterContent = currentChapterInfo.getChapterContentStr();
         if (StringUtils.isBlank(chapterContent)) {
             Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR,
@@ -1507,23 +1519,24 @@ public class OperateActionRefactored {
         }
 
         // 初始化TTS服务
-        initializeTTSService();
+        initializeEdgeTTSService();
 
         // 设置TTS参数
-        configureTTSParameters();
+        configureEdgeTTSParameters();
 
         // 开始语音合成
         edgeTTS.synthesize(chapterContent);
         edgeTTS.start();
+
     }
 
     /**
      * 初始化TTS服务
      */
-    private void initializeTTSService() {
+    private void initializeEdgeTTSService() {
         try {
             edgeTTS = new EdgeTTS();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to initialize TTS service", e);
         }
     }
@@ -1531,7 +1544,7 @@ public class OperateActionRefactored {
     /**
      * 配置TTS参数
      */
-    private void configureTTSParameters() {
+    private void configureEdgeTTSParameters() {
         // 音色设置
         String voiceRole = settings.getVoiceRole();
         if (StringUtils.isBlank(voiceRole)) {
@@ -1572,11 +1585,63 @@ public class OperateActionRefactored {
     /**
      * 停止语音播放
      */
-    public void stopTTS() {
+    public void stopEdgeTTS() {
         if (edgeTTS != null) {
             edgeTTS.dispose();
             edgeTTS = null;
         }
+    }
+
+    /**
+     * 文本转语音--小米Mimo-V2-TTS
+     */
+    public void mimoTTSChapterContent() {
+        String chapterContent = currentChapterInfo.getChapterContentStr();
+        if (StringUtils.isBlank(chapterContent)) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_CONTENT_ERROR,
+                    MessageDialogUtil.TITLE_INFO);
+            return;
+        }
+
+
+//        if (mimoTTS != null) {
+//            mimoTTS.dispose();
+//            mimoTTS = null;
+//            return;
+//        }
+        if (mimoTTSClient != null) {
+            play.stop();
+            mimoTTSClient = null;
+            return;
+        }
+
+        try {
+            TTSConfig.Builder builder = new TTSConfig.Builder("sk-c9pc4kqw5bsfgvfb9mivukjsza8hxuhj1p2npfnd25ie8ny6");
+            builder.temperature(0.2f);
+//            mimoTTS = new MimoTTS(builder.build());
+//            mimoTTS.synthesize(chapterContent);
+//            mimoTTS.start();
+            mimoTTSClient = new MiMoTTSClient(builder.build());
+            play = mimoTTSClient.play(chapterContent);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize TTS service", e);
+        }
+
+    }
+
+    /**
+     * 停止语音播放
+     */
+    public void stopMimoTTS() {
+        if (mimoTTSClient != null) {
+            play.stop();
+            mimoTTSClient = null;
+        }
+    }
+
+    public void stopTTS() {
+        stopEdgeTTS();
+        stopMimoTTS();
     }
 
     // ==================== 字体和样式管理 ====================

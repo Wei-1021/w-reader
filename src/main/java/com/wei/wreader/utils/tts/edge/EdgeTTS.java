@@ -1,6 +1,6 @@
-package com.wei.wreader.utils.tts;
+package com.wei.wreader.utils.tts.edge;
 
-import com.wei.wreader.utils.tts.listener.ITTSListener;
+import com.wei.wreader.utils.tts.edge.listener.ITTSListener;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;

@@ -10,12 +10,21 @@ import java.util.List;
  * @author weizhanjie
  */
 public class SearchBookCallParam {
+    private String url;
     private String chapterContentHtml;
     private String chapterContentText;
     private Element bodyElement;
     private String bodyContentStr;
     private List<String> tempChapterList;
     private List<String> tempChapterUrlList;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public String getChapterContentHtml() {
         return chapterContentHtml;

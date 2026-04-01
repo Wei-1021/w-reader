@@ -711,9 +711,9 @@ public class SearchBookUtil {
         // 当使用api接口获取目录列表，且小说目录列表JSONPath规则不为空时，则使用api接口获取，
         // 反之使用html页面获取
         if (StringUtils.isNotBlank(listMainUrl) && StringUtils.isNotBlank(listMainUrlDataRule)) {
-            return this.searchBookDirectoryHtml(url, searchTempSelectedSiteBean, searchTempListMainRules);
+            return this.searchBookDirectoryApi(url, searchTempSelectedSiteBean, searchTempListMainRules);
         } else {
-            return this.searchBookDirectoryApi(url, searchTempListMainRules);
+            return this.searchBookDirectoryHtml(url, searchTempListMainRules);
         }
     }
 
@@ -725,7 +725,7 @@ public class SearchBookUtil {
      * @param searchTempListMainRules    目录规则
      * @return
      */
-    private Map<String, Object> searchBookDirectoryHtml(String url,
+    private Map<String, Object> searchBookDirectoryApi(String url,
                                                         SiteBean searchTempSelectedSiteBean,
                                                         ListMainRules searchTempListMainRules) {
         String listMainBodyStr = "";
@@ -828,7 +828,7 @@ public class SearchBookUtil {
      * @param searchTempListMainRules 目录规则
      * @return
      */
-    private Map<String, Object> searchBookDirectoryApi(String url, ListMainRules searchTempListMainRules) {
+    private Map<String, Object> searchBookDirectoryHtml(String url, ListMainRules searchTempListMainRules) {
         String listMainBodyStr = "";
         Element listMainBodyElement = null;
         List<String> tempChapterList = new ArrayList<>();
