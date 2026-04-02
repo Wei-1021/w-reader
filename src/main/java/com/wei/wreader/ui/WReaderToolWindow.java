@@ -244,7 +244,7 @@ public class WReaderToolWindow {
 
             // 加载持久化数据--站点信息
             Integer selectedBookSiteIndexTemp = cacheService.getSelectedBookSiteIndex();
-            if (selectedBookSiteIndexTemp == null) {
+            if (selectedBookSiteIndexTemp == null || selectedBookSiteIndex >= siteBeanList.size()) {
                 selectedBookSiteIndex = 0;
                 cacheService.setSelectedBookSiteIndex(0);
             } else {

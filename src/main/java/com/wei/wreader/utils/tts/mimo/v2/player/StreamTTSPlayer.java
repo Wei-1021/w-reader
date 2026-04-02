@@ -338,8 +338,8 @@ public class StreamTTSPlayer {
                 requestBody.put("temperature", config.getTemperature());
                 requestBody.put("top_p", config.getTopP());
 
-                URL url = new URL(config.getBaseUrl() + TTSConfig.DEFAULT_SUFFIX_URL);
-                connection = (HttpURLConnection) url.openConnection();
+//                URL url = new URL(config.getBaseUrl() + TTSConfig.DEFAULT_SUFFIX_URL);
+//                connection = (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -356,10 +356,10 @@ public class StreamTTSPlayer {
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK) {
-                    String errorBody = readStream(connection.getErrorStream());
-                    JsonNode errorNode = objectMapper.readTree(errorBody);
-                    String message = errorNode.path("error").path("message").asText("Unknown error");
-                    throw new TTSException(message, responseCode);
+//                    String errorBody = readStream(connection.getErrorStream());
+//                    JsonNode errorNode = objectMapper.readTree(errorBody);
+//                    String message = errorNode.path("error").path("message").asText("Unknown error");
+//                    throw new TTSException(message, responseCode);
                 }
 
                 // 解析 SSE 流
@@ -484,8 +484,8 @@ public class StreamTTSPlayer {
                 requestBody.put("temperature", config.getTemperature());
                 requestBody.put("top_p", config.getTopP());
 
-                URL url = new URL(config.getBaseUrl() + TTSConfig.DEFAULT_SUFFIX_URL);
-                connection = (HttpURLConnection) url.openConnection();
+//                URL url = new URL(config.getBaseUrl() + TTSConfig.DEFAULT_SUFFIX_URL);
+//                connection = (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -502,10 +502,10 @@ public class StreamTTSPlayer {
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK) {
-                    String errorBody = readStream(connection.getErrorStream());
-                    JsonNode errorNode = objectMapper.readTree(errorBody);
-                    String message = errorNode.path("error").path("message").asText("Unknown error");
-                    throw new TTSException(message, responseCode);
+//                    String errorBody = readStream(connection.getErrorStream());
+//                    JsonNode errorNode = objectMapper.readTree(errorBody);
+//                    String message = errorNode.path("error").path("message").asText("Unknown error");
+//                    throw new TTSException(message, responseCode);
                 }
 
                 // 解析 SSE 流

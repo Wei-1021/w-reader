@@ -45,6 +45,7 @@ import io.documentnode.epub4j.domain.Resource;
 import io.documentnode.epub4j.epub.EpubReader;
 import io.documentnode.epub4j.util.IOUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
@@ -315,7 +316,7 @@ public class OperateActionRefactored {
         }
 
         // 边界检查和站点信息设置
-        if (selectedBookSiteIndex > siteBeanList.size()) {
+        if (selectedBookSiteIndex >= siteBeanList.size()) {
             selectedBookSiteIndex = 0;
             cacheService.setSelectedBookSiteIndex(0);
         }
@@ -1413,14 +1414,14 @@ public class OperateActionRefactored {
         // 如果已经在运行则停止
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
-            ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
-            int size = selectedChapterInfoTemp.getChapterContentList().size();
-            selectedChapterInfoTemp.initLineNum(
-                    autoReadLastReadLineNum == 1 ? 1 : autoReadLastReadLineNum - 1,
-                    autoReadLastReadLineNum == size ? size : autoReadLastReadLineNum + 1,
-                    autoReadLastReadLineNum
-            );
-            cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
+//            ChapterInfo selectedChapterInfoTemp = cacheService.getSelectedChapterInfo();
+//            int size = selectedChapterInfoTemp.getChapterContentList().size();
+//            selectedChapterInfoTemp.initLineNum(
+//                    autoReadLastReadLineNum == 1 ? 1 : autoReadLastReadLineNum - 1,
+//                    autoReadLastReadLineNum == size ? size : autoReadLastReadLineNum + 1,
+//                    autoReadLastReadLineNum
+//            );
+//            cacheService.setSelectedChapterInfo(selectedChapterInfoTemp);
             return;
         }
 
@@ -1447,7 +1448,7 @@ public class OperateActionRefactored {
         }
 
         // 创建自动阅读任务
-        Runnable readNextLineTask = createAutoReadTask(selectedChapterInfo);
+        Runnable readNextLineTask = createAutoReadTask();
         long autoReadTimeMillis = (long) (autoReadTime * 1000);
 
         // 调度任务
@@ -1460,8 +1461,9 @@ public class OperateActionRefactored {
     /**
      * 创建自动阅读任务
      */
-    private Runnable createAutoReadTask(ChapterInfo selectedChapterInfo) {
+    private Runnable createAutoReadTask() {
         return () -> {
+            ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
             autoReadLastReadLineNum = selectedChapterInfo.getLastReadLineNum();
             int contentLength = selectedChapterInfo.getChapterContentList() == null ?
                     0 : selectedChapterInfo.getChapterContentList().size();
@@ -1495,7 +1497,7 @@ public class OperateActionRefactored {
     private static MimoTTS mimoTTS;
 
     public void ttsChapterContent() {
-        edgeTTSChapterContent();
+        mimoTTSChapterContent();
     }
 
     /**
@@ -1622,7 +1624,7 @@ public class OperateActionRefactored {
 //            mimoTTS.synthesize(chapterContent);
 //            mimoTTS.start();
             mimoTTSClient = new MiMoTTSClient(builder.build());
-            play = mimoTTSClient.play(chapterContent);
+            play = mimoTTSClient.playAndSave(chapterContent, "D:\\资源\\audio\\" + RandomStringUtils.random(8) + ".wav");
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize TTS service", e);
         }

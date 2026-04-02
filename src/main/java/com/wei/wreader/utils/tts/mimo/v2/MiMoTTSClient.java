@@ -182,9 +182,9 @@ public class MiMoTTSClient {
 
     private String sendPostRequest(String endpoint, Object requestBody)
             throws IOException, TTSException {
-
-        URL url = new URL(config.getBaseUrl() + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpURLConnection connection = null;
+//        URL url = new URL(config.getBaseUrl() + endpoint);
+//        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         try {
             connection.setRequestMethod("POST");
@@ -204,11 +204,11 @@ public class MiMoTTSClient {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 return readStream(connection.getInputStream());
             } else {
-                String errorBody = readStream(connection.getErrorStream());
-                JsonNode errorNode = objectMapper.readTree(errorBody);
-                String message = errorNode.path("error").path("message").asText("Unknown error");
-                String code = errorNode.path("error").path("code").asText(null);
-                throw new TTSException(message, responseCode, code);
+//                String errorBody = readStream(connection.getErrorStream());
+//                JsonNode errorNode = objectMapper.readTree(errorBody);
+//                String message = errorNode.path("error").path("message").asText("Unknown error");
+//                String code = errorNode.path("error").path("code").asText(null);
+                throw new TTSException("sendPostRequest TTSException", responseCode, "");
             }
 
         } finally {

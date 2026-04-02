@@ -62,7 +62,5 @@ public class ShowBookInfoAction extends BaseAction {
 
             MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 500, 0, null);
         });
-
-//        TTSExample.main(null);
     }
 }
