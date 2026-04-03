@@ -30,6 +30,16 @@ public class ShowBookInfoAction extends BaseAction {
         }
         // 获取当前选择的书源
         SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+        String siteBeanName;
+        String siteBeanId;
+        if (selectedSiteBean != null) {
+            siteBeanName = selectedSiteBean.getName();
+            siteBeanId = selectedSiteBean.getId();
+        } else {
+            siteBeanId = "";
+            siteBeanName = "";
+        }
+
         SwingUtilities.invokeLater(() -> {
             String bookInfoStr =
                     "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
@@ -40,8 +50,8 @@ public class ShowBookInfoAction extends BaseAction {
                 bookInfoStr =
                         "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
                         "<p>作者：" + selectedBookInfo.getBookAuthor() + "</p>" +
-                        "<p>书源：" + selectedSiteBean.getName() + "</p>" +
-                        "<p>书源网址：" + selectedSiteBean.getId() + "</p>" +
+                        "<p>书源：" + siteBeanName + "</p>" +
+                        "<p>书源网址：" + siteBeanId + "</p>" +
                         "<p>简介：" + selectedBookInfo.getBookDesc() + "</p>";
             }
 

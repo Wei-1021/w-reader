@@ -120,6 +120,7 @@ public class ConstUtil {
     public static final String WREADER_SEARCH_BOOK_CONTENT_ERROR = "未找到书本内容";
     public static final String WREADER_LOAD_CHAPTER_LIST_ERROR = "未找到章节目录信息！";
     public static final String WREADER_LOAD_CONTENT_ERROR = "加载内容失败，请重新加载书本！";
+    public static final String WREADER_SITE_BEAN_ERROR = "书源信息异常，请重试！";
     public static final String WREADER_ERROR = "出现异常，请重试！";
     public static final String WREADER_JSCODE_EXECUTE_ERROR = "JS脚本执行出现异常，请重试！";
     public static final String WREADER_JSCODE_EXECUTE_ERROR_MSG = "JS脚本执行出现异常：";

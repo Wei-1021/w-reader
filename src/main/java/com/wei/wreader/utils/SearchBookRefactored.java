@@ -279,6 +279,9 @@ public class SearchBookRefactored {
         }
 
         SiteBean siteBean = cacheService.getSelectedSiteBean();
+        if (siteBean == null) {
+            return;
+        }
         ChapterRules chapterRules = siteBean.getChapterRules();
 
         // 验证必要配置
@@ -1150,7 +1153,7 @@ public class SearchBookRefactored {
         int fontSize = cacheService.getFontSize();
 
         // 判断是否使用原始样式
-        if (siteBean.getChapterRules().isUseContentOriginalStyle()) {
+        if (siteBean != null && siteBean.getChapterRules().isUseContentOriginalStyle()) {
             chapterContent = String.format("""
                     <div class="%s" style="color:%s;font-size:%dpx;">%s</div>
                     """, ConstUtil.NEW_FONT_CLASS_NAME, fontColor, fontSize, chapterContent);
@@ -1679,7 +1682,14 @@ public class SearchBookRefactored {
 
         private String getNextContentUrl() {
             SiteBean siteBean = cacheService.getSelectedSiteBean();
-            return siteBean.getChapterRules().getNextContentUrl();
+            if (siteBean == null) {
+                return "";
+            }
+            ChapterRules chapterRules = siteBean.getChapterRules();
+            if (chapterRules == null) {
+                return "";
+            }
+            return chapterRules.getNextContentUrl();
         }
 
         @Override
@@ -1687,7 +1697,11 @@ public class SearchBookRefactored {
             indicator.setIndeterminate(true);
 
             try {
-                String baseUrl = cacheService.getSelectedSiteBean().getBaseUrl();
+                SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+                if (selectedSiteBean == null) {
+                    return;
+                }
+                String baseUrl = selectedSiteBean.getBaseUrl();
                 String previousContentUrl = "";
                 int pageCount = 0;
 
@@ -1769,6 +1783,9 @@ public class SearchBookRefactored {
          */
         private void updateChapterInfo(String content) {
             SiteBean siteBean = cacheService.getSelectedSiteBean();
+            if (siteBean == null) {
+                return;
+            }
             ChapterRules chapterRules = siteBean.getChapterRules();
 
             Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
@@ -2465,6 +2482,9 @@ public class SearchBookRefactored {
     private String requestContent(String url, BiConsumer<String, Element> callback) {
         String content = "";
         SiteBean siteBean = cacheService.getSelectedSiteBean();
+        if (siteBean == null) {
+            return "";
+        }
         ChapterRules chapterRules = siteBean.getChapterRules();
 
         try {

@@ -343,6 +343,9 @@ public class OperateActionRefactored {
     private void initializeCachedData() {
         // 初始化选中的书籍信息
         selectBookInfo = cacheService.getSelectedBookInfo();
+        if (selectBookInfo == null) {
+            selectBookInfo = new BookInfo();
+        }
 
         // 初始化章节信息
         currentChapterInfo = cacheService.getSelectedChapterInfo();
@@ -666,7 +669,8 @@ public class OperateActionRefactored {
      */
     private void loadNextChapterLocal(BiConsumer<ChapterInfo, Element> runnable) {
         chapterContentList = cacheService.getChapterContentList();
-        if (currentChapterIndex >= chapterContentList.size() - 1) {
+        if (chapterContentList == null ||
+                currentChapterIndex >= chapterContentList.size() - 1) {
             return;
         }
 
@@ -718,6 +722,10 @@ public class OperateActionRefactored {
             indicator.setIndeterminate(true);
 
             SiteBean siteBean = cacheService.getSelectedSiteBean();
+            if (siteBean == null || StringUtils.isBlank(siteBean.getId())) {
+                Messages.showErrorDialog(ConstUtil.WREADER_SITE_BEAN_ERROR, "提示");
+                return;
+            }
             ChapterRules chapterRules = siteBean.getChapterRules();
 
             // 根据配置决定使用API还是HTML方式加载内容
@@ -874,9 +882,16 @@ public class OperateActionRefactored {
      */
     public String handleContent(String content) throws Exception {
         SiteBean siteBean = cacheService.getSelectedSiteBean();
-        ChapterRules chapterRules = siteBean.getChapterRules();
-        String handleRule = chapterRules.getContentHandleRule();
+        if (siteBean == null) {
+            return content;
+        }
 
+        ChapterRules chapterRules = siteBean.getChapterRules();
+        if (chapterRules == null) {
+            return content;
+        }
+
+        String handleRule = chapterRules.getContentHandleRule();
         // 根据配置规则处理内容
         String processedContent = processContentByRule(content, handleRule);
         return formatAndApplyRegex(processedContent, chapterRules);
@@ -930,6 +945,9 @@ public class OperateActionRefactored {
         }
 
         SiteBean siteBean = cacheService.getSelectedSiteBean();
+        if (siteBean == null) {
+            return;
+        }
         ChapterRules chapterRules = siteBean.getChapterRules();
 
         // 验证必要配置
@@ -974,7 +992,13 @@ public class OperateActionRefactored {
 
         private String getNextContentUrl() {
             SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+            if (selectedSiteBean == null || StringUtils.isBlank(selectedSiteBean.getId())) {
+                return "";
+            }
             ChapterRules chapterRules = selectedSiteBean.getChapterRules();
+            if (chapterRules == null) {
+                return "";
+            }
             return chapterRules.getNextContentUrl();
         }
 
@@ -1059,6 +1083,9 @@ public class OperateActionRefactored {
         public void onSuccess() {
             ToolWindowUtil.updateContentText(project, contentTextPanel -> {
                 ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+                if (selectedChapterInfo == null) {
+                    return;
+                }
 
                 String text = nextContent.toString();
                 int caretPosition = contentTextPanel.getCaretPosition();
@@ -1077,6 +1104,9 @@ public class OperateActionRefactored {
          */
         private void updateChapterInfoWithContent(String text) {
             SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+            if (selectedSiteBean == null || StringUtils.isBlank(selectedSiteBean.getId())) {
+                return;
+            }
             ChapterRules chapterRules = selectedSiteBean.getChapterRules();
 
             Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
@@ -1464,6 +1494,9 @@ public class OperateActionRefactored {
     private Runnable createAutoReadTask() {
         return () -> {
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+            if (selectedChapterInfo == null) {
+                return;
+            }
             autoReadLastReadLineNum = selectedChapterInfo.getLastReadLineNum();
             int contentLength = selectedChapterInfo.getChapterContentList() == null ?
                     0 : selectedChapterInfo.getChapterContentList().size();
@@ -1624,7 +1657,7 @@ public class OperateActionRefactored {
 //            mimoTTS.synthesize(chapterContent);
 //            mimoTTS.start();
             mimoTTSClient = new MiMoTTSClient(builder.build());
-            play = mimoTTSClient.playAndSave(chapterContent, "D:\\资源\\audio\\" + RandomStringUtils.random(8) + ".wav");
+//            play = mimoTTSClient.playAndSave(chapterContent, "D:\\资源\\audio\\" + RandomStringUtils.random(8) + ".wav");
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize TTS service", e);
         }
@@ -1719,12 +1752,14 @@ public class OperateActionRefactored {
      */
     private void updateSidebarContent() {
         ToolWindowUtil.updateContentText(project, textPane -> {
+            boolean isContentOriginalStyle = false;
             SiteBean siteBean = cacheService.getSelectedSiteBean();
-            ChapterRules chapterRules = siteBean.getChapterRules();
+            if (siteBean != null && siteBean.getChapterRules() != null) {
+                ChapterRules chapterRules = siteBean.getChapterRules();
+                isContentOriginalStyle = chapterRules.isUseContentOriginalStyle();
+            }
 
             String chapterContent = cacheService.getSelectedChapterInfo().getChapterContent();
-            boolean isContentOriginalStyle = chapterRules.isUseContentOriginalStyle();
-
             String styledContent = isContentOriginalStyle ?
                     buildOriginalStyleContent(chapterContent) :
                     buildCustomStyleContent(chapterContent);
