@@ -89,6 +89,8 @@ public class CustomSiteRuleAction extends BaseAction {
         List<String> customSiteKeyGroupList = customSiteUtil.getCustomSiteKeyGroupList();
         String selectedKey = customSiteRuleCacheServer.getSelectedCustomSiteRuleKey();
 
+        loadSourceGroupKeyName = "";
+
         JFrame frame = new JFrame("自定义书源规则(Beta)");
         frame.setSize(850, 700);
         // 让窗口处于屏幕中心
@@ -142,7 +144,9 @@ public class CustomSiteRuleAction extends BaseAction {
             editor = (TextEditor) provider.createEditor(project, virtualFile);
             document = editor.getEditor().getDocument();
             // 放入滚动面板
-            scrollPane = new JBScrollPane(editor.getComponent());
+//            scrollPane = new JBScrollPane(editor.getComponent());
+            thirdLayer.add(new JLabel("书源规则:"), BorderLayout.NORTH);
+            thirdLayer.add(editor.getComponent(), BorderLayout.CENTER);
         }
         // 普通文本框
         else if (settings.getCustomSiteRuleTextAreaType() == Settings.CUSTOM_SITE_RULE_TEXT_AREA_TYPE_TEXTAREA) {
@@ -152,11 +156,11 @@ public class CustomSiteRuleAction extends BaseAction {
             textArea.setWrapStyleWord(true);
             // 放入滚动面板
             scrollPane = new JBScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(800, 500));
+            scrollPane.setMinimumSize(new Dimension(600, 500));
+            thirdLayer.add(new JLabel("书源规则:"), BorderLayout.NORTH);
+            thirdLayer.add(scrollPane, BorderLayout.CENTER);
         }
-        scrollPane.setPreferredSize(new Dimension(800, 500));
-        scrollPane.setMinimumSize(new Dimension(600, 500));
-        thirdLayer.add(new JLabel("书源规则:"), BorderLayout.NORTH);
-        thirdLayer.add(scrollPane, BorderLayout.CENTER);
 
         // 第四层：提示文本区域
         fourthLayer = new JPanel(new BorderLayout());
@@ -230,7 +234,9 @@ public class CustomSiteRuleAction extends BaseAction {
                 // 重设内容面板的大小
                 int width = mainPanel.getWidth() - 50;
                 int height = mainPanel.getHeight() - 220;
-                scrollPane.setPreferredSize(new Dimension(width, height));
+                if (scrollPane != null) {
+                    scrollPane.setPreferredSize(new Dimension(width, height));
+                }
                 //
                 firstLayer.setPreferredSize(new Dimension(width, 35));
                 secondLayer.setPreferredSize(new Dimension(width, 35));
@@ -307,6 +313,7 @@ public class CustomSiteRuleAction extends BaseAction {
             comboBox.setSelectedIndex(0);
             setCustomRuleTextArea("");
             groupNameTextField.setText("");
+            loadSourceGroupKeyName = "";
         });
     }
 
@@ -395,11 +402,11 @@ public class CustomSiteRuleAction extends BaseAction {
                 return;
             }
 
-            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(loadSourceGroupKeyName) &&
-                    !ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(groupName)) {
-                Messages.showInfoMessage("不能修改默认分组的名称", "提示");
-                return;
-            }
+//            if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(loadSourceGroupKeyName) &&
+//                    !ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(groupName)) {
+//                Messages.showInfoMessage("不能修改默认分组的名称", "提示");
+//                return;
+//            }
 
             // 获取输入的规则
             String rule = getCustomRuleTextAreaContent();

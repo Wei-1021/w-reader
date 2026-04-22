@@ -1530,7 +1530,7 @@ public class OperateActionRefactored {
     private static MimoTTS mimoTTS;
 
     public void ttsChapterContent() {
-        mimoTTSChapterContent();
+        edgeTTSChapterContent();
     }
 
     /**
@@ -1676,7 +1676,7 @@ public class OperateActionRefactored {
 
     public void stopTTS() {
         stopEdgeTTS();
-        stopMimoTTS();
+//        stopMimoTTS();
     }
 
     // ==================== 字体和样式管理 ====================
