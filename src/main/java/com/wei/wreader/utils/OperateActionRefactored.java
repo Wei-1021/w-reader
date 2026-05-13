@@ -193,9 +193,6 @@ public class OperateActionRefactored {
      * @return OperateActionUtilRefactored实例
      */
     public static OperateActionRefactored getInstance(Project project) {
-//        if (instance == null || !project.equals(mProject) || mProject.isDisposed()) {
-//            instance = new OperateActionRefactored(project);
-//        }
         instance = new OperateActionRefactored(project);
         instance.initData();
         return instance;
@@ -304,6 +301,9 @@ public class OperateActionRefactored {
         } else {
             Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
             siteBeanList = siteMap.get(selectedCustomSiteRuleKey);
+            if (siteBeanList == null) {
+                siteBeanList = configYaml.getSiteList();
+            }
         }
 
         // 初始化选中的站点索引

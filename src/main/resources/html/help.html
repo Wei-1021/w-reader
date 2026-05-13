@@ -148,6 +148,15 @@
                     听书功能无效，无法使用的原因是因为API发生变化，导致无法进行播放。
                 </span>
             </li>
+            <li class="mt-10">
+                <div class="li-label">5.如何重置插件：</div>
+                <span>
+                    若因为各种原因导致插件无法使用（如IDE不正常关闭导致插件缓存冲突等），需要重置插件时，
+                    Windows用户请前往"C:\Users\[用户名]\AppData\Roaming\JetBrains\[IDE版本]\options"目录下找到w-reader-cache.xml
+                    和w-reader-custom-site-rule.xml这两个文件并删除（必要时可以备份这俩个文件），然后重启IDE，即可解决该问题。<br>
+                    MacOS用户请前往"~/Library/Application Support/JetBrains/[IDE版本]/options"，其余同上。
+                </span>
+            </li>
         </ul>
     </div>
 
@@ -195,6 +204,12 @@
     <div id="update_logs">
         <div class="sub-title">更新日志</div>
         <div class="update_content">
+            <div>
+                0.1.7:
+                <ul>
+                    <li>1.【修复】书源列表加载异常，导致插件初始化失败的问题；</li>
+                </ul>
+            </div>
             <div>
                 0.1.6:
                 <ul>
