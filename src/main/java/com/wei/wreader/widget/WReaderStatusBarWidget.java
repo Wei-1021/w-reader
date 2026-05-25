@@ -260,10 +260,11 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             int updateLastReadLineNum = lastReadLineNum - 1;
 
             // 创建新的 ChapterInfo 对象，而不是修改旧对象
+            String content = selectedChapterInfoTemp.getChapterContent().replaceAll("(?s)<style[^>]*>.*?</style>", "");
             ChapterInfo newChapterInfo = new ChapterInfo();
             newChapterInfo.setChapterUrl(selectedChapterInfoTemp.getChapterUrl());
             newChapterInfo.setChapterTitle(selectedChapterInfoTemp.getChapterTitle());
-            newChapterInfo.setChapterContent(selectedChapterInfoTemp.getChapterContent());
+            newChapterInfo.setChapterContent(content);
             newChapterInfo.setChapterContentStr(selectedChapterInfoTemp.getChapterContentStr());
             newChapterInfo.setSelectedChapterIndex(selectedChapterInfoTemp.getSelectedChapterIndex());
             newChapterInfo.setLastReadLineNum(updateLastReadLineNum);
@@ -298,10 +299,11 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
             lastReadLineNum = lastReadLineNum == chapterContentList.size() ? lastReadLineNum : lastReadLineNum + 1;
 
             // 创建新的 ChapterInfo 对象，而不是修改旧对象
+            String content = selectedChapterInfoTemp.getChapterContent().replaceAll("(?s)<style[^>]*>.*?</style>", "");
             ChapterInfo newChapterInfo = new ChapterInfo();
             newChapterInfo.setChapterUrl(selectedChapterInfoTemp.getChapterUrl());
             newChapterInfo.setChapterTitle(selectedChapterInfoTemp.getChapterTitle());
-            newChapterInfo.setChapterContent(selectedChapterInfoTemp.getChapterContent());
+            newChapterInfo.setChapterContent(content);
             newChapterInfo.setChapterContentStr(selectedChapterInfoTemp.getChapterContentStr());
             newChapterInfo.setSelectedChapterIndex(selectedChapterInfoTemp.getSelectedChapterIndex());
             newChapterInfo.setLastReadLineNum(lastReadLineNum);

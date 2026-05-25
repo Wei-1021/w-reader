@@ -149,6 +149,7 @@ public class ChapterInfo implements Serializable {
     public void initChapterInfo(String chapterContentHtml,
                                 String chapterContentText,
                                 int chapterIndex) {
+        chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
         this.setChapterContent(chapterContentHtml);
         this.setChapterContentStr(chapterContentText);
         this.setSelectedChapterIndex(chapterIndex);

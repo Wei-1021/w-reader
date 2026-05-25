@@ -259,11 +259,11 @@ public class StringUtil {
                                            Map<String, String> imageMap,
                                            Map<String, Integer> imgWidthMap) {
         // 匹配 <img> 标签的正则表达式
-        String imgRegex = "<img\\s+[^>]*src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
+        String imgRegex = "<img\\s+[^>]*?\\bsrc\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
         html = replaceWithImg(html, imgRegex, imageMap, imgWidthMap);
 
         // 匹配 SVG 中 <image> 标签的正则表达式
-        String svgImageRegex = "<image\\s+[^>]*xlink:href\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
+            String svgImageRegex = "<image\\s+[^>]*?\\bxlink:href\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>";
         html = replaceWithImg(html, svgImageRegex, imageMap, imgWidthMap);// 去除可能存在的 ../ 前缀
         // 将 SVG 中的 <image> 标签转换为 <img> 标签
         html = convertSvgImageToImg(html);

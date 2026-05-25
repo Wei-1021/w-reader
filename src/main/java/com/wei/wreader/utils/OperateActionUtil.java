@@ -570,6 +570,7 @@ public class OperateActionUtil {
                         }
                     }
 
+                    text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
                     selectedChapterInfo.setChapterContent(text);
                     selectedChapterInfo.setChapterContentStr(chapterContentText);
                     cacheService.setSelectedChapterInfo(selectedChapterInfo);

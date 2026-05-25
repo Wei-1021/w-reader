@@ -1339,7 +1339,8 @@ public class SearchBookUtil {
         selectChapterInfo.setChapterUrl(chapterUrl);
         // 远程获取章节内容
         searchBookContentRemote(chapterUrl, (searchBookCallParam) -> {
-            selectChapterInfo.setChapterContent(searchBookCallParam.getChapterContentHtml());
+            String content = searchBookCallParam.getChapterContentHtml().replaceAll("(?s)<style[^>]*>.*?</style>", "");
+            selectChapterInfo.setChapterContent(content);
             selectChapterInfo.setChapterContentStr(searchBookCallParam.getChapterContentText());
             selectChapterInfo.setSelectedChapterIndex(selectedIndex);
 
@@ -1708,6 +1709,7 @@ public class SearchBookUtil {
                     }
 
                     ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+                    text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
                     selectedChapterInfo.setChapterContent(text);
                     selectedChapterInfo.setChapterContentStr(chapterContentText);
                     cacheService.setSelectedChapterInfo(selectedChapterInfo);

@@ -1116,6 +1116,7 @@ public class OperateActionRefactored {
             chapterContentText = formatAndApplyRegex(chapterContentText, chapterRules);
 
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+            text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             selectedChapterInfo.setChapterContent(text);
             selectedChapterInfo.setChapterContentStr(chapterContentText);
             cacheService.setSelectedChapterInfo(selectedChapterInfo);
@@ -1760,6 +1761,7 @@ public class OperateActionRefactored {
             }
 
             String chapterContent = cacheService.getSelectedChapterInfo().getChapterContent();
+            chapterContent = chapterContent.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             String styledContent = isContentOriginalStyle ?
                     buildOriginalStyleContent(chapterContent) :
                     buildCustomStyleContent(chapterContent);
@@ -1927,6 +1929,8 @@ public class OperateActionRefactored {
         String style = "font-family: '" + fontFamily + "'; " +
                 "font-size: " + fontSize + "px;" +
                 "color:" + fontColorHex + ";";
+
+        text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
 
         return "<div style=\"" + style + "\">" + text + "</div>";
     }

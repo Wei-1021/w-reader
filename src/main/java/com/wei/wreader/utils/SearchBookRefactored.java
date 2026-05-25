@@ -1074,7 +1074,8 @@ public class SearchBookRefactored {
                                        int selectedIndex, List<String> chapterList,
                                        List<String> chapterUrlList, SiteBean siteBean) {
         // 设置章节内容
-        chapterInfo.setChapterContent(param.getChapterContentHtml());
+        String content = param.getChapterContentHtml().replaceAll("(?s)<style[^>]*>.*?</style>", "");
+        chapterInfo.setChapterContent(content);
         chapterInfo.setChapterContentStr(param.getChapterContentText());
         chapterInfo.setSelectedChapterIndex(selectedIndex);
 
@@ -1152,6 +1153,7 @@ public class SearchBookRefactored {
         String fontFamily = cacheService.getFontFamily();
         int fontSize = cacheService.getFontSize();
 
+        chapterContent = chapterContent.replaceAll("(?s)<style[^>]*>.*?</style>", "");
         // 判断是否使用原始样式
         if (siteBean != null && siteBean.getChapterRules().isUseContentOriginalStyle()) {
             chapterContent = String.format("""
@@ -1206,6 +1208,8 @@ public class SearchBookRefactored {
         String style = "font-family: '" + fontFamily + "'; " +
                 "font-size: " + fontSize + "px;" +
                 "color:" + fontColor + ";";
+
+        text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
 
         return "<h3 style=\"text-align: center;margin-bottom: 20px;color:" + fontColor + ";\">" +
                 chapterInfo.getChapterTitle() + "</h3>" +
@@ -1787,7 +1791,9 @@ public class SearchBookRefactored {
                 return;
             }
             ChapterRules chapterRules = siteBean.getChapterRules();
-
+            // 移除样式
+            content = content.replaceAll("(?s)<style[^>]*>.*?</style>", "");
+            // 剔除HTML标签
             Pattern pattern = Pattern.compile(ConstUtil.HTML_TAG_REGEX_STR);
             String chapterContentText = pattern.matcher(content).replaceAll("　");
             chapterContentText = StringUtils.normalizeSpace(chapterContentText);

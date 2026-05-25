@@ -36,7 +36,9 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList": null
+      "contentRegexList": [
+        "<br\\s*/+>@replace:"
+      ]
     },
     "bookInfoRules": {
       "bookIdField": "book_id",

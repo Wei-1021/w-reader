@@ -768,6 +768,8 @@ public class OperateActionUtilOld {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
+
+                chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
                 currentChapterInfo.setChapterContent(chapterContentHtml);
                 currentChapterInfo.setChapterContentStr(chapterContentText);
                 currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -933,6 +935,7 @@ public class OperateActionUtilOld {
             // 搜索章节内容
             searchBookContentRemote(chapterUrl);
             // 缓存当前章节信息
+            chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
@@ -969,6 +972,7 @@ public class OperateActionUtilOld {
             chapterContentText = StringEscapeUtils.unescapeHtml4(chapterContentText);
 
             // 缓存当前章节信息
+            chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
@@ -1107,6 +1111,7 @@ public class OperateActionUtilOld {
                 }
             }
 
+            chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
@@ -1166,6 +1171,7 @@ public class OperateActionUtilOld {
                 }
             }
 
+            chapterContentHtml = chapterContentHtml.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             currentChapterInfo.setChapterContent(chapterContentHtml);
             currentChapterInfo.setChapterContentStr(chapterContentText);
             currentChapterInfo.setSelectedChapterIndex(currentChapterIndex);
