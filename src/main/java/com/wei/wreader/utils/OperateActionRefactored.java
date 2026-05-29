@@ -462,6 +462,13 @@ public class OperateActionRefactored {
     public void loadBookDirectoryRemote(JBList<String> chapterListJBList, BookDirectoryListener listener) {
         // 获取选中的章节索引和信息
         int selectedIndex = chapterListJBList.getSelectedIndex();
+        // 索引越界处理
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        if (selectedIndex >= chapterUrlList.size()) {
+            selectedIndex = chapterUrlList.size() - 1;
+        }
         currentChapterIndex = selectedIndex;
 
         String chapterTitle = chapterList.get(currentChapterIndex);
@@ -479,6 +486,7 @@ public class OperateActionRefactored {
         currentChapterInfo.setChapterUrl(chapterUrl);
 
         // 远程获取章节内容
+        int finalSelectedIndex = selectedIndex;
         searchBookContentRemote(chapterUrl, (searchBookCallParam) -> {
             chapterContentHtml = searchBookCallParam.getChapterContentHtml();
             chapterContentText = searchBookCallParam.getChapterContentText();
@@ -486,7 +494,7 @@ public class OperateActionRefactored {
             cacheService.setSelectedChapterInfo(currentChapterInfo);
 
             if (listener != null) {
-                listener.onClickItem(selectedIndex, chapterList, currentChapterInfo, searchBookCallParam.getBodyElement());
+                listener.onClickItem(finalSelectedIndex, chapterList, currentChapterInfo, searchBookCallParam.getBodyElement());
             }
         });
     }
@@ -498,10 +506,17 @@ public class OperateActionRefactored {
      * @param listener          回调监听器
      */
     public void loadBookDirectoryLocal(JBList<String> chapterListJBList, BookDirectoryListener listener) {
+        chapterContentList = cacheService.getChapterContentList();
         int selectedIndex = chapterListJBList.getSelectedIndex();
+        // 索引越界处理
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        if (chapterContentList != null && selectedIndex >= chapterContentList.size()) {
+            selectedIndex = chapterContentList.size() - 1;
+        }
         currentChapterIndex = selectedIndex;
 
-        chapterContentList = cacheService.getChapterContentList();
         if (chapterContentList != null && !chapterContentList.isEmpty()) {
             String chapterTitle = chapterList.get(currentChapterIndex);
             currentChapterInfo.setChapterTitle(chapterTitle);
@@ -561,6 +576,10 @@ public class OperateActionRefactored {
                 return;
             }
 
+            if (currentChapterIndex >= chapterList.size()) {
+                currentChapterIndex = chapterList.size() - 1;
+            }
+
             currentChapterIndex--;
             String chapterTitle = chapterList.get(currentChapterIndex);
             currentChapterInfo.setChapterTitle(chapterTitle);
@@ -585,6 +604,13 @@ public class OperateActionRefactored {
             return;
         }
 
+        // 索引越界处理
+        if (currentChapterIndex < 0) {
+            currentChapterIndex = 0;
+        }
+        if (currentChapterIndex >= chapterUrlList.size()) {
+            currentChapterIndex = chapterUrlList.size() - 1;
+        }
         String prevChapterSuffixUrl = chapterUrlList.get(currentChapterIndex);
         String prevChapterUrl = buildFullChapterUrl(prevChapterSuffixUrl);
         currentChapterInfo.setChapterUrl(prevChapterUrl);
@@ -604,6 +630,13 @@ public class OperateActionRefactored {
     private void loadPrevChapterLocal(BiConsumer<ChapterInfo, Element> runnable) {
         chapterContentList = cacheService.getChapterContentList();
         if (chapterContentList != null && !chapterContentList.isEmpty()) {
+            // 索引越界处理
+            if (currentChapterIndex < 0) {
+                currentChapterIndex = 0;
+            }
+            if (currentChapterIndex >= chapterContentList.size()) {
+                currentChapterIndex = chapterContentList.size() - 1;
+            }
             chapterContentHtml = chapterContentList.get(currentChapterIndex);
             chapterContentText = processChapterContentText(chapterContentHtml);
             currentChapterInfo.initChapterInfo(chapterContentHtml, chapterContentText, currentChapterIndex);
@@ -646,6 +679,10 @@ public class OperateActionRefactored {
             return;
         }
 
+        if (currentChapterIndex < 0) {
+            currentChapterIndex = 0;
+        }
+
         currentChapterIndex++;
         String chapterTitle = chapterList.get(currentChapterIndex);
         currentChapterInfo.setChapterTitle(chapterTitle);
@@ -672,6 +709,10 @@ public class OperateActionRefactored {
         if (chapterContentList == null ||
                 currentChapterIndex >= chapterContentList.size() - 1) {
             return;
+        }
+
+        if (currentChapterIndex < 0) {
+            currentChapterIndex = 0;
         }
 
         currentChapterIndex++;

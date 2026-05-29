@@ -444,6 +444,9 @@ public class SearchBookRefactored {
         if (selectedName == null) {
             // 使用默认分组
             int defaultIndex = siteGroupNameList.indexOf(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY);
+            if (defaultIndex == -1) {
+                defaultIndex = 0;
+            }
             return siteGroupNameList.get(defaultIndex);
         }
         return selectedName;
@@ -530,6 +533,15 @@ public class SearchBookRefactored {
     private void searchBookDialogOk(ComboBox<String> comboBox, JTextField searchBookTextField) {
         // 获取选择的站点信息
         int selectedIndex = comboBox.getSelectedIndex();
+
+        if (selectedIndex < 0) {
+            selectedIndex  = 0;
+        }
+
+        if (selectedIndex >= siteBeanList.size()) {
+            selectedIndex = siteBeanList.size() - 1;
+        }
+
         selectedBookSiteIndex = selectedIndex;
         SiteBean selectedSiteBean = siteBeanList.get(selectedIndex);
 
@@ -1026,6 +1038,12 @@ public class SearchBookRefactored {
         BookInfo bookInfo = cacheService.getTempSelectedBookInfo();
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
         int selectedIndex = chapterListJBList.getSelectedIndex();
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        if (selectedIndex >= chapterUrlList.size()) {
+            selectedIndex = chapterUrlList.size() - 1;
+        }
 
         // 构建章节URL
         String chapterTitle = chapterList.get(selectedIndex);
@@ -1037,8 +1055,9 @@ public class SearchBookRefactored {
         chapterInfo.setChapterUrl(chapterUrl);
 
         // 获取章节内容
+        int finalSelectedIndex = selectedIndex;
         searchBookContentRemote(chapterUrl, param -> {
-            processChapterContent(param, chapterInfo, selectedIndex,
+            processChapterContent(param, chapterInfo, finalSelectedIndex,
                     chapterList, chapterUrlList, siteBean);
         });
     }
