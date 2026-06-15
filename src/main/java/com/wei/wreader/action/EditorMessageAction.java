@@ -62,7 +62,7 @@ public class EditorMessageAction extends BaseAction {
         // 禁用光标显示，避免第一次点击只获取焦点
         contentTextPane.setCaret(new javax.swing.text.DefaultCaret() {
             @Override
-            public void paint(java.awt.Graphics g) {
+            public void paint(Graphics g) {
                 // 不绘制光标
             }
 

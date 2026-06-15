@@ -30,7 +30,7 @@ public class CustomSiteUtil {
     /** 自定义书源规则缓存服务 */
     private final SiteRuleService siteRuleService;
     /** 默认书源规则文件路径 */
-    private static final String DEFAULT_SITE_RULE_PATH = "json/default-site-rule.json";
+    public static final String DEFAULT_SITE_RULE_PATH = "json/default-site-rule.json";
     //endregion
 
     public static CustomSiteUtil getInstance(Project project) {

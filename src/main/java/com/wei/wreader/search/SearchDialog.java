@@ -1,5 +1,7 @@
 package com.wei.wreader.search;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -22,6 +24,7 @@ import com.wei.wreader.util.data.JsonUtil;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.SiteRuleService;
 import com.wei.wreader.util.CustomSiteUtil;
+import com.wei.wreader.util.file.FileUtil;
 import com.wei.wreader.util.ui.ToolWindowUtil;
 import com.wei.wreader.util.yml.ConfigYaml;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +87,7 @@ public class SearchDialog {
 
         if (StringUtils.isBlank(selectedRuleKey) ||
                 ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedRuleKey)) {
-            siteBeanList = configYaml.getSiteList();
+            siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
         } else {
             Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
             List<SiteBean> customList = siteMap.get(selectedRuleKey);
@@ -121,7 +124,7 @@ public class SearchDialog {
         // ===== 顶部：书源选择区域 =====
         JPanel sourcePanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 5, 2, 5);
+        gbc.insets = JBUI.insets(2, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // 书源分组下拉框

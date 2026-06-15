@@ -856,9 +856,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 OptionItem voiceRoleSelectedItem = (OptionItem) voiceRoleGroupComboBox.getSelectedItem();
                 if (voiceRoleSelectedItem != null) {
                     // 获取音色拥有的风格
-                    com.wei.wreader.tts.edge.VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRoleSelectedItem.getText());
+                    VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRoleSelectedItem.getText());
                     if (voiceStyles.length == 0) {
-                        audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{com.wei.wreader.tts.edge.VoiceStyle.style_default.name}));
+                        audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{VoiceStyle.style_default.name}));
                     } else {
                         String[] voiceStyleStrs = new String[voiceStyles.length];
                         for (int i = 0; i < voiceStyles.length; i++) {
@@ -873,9 +873,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
             // 更新风格选项
             String voiceRole = settings.getVoiceRole();
-            com.wei.wreader.tts.edge.VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRole);
+            VoiceStyle[] voiceStyles = VoiceRoleStyle.getByRoleNickName(voiceRole);
             if (voiceStyles.length == 0) {
-                audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{com.wei.wreader.tts.edge.VoiceStyle.style_default.name}));
+                audioStyleComboBox.setModel(new DefaultComboBoxModel<>(new String[]{VoiceStyle.style_default.name}));
             } else {
                 String[] voiceStyleStrs = new String[voiceStyles.length];
                 for (int i = 0; i < voiceStyles.length; i++) {

@@ -179,12 +179,12 @@ public class SearchService {
 
         // 如果URL模板不为空且不是HTML模式，使用模板引擎
         if (StringUtils.isNotBlank(url) && !siteBean.isHasHtml()) {
-            return com.wei.wreader.util.comm.StringTemplateEngine.render(url, Map.of("bookId", bookInfo.getBookId()));
+            return StringTemplateEngine.render(url, Map.of("bookId", bookInfo.getBookId()));
         }
 
         // 否则使用书籍URL
         String bookUrl = bookInfo.getBookUrl();
-        if (bookUrl != null && !bookUrl.startsWith("http") && !com.wei.wreader.util.data.JsonUtil.isValid(bookUrl)) {
+        if (bookUrl != null && !bookUrl.startsWith("http") && !JsonUtil.isValid(bookUrl)) {
             return searchRules.getUrl() + bookUrl;
         }
         return bookUrl;
@@ -364,7 +364,7 @@ public class SearchService {
             if (StringUtils.isNotBlank(chapterTitle)) {
                 chapterNames.add(chapterTitle);
                 // 构建完整URL
-                chapterUrl = com.wei.wreader.util.comm.UrlUtil.buildFullURL(location, chapterUrl);
+                chapterUrl = UrlUtil.buildFullURL(location, chapterUrl);
                 chapterUrls.add(chapterUrl);
             }
         }

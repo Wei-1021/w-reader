@@ -153,8 +153,7 @@ public class WReaderStatusBarWidget extends EditorBasedStatusBarPopup {
         // 鼠标悬停时的提示内容
         String tooltipText = getTooltipText();
 
-        EditorBasedStatusBarPopup.WidgetState widgetState = new EditorBasedStatusBarPopup
-                .WidgetState(tooltipText, showContentStr, true);
+        WidgetState widgetState = new WidgetState(tooltipText, showContentStr, true);
         Icon mainIcon = WReaderIcons.getMainIcon(project);
         widgetState.setIcon(mainIcon);
 

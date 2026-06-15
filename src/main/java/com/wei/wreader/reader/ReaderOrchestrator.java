@@ -180,7 +180,7 @@ public final class ReaderOrchestrator {
 
     // --- 内容加载 ---
 
-    public void searchBookContentRemote(String url, java.util.function.Consumer<com.wei.wreader.model.SearchBookCallParam> callback) {
+    public void searchBookContentRemote(String url, java.util.function.Consumer<SearchBookCallParam> callback) {
         chapterNavigator.searchBookContentRemote(url, callback);
     }
 
@@ -291,7 +291,7 @@ public final class ReaderOrchestrator {
     /**
      * 加载本章节下一页内容
      */
-    public void loadThisChapterNextContent(String chapterUrl, org.jsoup.nodes.Element bodyElement) {
+    public void loadThisChapterNextContent(String chapterUrl, Element bodyElement) {
         chapterNavigator.loadThisChapterNextContent(chapterUrl, bodyElement);
     }
 
@@ -302,7 +302,7 @@ public final class ReaderOrchestrator {
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
         if (chapterInfo == null) return;
         String chapterContentStr = chapterInfo.getChapterContentStr();
-        java.util.List<String> chapterContentSplitList = chapterInfo.getChapterContentList();
+        List<String> chapterContentSplitList = chapterInfo.getChapterContentList();
         Settings settings = cacheService.getSettings();
         int singleLineChars = settings.getSingleLineChars();
         if (chapterContentSplitList == null || chapterContentSplitList.isEmpty()) {
@@ -328,7 +328,7 @@ public final class ReaderOrchestrator {
             return null;
         }
         javax.swing.text.Element element = htmlDoc.getCharacterElement(pos);
-        java.util.List<javax.swing.text.Element> elements = new java.util.ArrayList<>();
+        List<javax.swing.text.Element> elements = new java.util.ArrayList<>();
         javax.swing.text.Element current = element;
         while (current != null && current.getName() != null) {
             elements.add(current);

@@ -55,7 +55,7 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
      * </ul>
      * <p>
      * To do this, you need to explicitly invoke
-     * {@link com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager#updateWidget(StatusBarWidgetFactory)}
+     * {@link StatusBarWidgetsManager#updateWidget(StatusBarWidgetFactory)}
      * to recreate the widget and re-add it to the status bar.
      */
     @Override
@@ -75,7 +75,7 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
      * Returns availability of the widget.
      * <p>
      * {@code false} means that the IDE won't try to create a widget,
-     * or will dispose it on {@link com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager#updateWidget} call.
+     * or will dispose it on {@link StatusBarWidgetsManager#updateWidget} call.
      * E.g., {@code false} can be returned for:
      * <ul>
      * <li>the "Notifications" widget if the event log is shown as a tool window</li>
@@ -84,7 +84,7 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
      * </ul>
      * <p>
      * Whenever availability is changed,
-     * you need to call {@link com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager#updateWidget(StatusBarWidgetFactory)}
+     * you need to call {@link StatusBarWidgetsManager#updateWidget(StatusBarWidgetFactory)}
      * explicitly to get the status bar updated.
      */
     @Override
