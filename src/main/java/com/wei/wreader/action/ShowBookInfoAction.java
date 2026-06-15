@@ -1,0 +1,74 @@
+package com.wei.wreader.action;
+
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.util.ui.HTMLEditorKitBuilder;
+import com.wei.wreader.model.BookInfo;
+import com.wei.wreader.model.Settings;
+import com.wei.wreader.model.SiteBean;
+import com.wei.wreader.util.data.ConstUtil;
+import com.wei.wreader.util.ui.MessageDialogUtil;
+import org.jetbrains.annotations.NotNull;
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * 书本信息展示
+ */
+public class ShowBookInfoAction extends BaseAction {
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+        super.actionPerformed(e);
+
+        // 获取当前选择的书本信息
+        BookInfo selectedBookInfo = cacheService.getSelectedBookInfo();
+        if (selectedBookInfo == null) {
+            Messages.showErrorDialog(ConstUtil.WREADER_SEARCH_BOOK_ERROR, "提示");
+            return;
+        }
+        // 获取当前选择的书源
+        SiteBean selectedSiteBean = cacheService.getSelectedSiteBean();
+        String siteBeanName;
+        String siteBeanId;
+        if (selectedSiteBean != null) {
+            siteBeanName = selectedSiteBean.getName();
+            siteBeanId = selectedSiteBean.getId();
+        } else {
+            siteBeanId = "";
+            siteBeanName = "";
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            String bookInfoStr =
+                    "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
+                    "<p>作者：" + selectedBookInfo.getBookAuthor() + "</p>" +
+                    "<p>简介：" + selectedBookInfo.getBookDesc() + "</p>";
+
+            if (Settings.DATA_LOAD_TYPE_NETWORK == settings.getDataLoadType()) {
+                bookInfoStr =
+                        "<p>书名：" + selectedBookInfo.getBookName() + "</p>" +
+                        "<p>作者：" + selectedBookInfo.getBookAuthor() + "</p>" +
+                        "<p>书源：" + siteBeanName + "</p>" +
+                        "<p>书源网址：" + siteBeanId + "</p>" +
+                        "<p>简介：" + selectedBookInfo.getBookDesc() + "</p>";
+            }
+
+            bookInfoStr = "<div>" + bookInfoStr + "</div>";
+
+            JTextPane bookInfoTextPane = new JTextPane();
+            bookInfoTextPane.setContentType("text/html");
+            bookInfoTextPane.setEditable(false);
+            bookInfoTextPane.setPreferredSize(new Dimension(450, 380));
+            bookInfoTextPane.setMaximumSize(new Dimension(450, 550));
+            bookInfoTextPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+            bookInfoTextPane.setEditorKit(new HTMLEditorKitBuilder().withWordWrapViewFactory().build());
+            bookInfoTextPane.setText(bookInfoStr);
+
+            Object[] objects = new Object[] {
+                    bookInfoTextPane
+            };
+
+            MessageDialogUtil.showMessageDialog(project, "书籍信息", objects, 500, 0, null);
+        });
+    }
+}

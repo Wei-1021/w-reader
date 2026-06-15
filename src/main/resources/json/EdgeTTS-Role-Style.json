@@ -1,0 +1,143 @@
+{
+  "Xiaoxiao": {
+    "roleName": "Xiaoxiao",
+    "shortName": "zh-CN-XiaoxiaoNeural",
+    "nickname": "晓晓",
+    "styles": [
+      "style_default", "assistant", "chat", "customerservice", "newscast", "affectionate", "angry", "calm", "cheerful", "disgruntled", "terrified",
+      "whispering", "lyrical", "sad", "serious", "poetry_reading", "friendly", "chat", "whispering", "sorry", "excited"
+    ]
+  },
+  "Xiaoshuang": {
+    "roleName": "Xiaoshuang",
+    "shortName": "zh-CN-XiaoshuangNeural",
+    "nickname": "晓双",
+    "styles": ["style_default", "chat"]
+  },
+  "Xiaoyou": {
+    "roleName": "Xiaoyou",
+    "shortName": "zh-CN-XiaoyouNeural",
+    "nickname": "晓悠",
+    "styles": ["style_default"]
+  },
+  "Xiaochen": {
+    "roleName": "Xiaochen",
+    "shortName": "zh-CN-XiaochenNeural",
+    "nickname": "晓辰",
+    "styles": ["style_default", "livecommercial"]
+  },
+  "Xiaohan": {
+    "roleName": "Xiaohan",
+    "shortName": "zh-CN-XiaohannNeural",
+    "nickname": "晓涵",
+    "styles": ["style_default", "calm", "fearful", "cheerful", "disgruntled", "serious", "angry", "sad", "gentle", "affectionate", "embarrassed"]
+  },
+  "Xiaomeng": {
+    "roleName": "Xiaomeng",
+    "shortName": "zh-CN-XiaomengNeural",
+    "nickname": "晓梦",
+    "styles": ["style_default", "chat"]
+  },
+  "Xiaoxuan": {
+    "roleName": "Xiaoxuan",
+    "shortName": "zh-CN-XiaoxuanNeural",
+    "nickname": "晓萱",
+    "styles": ["style_default"]
+  },
+  "Xiaorou": {
+    "roleName": "Xiaorou",
+    "shortName": "zh-CN-XiaorouNeural",
+    "nickname": "晓柔",
+    "styles": ["style_default"]
+  },
+  "Xiaoyi": {
+    "roleName": "Xiaoyi",
+    "shortName": "zh-CN-XiaoyiNeural",
+    "nickname": "晓伊",
+    "styles": ["style_default", "angry", "disgruntled", "affectionate", "cheerful", "fearful", "sad", "embarrassed", "serious", "gentle"]
+  },
+  "Xiaoqiu": {
+    "roleName": "Xiaoqiu",
+    "shortName": "zh-CN-XiaoqiuNeural",
+    "nickname": "晓秋",
+    "styles": ["style_default"]
+  },
+  "Xiaobei": {
+    "roleName": "Xiaobei",
+    "shortName": "zh-CN-liaoning-XiaobeiNeural",
+    "nickname": "晓北",
+    "styles": ["style_default"]
+  },
+  "Xiaoni": {
+    "roleName": "Xiaoni",
+    "shortName": "zh-CN-shaanxi-XiaoniNeural",
+    "nickname": "晓妮",
+    "styles": ["style_default"]
+  },
+  "HiuGaai": {
+    "roleName": "HiuGaai",
+    "shortName": "zh-HK-HiuGaaiNeural",
+    "nickname": "曉佳",
+    "styles": ["style_default"]
+  },
+  "HiuMaan": {
+    "roleName": "HiuMaan",
+    "shortName": "zh-HK-HiuMaanNeural",
+    "nickname": "曉曼",
+    "styles": ["style_default"]
+  },
+  "HsiaoChen": {
+    "roleName": "HsiaoChen",
+    "shortName": "zh-TW-HsiaoChenNeural",
+    "nickname": "曉臻",
+    "styles": ["style_default"]
+  },
+  "HsiaoYu": {
+    "roleName": "HsiaoYu",
+    "shortName": "zh-TW-HsiaoYuNeural",
+    "nickname": "曉雨",
+    "styles": ["style_default"]
+  },
+  "Yunjian": {
+    "roleName": "Yunjian",
+    "shortName": "zh-CN-YunjianNeural",
+    "nickname": "云健",
+    "styles": ["style_default", "narration_relaxed", "sports_commentary", "sports_commentary_excited", "angry", "disgruntled", "cheerful", "sad", "serious", "depressed", "documentary_narration"]
+  },
+  "Yunxi": {
+    "roleName": "Yunxi",
+    "shortName": "zh-CN-YunxiNeural",
+    "nickname": "云希",
+    "styles": ["style_default", "narration_relaxed", "embarrassed", "fearful", "cheerful", "disgruntled", "serious", "angry", "sad", "depressed", "chat", "assistant", "newscast"]
+  },
+  "Yunxia": {
+    "roleName": "Yunxia",
+    "shortName": "zh-CN-YunxiaNeural",
+    "nickname": "云夏",
+    "styles": ["style_default", "calm", "fearful", "cheerful", "angry", "sad"]
+  },
+  "Yunyang": {
+    "roleName": "Yunyang",
+    "shortName": "zh-CN-YunyangNeural",
+    "nickname": "云扬",
+    "styles": ["style_default", "customerservice", "narration_professional", "newscast_casual"]
+  },
+  "Yunqi": {
+    "roleName": "Yunqi",
+    "shortName": "zh-CN-guangxi-YunqiNeural",
+    "nickname": "云奇",
+    "styles": ["style_default"]
+  },
+  "WanLung": {
+    "roleName": "WanLung",
+    "shortName": "zh-HK-WanLungNeural",
+    "nickname": "雲龍",
+    "styles": ["style_default"]
+  },
+  "YunJhe": {
+    "roleName": "YunJhe",
+    "shortName": "zh-TW-YunJheNeural",
+    "nickname": "雲哲",
+    "styles": ["style_default"]
+  }
+}
