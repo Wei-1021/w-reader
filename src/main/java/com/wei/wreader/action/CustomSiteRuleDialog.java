@@ -429,7 +429,7 @@ public class CustomSiteRuleDialog {
             public void documentChanged(@NotNull DocumentEvent event) {
                 ApplicationManager.getApplication().invokeLater(() -> refreshFolding());
             }
-        });
+        }, project);
     }
 
     /**

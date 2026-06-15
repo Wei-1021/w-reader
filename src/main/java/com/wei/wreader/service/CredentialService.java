@@ -73,6 +73,6 @@ public class CredentialService {
      * 创建凭证属性
      */
     private CredentialAttributes createCredentialAttributes(String serviceName, String userName) {
-        return new CredentialAttributes(serviceName, userName, getClass(), false);
+        return new CredentialAttributes(serviceName, userName);
     }
 }

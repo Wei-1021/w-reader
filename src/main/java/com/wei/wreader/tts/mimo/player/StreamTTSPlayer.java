@@ -13,6 +13,7 @@ import com.wei.wreader.tts.mimo.enums.VoiceStyle;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -304,7 +305,7 @@ public class StreamTTSPlayer {
         networkThread = new Thread(() -> {
             HttpURLConnection connection = null;
             try {
-                URL url = new URL(config.getBaseUrl() + MimoTTSConfig.DEFAULT_SUFFIX_URL);
+                URL url = URI.create(config.getBaseUrl() + MimoTTSConfig.DEFAULT_SUFFIX_URL).toURL();
                 connection = (HttpURLConnection) url.openConnection();
 
                 Map<String, Object> requestBody = request.toMap();

@@ -8,6 +8,7 @@ import com.wei.wreader.tts.mimo.enums.VoiceStyle;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -83,7 +84,7 @@ public class MimoTTSClient {
     // ==================== 内部方法 ====================
 
     private String sendPostRequest(String endpoint, Object requestBody) throws IOException, MimoTTSException {
-        URL url = new URL(config.getBaseUrl() + endpoint);
+        URL url = URI.create(config.getBaseUrl() + endpoint).toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         try {

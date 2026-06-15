@@ -294,7 +294,7 @@ public class SearchService {
                 }
             }
         }
-        return StringUtils.defaultString(itemUrl, "");
+        return itemUrl != null ? itemUrl : "";
     }
 
     /**
