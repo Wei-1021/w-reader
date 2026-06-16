@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
@@ -24,9 +25,9 @@ import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
@@ -68,8 +69,8 @@ import java.util.Map;
  */
 public class CustomSiteRuleDialogNew {
 
-    private static final String TEMP_DIR = ".idea/w-reader";
-    private static final String TEMP_FILE_NAME = "w-reader-custom-rule-temp.json";
+    public static final String TEMP_DIR = ".idea/w-reader";
+    public static final String TEMP_FILE_NAME = "w-reader-custom-rule-temp.json";
     private static final String GUIDE_URL = "https://gitee.com/weizhanjie/w-reader/wikis/%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B9%A6%E6%BA%90/" +
             "%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B9%A6%E6%BA%90%E8%A7%84%E5%88%99%E8%AF%B4%E6%98%8E";
     private static final String TIP_TEXT = "提示：本功能规则比较简陋，目前只适合获取相对简单的书源，部分包括但不限于需要登录权限、字体加密等复杂的书源暂时是没法获取的。" +
@@ -119,6 +120,10 @@ public class CustomSiteRuleDialogNew {
 
     // 当前已加载的分组名
     private String loadedGroupKey;
+
+    // 编辑器异步初始化状态
+    private volatile boolean editorInitializing = false;
+    private String pendingContent;
 
     public CustomSiteRuleDialogNew(@NotNull Project project, Settings settings) {
         this.project = project;
@@ -466,50 +471,75 @@ public class CustomSiteRuleDialogNew {
         if (editor != null && !editor.isDisposed()) {
             return;
         }
-
-        try {
-            virtualFile = getOrCreateTempVirtualFile("");
-        } catch (IOException ex) {
-            Messages.showErrorDialog("创建临时文件失败: " + ex.getMessage(), "错误");
+        if (editorInitializing) {
             return;
         }
+        editorInitializing = true;
 
-        psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-        if (psiFile == null) {
-            Messages.showErrorDialog("无法获取 PSI 文件", "错误");
-            return;
-        }
-
-        document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
-        if (document == null) {
-            document = EditorFactory.getInstance().createDocument("");
-        }
-
-        FileType jsonFileType = FileTypeManager.getInstance().getFileTypeByExtension("json");
-        editor = (EditorEx) EditorFactory.getInstance().createEditor(document, project, jsonFileType, false);
-
-        // 编辑器配置
-        EditorSettings editorSettings = editor.getSettings();
-        editorSettings.setLineNumbersShown(true);
-        editorSettings.setFoldingOutlineShown(true);
-        editorSettings.setAutoCodeFoldingEnabled(true);
-        editorSettings.setIndentGuidesShown(true);
-        editorSettings.setLineMarkerAreaShown(true);
-        editorSettings.setCaretRowShown(true);
-        editorSettings.setUseSoftWraps(false);
-
-        ErrorStripeEditorCustomization.ENABLED.customize(editor);
-
-        // 挂载编辑器组件
-        currentEditorComponent = editor.getComponent();
-
-        // 注册 快捷键进行代码格式化
-        registerFormatShortcut();
-
+        // 显示加载占位
+        JLabel loadingLabel = new JLabel("编辑器初始化中...", SwingConstants.CENTER);
         editorContainer.removeAll();
-        editorContainer.add(currentEditorComponent, BorderLayout.CENTER);
+        editorContainer.add(loadingLabel, BorderLayout.CENTER);
         editorContainer.revalidate();
         editorContainer.repaint();
+
+        // 创建或复用临时文件并初始化编辑器
+        ApplicationManager.getApplication().invokeLater(() -> {
+            try {
+                if (frame == null || !frame.isDisplayable()) {
+                    return;
+                }
+
+                // 复用已有文件或创建新文件
+                if (virtualFile == null || !virtualFile.isValid()) {
+                    virtualFile = getOrCreateTempVirtualFile("");
+                }
+
+                psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if (psiFile == null) {
+                    throw new RuntimeException("无法获取 PSI 文件");
+                }
+
+                document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+                if (document == null) {
+                    document = EditorFactory.getInstance().createDocument("");
+                }
+
+                FileType jsonFileType = FileTypeManager.getInstance().getFileTypeByExtension("json");
+                editor = (EditorEx) EditorFactory.getInstance().createEditor(document, project, jsonFileType, false);
+
+                // 编辑器配置
+                EditorSettings editorSettings = editor.getSettings();
+                editorSettings.setLineNumbersShown(true);
+                editorSettings.setFoldingOutlineShown(true);
+                editorSettings.setAutoCodeFoldingEnabled(true);
+                editorSettings.setIndentGuidesShown(true);
+                editorSettings.setLineMarkerAreaShown(true);
+                editorSettings.setCaretRowShown(true);
+                editorSettings.setUseSoftWraps(false);
+
+                ErrorStripeEditorCustomization.ENABLED.customize(editor);
+
+                currentEditorComponent = editor.getComponent();
+                registerFormatShortcut();
+
+                editorContainer.removeAll();
+                editorContainer.add(currentEditorComponent, BorderLayout.CENTER);
+                editorContainer.revalidate();
+                editorContainer.repaint();
+
+                // 应用等待中的内容
+                if (pendingContent != null) {
+                    String content = pendingContent;
+                    pendingContent = null;
+                    applyRuleText(content);
+                }
+            } catch (Exception ex) {
+                Messages.showErrorDialog("编辑器初始化失败: " + ex.getMessage(), "错误");
+            } finally {
+                editorInitializing = false;
+            }
+        });
     }
 
     /**
@@ -560,16 +590,45 @@ public class CustomSiteRuleDialogNew {
 
         // 代码编辑器模式
         if (editor == null || editor.isDisposed()) {
+            if (editorInitializing) {
+                // 编辑器正在异步初始化，暂存内容
+                pendingContent = finalContent;
+                return;
+            }
             initEditor();
-        }
-
-        if (document == null) {
+            // initEditor 是异步的，暂存内容
+            pendingContent = finalContent;
             return;
         }
 
-        if (finalContent.length() <= 8000) {
+        applyRuleText(finalContent);
+    }
+
+    /**
+     * 将内容写入临时文件并同步到编辑器（必须在 EDT 上调用，编辑器已就绪）
+     */
+    private void applyRuleText(String content) {
+        if (document == null || virtualFile == null) {
+            return;
+        }
+
+        // 0. 先保存当前 Document，使文件与 Document 同步，避免 IntelliJ 弹出"文件已变更"提示
+        FileDocumentManager.getInstance().saveDocument(document);
+
+        // 1. 写入磁盘文件
+        try {
+            File ioFile = new File(virtualFile.getPath());
+            Files.writeString(ioFile.toPath(), content, StandardCharsets.UTF_8);
+            // 2. 刷新 VFS，使磁盘变更同步到虚拟文件
+            virtualFile.refresh(false, false);
+        } catch (IOException e) {
+            // 文件写入失败时仍更新编辑器内容
+        }
+
+        // 3. 更新编辑器 Document
+        if (content.length() <= 8000) {
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                document.replaceString(0, document.getTextLength(), finalContent);
+                document.replaceString(0, document.getTextLength(), content);
                 PsiDocumentManager.getInstance(project).commitDocument(document);
             });
         } else {
@@ -580,10 +639,10 @@ public class CustomSiteRuleDialogNew {
             });
 
             final int CHUNK_SIZE = 5000;
-            for (int i = 0; i < finalContent.length(); i += CHUNK_SIZE) {
+            for (int i = 0; i < content.length(); i += CHUNK_SIZE) {
                 final int start = i;
-                final int end = Math.min(i + CHUNK_SIZE, finalContent.length());
-                final String chunk = finalContent.substring(start, end);
+                final int end = Math.min(i + CHUNK_SIZE, content.length());
+                final String chunk = content.substring(start, end);
                 WriteCommandAction.runWriteCommandAction(project, () -> {
                     document.insertString(document.getTextLength(), chunk);
                     PsiDocumentManager.getInstance(project).commitDocument(document);
@@ -682,6 +741,23 @@ public class CustomSiteRuleDialogNew {
         errorHighlighters.clear();
     }
 
+    private void disposeEditor() {
+        clearJsonErrors();
+
+        // 保存 Document 到磁盘，避免关闭时 IntelliJ 弹出"文件已更改"提示
+        if (document != null) {
+            FileDocumentManager.getInstance().saveDocument(document);
+        }
+
+        if (editor != null && !editor.isDisposed()) {
+            EditorFactory.getInstance().releaseEditor(editor);
+            editor = null;
+        }
+        document = null;
+        psiFile = null;
+        // 保留 virtualFile 和磁盘临时文件，下次打开窗口时复用
+    }
+
     private VirtualFile getOrCreateTempVirtualFile(String content) throws IOException {
         String tempDirPath = project.getBasePath() + "/" + TEMP_DIR;
         File tempDir = new File(tempDirPath);
@@ -690,39 +766,31 @@ public class CustomSiteRuleDialogNew {
         }
 
         File tempFile = new File(tempDir, TEMP_FILE_NAME);
-        Files.writeString(tempFile.toPath(), content, StandardCharsets.UTF_8);
+        // 仅文件不存在时写入初始内容，已有文件则复用
+        if (!tempFile.exists()) {
+            Files.writeString(tempFile.toPath(), content, StandardCharsets.UTF_8);
+        }
 
+        // 先尝试直接查找（VFS 可能已缓存该路径）
+        VirtualFile vf = LocalFileSystem.getInstance().findFileByIoFile(tempFile);
+        if (vf != null) {
+            vf.refresh(false, false);
+            return vf;
+        }
+
+        // 强制刷新后查找
         LocalFileSystem.getInstance().refreshWithoutFileWatcher(false);
-        VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(tempFile);
+        vf = LocalFileSystem.getInstance().findFileByIoFile(tempFile);
+        if (vf != null) {
+            return vf;
+        }
+
+        // 最后尝试 refreshAndFindFileByIoFile
+        vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(tempFile);
         if (vf == null) {
             throw new IOException("无法找到刷新后的虚拟文件: " + tempFile.getAbsolutePath());
         }
         return vf;
-    }
-
-    private void disposeEditor() {
-        clearJsonErrors();
-
-        if (editor != null && !editor.isDisposed()) {
-            EditorFactory.getInstance().releaseEditor(editor);
-            editor = null;
-        }
-        document = null;
-        psiFile = null;
-
-        if (virtualFile != null && virtualFile.isValid()) {
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                try {
-                    File ioFile = new File(virtualFile.getPath());
-                    if (ioFile.exists()) {
-                        Files.delete(ioFile.toPath());
-                        virtualFile.getFileSystem().refresh(false);
-                    }
-                } catch (IOException ignored) {
-                }
-            });
-        }
-        virtualFile = null;
     }
 
     // ==================== 格式化、校验和保存 ====================
