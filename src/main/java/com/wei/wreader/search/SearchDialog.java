@@ -12,6 +12,7 @@ import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+import com.wei.wreader.content.HtmlContentRenderer;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.BookInfo;
 import com.wei.wreader.model.ChapterInfo;
@@ -19,6 +20,8 @@ import com.wei.wreader.model.DataLoadType;
 import com.wei.wreader.model.SearchBookCallParam;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.model.SiteBean;
+import com.wei.wreader.reader.FontManager;
+import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.JsonUtil;
 import com.wei.wreader.service.CacheService;
@@ -46,9 +49,11 @@ public class SearchDialog {
     private final Project project;
     private final SearchService searchService;
     private final CacheService cacheService;
+    private final AppConfigService appConfig;
     private final SiteRuleService siteRuleService;
     private final CustomSiteUtil customSiteUtil;
     private final ConfigYaml configYaml;
+    private final FontManager fontManager;
 
     private List<SiteBean> siteBeanList;
     private int selectedBookSiteIndex;
@@ -73,9 +78,12 @@ public class SearchDialog {
         this.project = project;
         this.searchService = new SearchService(project);
         this.cacheService = CacheService.getInstance();
+        this.appConfig = AppConfigService.getInstance();
         this.siteRuleService = SiteRuleService.getInstance();
         this.customSiteUtil = CustomSiteUtil.getInstance(project);
         this.configYaml = ConfigYaml.getInstance();
+        this.fontManager = new FontManager(cacheService, appConfig);
+        fontManager.initializeFontSettings();
         initSiteBeanList();
     }
 
@@ -474,7 +482,12 @@ public class SearchDialog {
     private void processChapterContent(SearchBookCallParam param, ChapterInfo chapterInfo,
                                        int selectedIndex, List<String> chapterNames,
                                        List<String> chapterUrls, BookDirectoryListener listener) {
-        String rawContent = param.getChapterContentHtml();
+        String fontColorHex = fontManager.getFontColorHex();
+        String fontFamily = fontManager.getFontFamily();
+        int fontSize = fontManager.getFontSize();
+
+        String rawContent = HtmlContentRenderer.buildCustomStyleContent(param.getChapterContentHtml(),
+                fontColorHex, fontFamily, fontSize);
         final String content = (rawContent != null) ? rawContent.replaceAll("(?s)<style[^>]*>.*?</style>", "") : null;
         chapterInfo.setChapterContent(content);
         chapterInfo.setChapterContentStr(param.getChapterContentText());

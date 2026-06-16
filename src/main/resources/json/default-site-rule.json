@@ -37,7 +37,8 @@
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
       "contentRegexList": [
-        "<br\\s*/+>@replace:"
+        "<br\\s*/+>@replace:",
+        "<\\s*div\\s[^>]*?id\\s*=\\s*\"content_tip\"\\s*>[\\s\\S]*?<\\/\\s*div\\s*>@replace:"
       ]
     },
     "bookInfoRules": {

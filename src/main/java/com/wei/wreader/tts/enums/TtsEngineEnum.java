@@ -8,7 +8,7 @@ public enum TtsEngineEnum {
     EDGE("edge", "Edge TTS", null, null, null),
     MIMO("mimo", "MiMo TTS", 
          "https://platform.xiaomimimo.com/console/api-keys",
-         "<html>MiMo API Key 不支持 Token Plan 的 API Key<br>请前往「API Keys」页面申请 API Key</html>",
+         "<html>MiMo API Key 不支持 Token Plan 的 API Key<br>MiMo TTS 限时免费<br>请前往「API Keys」页面申请 API Key</html>",
          "MiMo 音色");
 
     private final String engineId;
