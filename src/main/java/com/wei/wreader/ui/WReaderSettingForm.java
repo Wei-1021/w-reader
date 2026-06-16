@@ -650,6 +650,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         mimoModelTypeComboBox.setSelectedIndex(currentModel.toIndex());
 
         // MiMo 音色描述
+        // 更新音色描述label文字
+        mimoVoiceDescLabel.setText(currentModel.getVoiceDescriptionLabel());
         String voiceDesc = settings.getMimoVoiceDescription();
         mimoVoiceDescTextArea.setText(voiceDesc != null ? voiceDesc : "");
         mimoVoiceDescTextArea.setLineWrap(true);

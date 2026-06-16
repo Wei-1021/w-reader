@@ -20,6 +20,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -247,7 +248,7 @@ public class StreamTTSPlayer {
 
                 while (running.get()) {
                     // 使用带超时的阻塞等待，避免空转
-                    byte[] audioChunk = audioQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    byte[] audioChunk = audioQueue.poll(100, TimeUnit.MILLISECONDS);
                     if (audioChunk == null) {
                         continue;  // 超时但未收到数据，继续等待
                     }
