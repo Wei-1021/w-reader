@@ -11,7 +11,7 @@ plugins {
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.2.0"
+version = "0.2.1"
 
 repositories {
     maven {

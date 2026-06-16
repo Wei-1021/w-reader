@@ -612,43 +612,24 @@ public class CustomSiteRuleDialogNew {
             return;
         }
 
-        // 0. 先保存当前 Document，使文件与 Document 同步，避免 IntelliJ 弹出"文件已变更"提示
-        FileDocumentManager.getInstance().saveDocument(document);
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            // 保存当前 Document，使文件与 Document 同步
+            FileDocumentManager.getInstance().saveDocument(document);
 
-        // 1. 写入磁盘文件
-        try {
-            File ioFile = new File(virtualFile.getPath());
-            Files.writeString(ioFile.toPath(), content, StandardCharsets.UTF_8);
-            // 2. 刷新 VFS，使磁盘变更同步到虚拟文件
-            virtualFile.refresh(false, false);
-        } catch (IOException e) {
-            // 文件写入失败时仍更新编辑器内容
-        }
-
-        // 3. 更新编辑器 Document
-        if (content.length() <= 8000) {
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                document.replaceString(0, document.getTextLength(), content);
-                PsiDocumentManager.getInstance(project).commitDocument(document);
-            });
-        } else {
-            // 大文本分块写入
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                document.replaceString(0, document.getTextLength(), "");
-                PsiDocumentManager.getInstance(project).commitDocument(document);
-            });
-
-            final int CHUNK_SIZE = 5000;
-            for (int i = 0; i < content.length(); i += CHUNK_SIZE) {
-                final int start = i;
-                final int end = Math.min(i + CHUNK_SIZE, content.length());
-                final String chunk = content.substring(start, end);
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    document.insertString(document.getTextLength(), chunk);
-                    PsiDocumentManager.getInstance(project).commitDocument(document);
-                });
+            // 写入磁盘文件
+            try {
+                File ioFile = new File(virtualFile.getPath());
+                Files.writeString(ioFile.toPath(), content, StandardCharsets.UTF_8);
+            } catch (IOException ignored) {
             }
-        }
+
+            // 刷新 VFS，使磁盘变更同步到虚拟文件
+            virtualFile.refresh(false, false);
+
+            // 更新编辑器 Document
+            document.replaceString(0, document.getTextLength(), content);
+            PsiDocumentManager.getInstance(project).commitDocument(document);
+        });
 
         refreshFolding();
         triggerJsonValidation();
@@ -746,7 +727,9 @@ public class CustomSiteRuleDialogNew {
 
         // 保存 Document 到磁盘，避免关闭时 IntelliJ 弹出"文件已更改"提示
         if (document != null) {
-            FileDocumentManager.getInstance().saveDocument(document);
+            WriteCommandAction.runWriteCommandAction(project, () ->
+                    FileDocumentManager.getInstance().saveDocument(document)
+            );
         }
 
         if (editor != null && !editor.isDisposed()) {
