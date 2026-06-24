@@ -1,7 +1,7 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -14,6 +14,6 @@ public class PrevLineAction extends BaseAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         super.actionPerformed(e);
 
-        WReaderStatusBarWidget.prevLine(project);
+        ReaderStatusBarWidget.prevLine(project);
     }
 }

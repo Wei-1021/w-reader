@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -68,6 +68,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.2.2:
+        <ul>
+            <li>1.【优化】重构状态栏组件，支持状态栏组件字体信息设置；</li>
+            <li>2.【优化】完善章节内容分页加载功能；</li>
+        </ul>
+    </div>
     <div>
         0.2.1:
         <ul>
@@ -385,6 +392,10 @@
             <reference id="wreader.NextChapterAction"/>
             <reference id="wreader.PrevLineAction"/>
             <reference id="wreader.NextLineAction"/>
+            <separator/>
+            <reference id="wreader.FontSizeSubAction"/>
+            <reference id="wreader.FontSizeAddAction"/>
+            <reference id="wreader.ChangeFontColorAction"/>
         </group>
         <!--endregion-->
     </actions>

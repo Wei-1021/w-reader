@@ -79,15 +79,21 @@ public class FontManager {
      * 改变字体颜色
      */
     public void changeFontColor() {
-        fontColorHex = cacheService.getFontColorHex();
-        Color currentFontColor = Color.decode(fontColorHex);
-        Color color = JColorChooser.showDialog(null, "选择颜色", currentFontColor);
-
+        Color color = changeFontColor(null, null);
         if (color != null) {
             fontColorHex = String.format("#%02x%02x%02x",
                     color.getRed(), color.getGreen(), color.getBlue());
             cacheService.setFontColorHex(fontColorHex);
         }
+    }
+
+    /**
+     * 改变字体颜色
+     */
+    public Color changeFontColor(Component component, Color preselectedColor) {
+        fontColorHex = cacheService.getFontColorHex();
+        Color currentFontColor = Color.decode(fontColorHex);
+        return JColorChooser.showDialog(component, "选择颜色", preselectedColor == null ? currentFontColor : preselectedColor);
     }
 
     public String getFontFamily() { return fontFamily; }

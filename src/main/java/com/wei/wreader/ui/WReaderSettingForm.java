@@ -22,6 +22,8 @@ import com.intellij.util.ui.JBUI;
 import com.wei.wreader.factory.WReaderStatusBarFactory;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
 import com.wei.wreader.model.Settings;
+import com.wei.wreader.reader.FontManager;
+import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.CredentialService;
 import com.wei.wreader.util.SettingConstants;
@@ -33,9 +35,11 @@ import com.wei.wreader.util.ui.MessageDialogUtil;
 import com.wei.wreader.util.ui.RadioButtonUtil;
 import com.wei.wreader.util.yml.ConfigYaml;
 import com.wei.wreader.util.ui.DecimalDocumentFilter;
+import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.NumberUtil;
 import com.wei.wreader.tts.edge.VoiceStyle;
 import com.wei.wreader.util.ui.GroupedComboBoxs.OptionItem;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import com.wei.wreader.tts.edge.VoiceRole;
 import com.wei.wreader.tts.enums.TtsEngineEnum;
@@ -116,9 +120,17 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JLabel mimoVoiceDescHintLabel;
     private JBScrollPane mimoVoiceDescTextAreaScroll;
 
+    // 状态栏字体设置
+    private JSpinner fontSizeSpinner;
+    private JButton fontColorButton;
+    private JLabel fontColorPreview;
+    private JPanel statusBarFontPanel;
+
     private final ConfigYaml configYaml;
     private final CacheService cacheService;
+    private final AppConfigService appConfig;
     private Settings settings;
+    private final FontManager fontManager;
     private int selectedDisplayType;
     private int selectedIconStyle;
     private int selectedCustomSiteRuleTextAreaType;
@@ -128,10 +140,12 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     public WReaderSettingForm() {
         configYaml = ConfigYaml.getInstance();
         cacheService = CacheService.getInstance();
+        appConfig = AppConfigService.getInstance();
         settings = cacheService.getSettings();
         if (settings == null) {
             settings = configYaml.getSettings();
         }
+        fontManager = new FontManager(cacheService, appConfig);
 
         if (StringUtils.isBlank(settings.getCharset())) {
             settings.setCharset(configYaml.getSettings().getCharset());
@@ -220,6 +234,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         createUIEditorMessageWindow();
         // 自定义书源规则本文区域类型
         createUICustomSiteRuleTextAreaType();
+
+        // *** 状态栏字体设置 ***
+        createUIStatusBarFont();
 
         // *** 音频管理 ***
         TitledBorder audioManageTitledBorder = new TitledBorder(border, SettingConstants.BORDER_TITLE_AUDIO_MANAGE);
@@ -312,6 +329,25 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         selectedCustomSiteRuleTextAreaType = NumberUtil.parseInt(customSiteRuleTextAreaTypeSelection.getActionCommand());
         if (customSiteRuleTextAreaType != selectedCustomSiteRuleTextAreaType) {
+            return true;
+        }
+
+        // 状态栏字体大小
+        int currentFontSize = cacheService.getFontSize();
+        if (currentFontSize <= 0) {
+            currentFontSize = (int) ConstUtil.DEFAULT_FONT_SIZE;
+        }
+        if (currentFontSize != (Integer) fontSizeSpinner.getValue()) {
+            return true;
+        }
+        // 状态栏字体颜色
+        String currentFontColorHex = cacheService.getFontColorHex();
+        if (currentFontColorHex == null || currentFontColorHex.isEmpty()) {
+            currentFontColorHex = ConstUtil.DEFAULT_FONT_COLOR_HEX;
+        }
+        Color previewColor = fontColorPreview.getBackground();
+        String previewColorHex = String.format("#%02X%02X%02X", previewColor.getRed(), previewColor.getGreen(), previewColor.getBlue());
+        if (!currentFontColorHex.equalsIgnoreCase(previewColorHex)) {
             return true;
         }
 
@@ -414,6 +450,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         settings.setCustomSiteRuleTextAreaType(selectedCustomSiteRuleTextAreaType);
 
+        // 状态栏字体大小
+        int newFontSize = (Integer) fontSizeSpinner.getValue();
+        cacheService.setFontSize(newFontSize);
+        // 状态栏字体颜色
+        Color newColor = fontColorPreview.getBackground();
+        String newColorHex = String.format("#%02X%02X%02X", newColor.getRed(), newColor.getGreen(), newColor.getBlue());
+        cacheService.setFontColorHex(newColorHex);
+
         // TTS引擎
         String selectedEngine = (String) ttsEngineComboBox.getSelectedItem();
         settings.setTtsEngine(selectedEngine);
@@ -461,6 +505,9 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         WReaderStatusBarFactory wReaderStatusBarFactory = new WReaderStatusBarFactory();
         wReaderStatusBarFactory.setEnabled(project, false);
+
+        // 更新状态栏字体
+        ReaderStatusBarWidget.updateFont(project);
     }
 
     /**
@@ -996,6 +1043,147 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         } else {
             audioStyleComboBox.setSelectedIndex(0);
         }
+    }
+
+    /**
+     * 创建状态栏字体设置UI
+     */
+    private void createUIStatusBarFont() {
+        statusBarFontPanel = new JPanel();
+        Border sbBorder = JBUI.Borders.customLine(JBUI.CurrentTheme.Popup.separatorColor(), 1, 0, 0, 0);
+        TitledBorder sbFontTitledBorder = new TitledBorder(sbBorder, SettingConstants.BORDER_TITLE_STATUS_BAR_FONT);
+        statusBarFontPanel.setBorder(sbFontTitledBorder);
+        statusBarFontPanel.setLayout(new GridLayoutManager(1, 4));
+
+        // 字体大小
+        JLabel fontSizeLabel = new JLabel("字体大小");
+        GridConstraints fontSizeLabelGrid = new GridConstraints();
+        fontSizeLabelGrid.setRow(0);
+        fontSizeLabelGrid.setColumn(0);
+        fontSizeLabelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        statusBarFontPanel.add(fontSizeLabel, fontSizeLabelGrid);
+
+        int currentFontSize = cacheService.getFontSize();
+        if (currentFontSize <= 0) {
+            currentFontSize = (int) ConstUtil.DEFAULT_FONT_SIZE;
+        }
+        fontSizeSpinner = new JSpinner(new SpinnerNumberModel(currentFontSize, 8, 72, 1));
+        fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
+        GridConstraints fontSizeSpinnerGrid = new GridConstraints();
+        fontSizeSpinnerGrid.setRow(0);
+        fontSizeSpinnerGrid.setColumn(1);
+        fontSizeSpinnerGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        statusBarFontPanel.add(fontSizeSpinner, fontSizeSpinnerGrid);
+
+        // 字体颜色
+        JLabel fontColorLabel = new JLabel("字体颜色");
+        GridConstraints fontColorLabelGrid = new GridConstraints();
+        fontColorLabelGrid.setRow(0);
+        fontColorLabelGrid.setColumn(2);
+        fontColorLabelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        fontColorLabelGrid.setIndent(5);
+        statusBarFontPanel.add(fontColorLabel, fontColorLabelGrid);
+
+        JPanel colorChooserPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        String currentColorHex = cacheService.getFontColorHex();
+        if (currentColorHex == null || currentColorHex.isEmpty()) {
+            Color foreground = JBUI.CurrentTheme.StatusBar.Widget.FOREGROUND;
+            currentColorHex = String.format(
+                    "#%02x%02x%02x",
+                    foreground.getRed(),
+                    foreground.getGreen(),
+                    foreground.getBlue()
+            );
+        }
+        Color currentColor;
+        try {
+            currentColor = Color.decode(currentColorHex);
+        } catch (NumberFormatException e) {
+            currentColor = JBUI.CurrentTheme.StatusBar.Widget.FOREGROUND;
+        }
+
+        fontColorPreview = new JLabel("  ");
+        fontColorPreview.setOpaque(true);
+        fontColorPreview.setBackground(currentColor);
+        fontColorPreview.setPreferredSize(new Dimension(24, 24));
+        fontColorPreview.setBorder(BorderFactory.createLineBorder(JBUI.CurrentTheme.Popup.separatorColor()));
+        colorChooserPanel.add(fontColorPreview);
+
+        fontColorButton = new JButton("选择颜色");
+        fontColorButton.addActionListener(e -> {
+            Color chosen = fontManager.changeFontColor(statusBarFontPanel, fontColorPreview.getBackground());
+            if (chosen != null) {
+                fontColorPreview.setBackground(chosen);
+                isModified();
+            }
+        });
+        colorChooserPanel.add(fontColorButton);
+
+        GridConstraints colorPanelGrid = new GridConstraints();
+        colorPanelGrid.setRow(0);
+        colorPanelGrid.setColumn(3);
+        colorPanelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        statusBarFontPanel.add(colorChooserPanel, colorPanelGrid);
+
+        // 插入到 settingPanel 中，位于 generalPanel 和 audioManagePanel 之间
+        insertStatusBarFontPanel();
+    }
+
+    /**
+     * 将状态栏字体设置面板插入到 settingPanel 中
+     */
+    private void insertStatusBarFontPanel() {
+        // 保存现有子组件
+        java.util.List<Component> children = new java.util.ArrayList<>();
+        for (int i = 0; i < settingPanel.getComponentCount(); i++) {
+            children.add(settingPanel.getComponent(i));
+        }
+        settingPanel.removeAll();
+
+        // 重新设置布局（增加一行）
+        settingPanel.setLayout(new GridLayoutManager(5, 2));
+
+        // Row 0: generalPanel
+        GridConstraints generalConstraints = new GridConstraints();
+        generalConstraints.setRow(0);
+        generalConstraints.setColumn(0);
+        generalConstraints.setColSpan(2);
+        generalConstraints.setFill(GridConstraints.FILL_BOTH);
+        generalConstraints.setVSizePolicy(GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW);
+        settingPanel.add(children.get(0), generalConstraints);
+
+        // Row 1: statusBarFontPanel（新增）
+        GridConstraints sbFontConstraints = new GridConstraints();
+        sbFontConstraints.setRow(1);
+        sbFontConstraints.setColumn(0);
+        sbFontConstraints.setColSpan(2);
+        sbFontConstraints.setFill(GridConstraints.FILL_BOTH);
+        settingPanel.add(statusBarFontPanel, sbFontConstraints);
+
+        // Row 2: audioManagePanel
+        GridConstraints audioConstraints = new GridConstraints();
+        audioConstraints.setRow(2);
+        audioConstraints.setColumn(0);
+        audioConstraints.setColSpan(2);
+        audioConstraints.setFill(GridConstraints.FILL_BOTH);
+        audioConstraints.setVSizePolicy(GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW);
+        settingPanel.add(children.get(1), audioConstraints);
+
+        // Row 3: footerTipPanel
+        GridConstraints footerConstraints = new GridConstraints();
+        footerConstraints.setRow(3);
+        footerConstraints.setColumn(0);
+        footerConstraints.setColSpan(2);
+        footerConstraints.setFill(GridConstraints.FILL_BOTH);
+        footerConstraints.setVSizePolicy(GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW);
+        settingPanel.add(children.get(2), footerConstraints);
+
+        // Row 4: vspacer
+        GridConstraints vspacerConstraints = new GridConstraints();
+        vspacerConstraints.setRow(4);
+        vspacerConstraints.setColumn(0);
+        vspacerConstraints.setVSizePolicy(GridConstraints.SIZEPOLICY_CAN_GROW);
+        settingPanel.add(children.get(3), vspacerConstraints);
     }
 
     /**

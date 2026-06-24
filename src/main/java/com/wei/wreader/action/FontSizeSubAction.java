@@ -7,6 +7,7 @@ import com.wei.wreader.content.HtmlContentRenderer;
 import com.wei.wreader.model.ChapterInfo;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.util.ui.ToolWindowUtil;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
 public class FontSizeSubAction extends BaseAction {
@@ -33,6 +34,10 @@ public class FontSizeSubAction extends BaseAction {
                         contentTextPanel.setText(text);
                         contentTextPanel.setCaretPosition(caretPosition);
                     });
+                    break;
+                case Settings.DISPLAY_TYPE_STATUSBAR:
+                    orchestrator.fontSizeSub();
+                    ReaderStatusBarWidget.updateFont(project);
                     break;
             }
         });

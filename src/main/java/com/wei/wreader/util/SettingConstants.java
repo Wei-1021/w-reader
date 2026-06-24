@@ -78,6 +78,7 @@ public final class SettingConstants {
 
     // ==================== 边框标题 ====================
     public static final String BORDER_TITLE_GENERAL = "general";
+    public static final String BORDER_TITLE_STATUS_BAR_FONT = "Status Bar Font";
     public static final String BORDER_TITLE_AUDIO_MANAGE = "Audio Manage";
 
     // ==================== 联系方式 ====================

@@ -16,7 +16,7 @@ import com.wei.wreader.util.CustomSiteUtil;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.ListUtil;
 import com.wei.wreader.util.ui.ToolWindowUtil;
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 
@@ -245,7 +245,7 @@ public final class ReaderOrchestrator {
                     updateSidebarContent();
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
-                    WReaderStatusBarWidget.update(project, text);
+                    ReaderStatusBarWidget.update(project);
                     break;
             }
         } catch (Exception e) {

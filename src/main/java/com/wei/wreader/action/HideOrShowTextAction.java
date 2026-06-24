@@ -1,7 +1,7 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,10 +18,14 @@ public class HideOrShowTextAction extends BaseAction {
         boolean isHideText = cacheService.isHideText();
         boolean newHideText = !isHideText;
         cacheService.setHideText(newHideText);
+        ReaderStatusBarWidget widget = ReaderStatusBarWidget.findWidget(project);
+        if (widget == null) {
+            return;
+        }
         if (newHideText) {
-            WReaderStatusBarWidget.hideText(project);
+            widget.hideText(project);
         } else {
-            WReaderStatusBarWidget.showText(project);
+            widget.showText(project);
         }
     }
 }

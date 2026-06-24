@@ -5,7 +5,7 @@ import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.ChapterInfo;
 import com.wei.wreader.model.Settings;
 
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
 
@@ -52,7 +52,7 @@ public class ChapterListAction extends BaseAction {
                     case Settings.DISPLAY_TYPE_STATUSBAR:
                         ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
                         selectedChapterInfo.initLineNum(1, 2, 1, settings.getSingleLineChars());
-                        WReaderStatusBarWidget.update(project, "");
+                        ReaderStatusBarWidget.update(project);
                         break;
                     case Settings.DISPLAY_TYPE_TERMINAL:
                         break;

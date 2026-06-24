@@ -3,7 +3,7 @@ package com.wei.wreader.action;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.wei.wreader.model.Settings;
 
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jetbrains.annotations.NotNull;
 
 public class NextChapterAction extends BaseAction {
@@ -35,7 +35,7 @@ public class NextChapterAction extends BaseAction {
 
                 break;
             case Settings.DISPLAY_TYPE_STATUSBAR:
-                WReaderStatusBarWidget.nextChapter(project);
+                ReaderStatusBarWidget.nextChapter(project);
                 break;
         }
 

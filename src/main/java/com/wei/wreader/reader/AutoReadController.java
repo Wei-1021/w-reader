@@ -6,7 +6,7 @@ import com.wei.wreader.model.ChapterInfo;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.service.AppStateService;
 import com.wei.wreader.service.CacheService;
-import com.wei.wreader.widget.WReaderStatusBarWidget;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -86,10 +86,10 @@ public class AutoReadController {
                         0 : selectedChapterInfo.getChapterContentList().size();
 
                 if (autoReadLastReadLineNum < contentLength) {
-                    WReaderStatusBarWidget.nextLine(project);
+                    ReaderStatusBarWidget.nextLine(project);
                 } else {
                     cacheService.setEditorMessageVerticalScrollValue(0);
-                    WReaderStatusBarWidget.nextChapter(project);
+                    ReaderStatusBarWidget.nextChapter(project);
                 }
             } catch (Exception e) {
                 LOG.error("Auto-read task error", e);
