@@ -433,11 +433,6 @@ public class ChapterNavigator {
      * @param bodyElement 页面body元素
      */
     public void loadThisChapterNextContent(String chapterUrl, Element bodyElement) {
-        Settings settings = cacheService.getSettings();
-        if (settings.getDisplayType() != Settings.DISPLAY_TYPE_SIDEBAR) {
-            return;
-        }
-
         SiteBean siteBean = cacheService.getSelectedSiteBean();
         if (siteBean == null) {
             return;
@@ -886,24 +881,22 @@ public class ChapterNavigator {
 
         @Override
         public void onSuccess() {
-            ToolWindowUtil.updateContentText(project, contentTextPanel -> {
-                ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                if (selectedChapterInfo == null) {
-                    return;
-                }
+            ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+            if (selectedChapterInfo == null) {
+                return;
+            }
 
-                String text = nextContent.toString();
-                int caretPosition = contentTextPanel.getCaretPosition();
-                String fontColorHex = cacheService.getFontColorHex();
-                if (fontColorHex == null) fontColorHex = "#cccccc";
-                text = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" +
-                        fontColorHex + ";\">" + selectedChapterInfo.getChapterTitle() + "</h3>" + text;
-                String newText = getStyledContent(text);
-                contentTextPanel.setText(newText);
-                contentTextPanel.setCaretPosition(caretPosition);
+            String text = nextContent.toString();
+            String fontColorHex = cacheService.getFontColorHex();
+            if (fontColorHex == null) fontColorHex = "#cccccc";
+            text = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" +
+                    fontColorHex + ";\">" + selectedChapterInfo.getChapterTitle() + "</h3>" + text;
 
-                updateChapterInfoWithContent(text);
-            });
+            // 更新缓存中的章节内容
+            updateChapterInfoWithContent(text);
+
+            // 通知所有显示模式更新内容
+            ReaderOrchestrator.getInstance(project).updateContentText(text);
         }
 
         private void updateChapterInfoWithContent(String text) {
@@ -920,10 +913,18 @@ public class ChapterNavigator {
             chapterContentText = ContentParser.formatAndApplyRegex(chapterContentText, chapterRules);
 
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
+            // 将章节内容分割成集合
+            Settings settings = cacheService.getSettings();
+            List<String> contentArr = StringUtil.splitStringByMaxCharList(
+                    chapterContentText,
+                    settings.getSingleLineChars()
+            );
             text = text.replaceAll("(?s)<style[^>]*>.*?</style>", "");
             selectedChapterInfo.setChapterContent(text);
             selectedChapterInfo.setChapterContentStr(chapterContentText);
+            selectedChapterInfo.setChapterContentList(contentArr);
             cacheService.setSelectedChapterInfo(selectedChapterInfo);
+
         }
 
         @Override

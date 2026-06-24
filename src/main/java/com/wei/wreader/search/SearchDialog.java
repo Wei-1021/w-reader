@@ -21,6 +21,8 @@ import com.wei.wreader.model.SearchBookCallParam;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.reader.FontManager;
+import com.wei.wreader.reader.ReaderOrchestrator;
+import org.jsoup.nodes.Element;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.JsonUtil;
@@ -505,6 +507,12 @@ public class SearchDialog {
                 textPane.setCaretPosition(0);
             }
         });
+
+        // 加载本章节下一页内容（分页加载）
+        Element bodyElement = param.getBodyElement();
+        if (bodyElement != null) {
+            ReaderOrchestrator.getInstance(project).loadThisChapterNextContent(chapterInfo.getChapterUrl(), bodyElement);
+        }
     }
 
     /**

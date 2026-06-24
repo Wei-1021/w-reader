@@ -16,6 +16,7 @@ import com.wei.wreader.util.CustomSiteUtil;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.ListUtil;
 import com.wei.wreader.util.ui.ToolWindowUtil;
+import com.wei.wreader.widget.WReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 
@@ -231,6 +232,10 @@ public final class ReaderOrchestrator {
     // --- 内容显示 ---
 
     public void updateContentText() {
+        updateContentText("");
+    }
+
+    public void updateContentText(String text) {
         try {
             Settings settings = cacheService.getSettings();
             if (settings == null) return;
@@ -240,7 +245,7 @@ public final class ReaderOrchestrator {
                     updateSidebarContent();
                     break;
                 case Settings.DISPLAY_TYPE_STATUSBAR:
-                    com.wei.wreader.widget.WReaderStatusBarWidget.update(project, "");
+                    WReaderStatusBarWidget.update(project, text);
                     break;
             }
         } catch (Exception e) {
