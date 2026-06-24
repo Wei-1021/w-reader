@@ -142,7 +142,6 @@ public class MimoTTS {
         } else {
             // 预置音色模型
             currentPlayer.startPresetWithInstruction(styleInstruction, config.getDefaultVoice(), finalText);
-//            currentPlayer.start(finalText, style);
         }
     }
 

@@ -247,23 +247,4 @@ public class ScriptCodeUtil {
 
         return result;
     }
-
-//    public List<String> execute(Map<String, Object> paramMap, List<Object> indexList, String bookId, List<Object> itemIdList) {
-//        List<String> list = new ArrayList<>();
-//        String dataJsonStr = (String) paramMap.get("dataJsonStr");
-//        String freeContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.freeContUrlPrefix");
-//        String shortContUrlPrefix = (String) StringUtil.jsonPathRead(dataJsonStr, "$.data.shortContUrlPrefix");
-//        String menuListJsonStr = (String) paramMap.get("menuListJsonStr");
-//        for (Object indexObj : indexList) {
-//            int index = Integer.parseInt(indexObj.toString());
-//            String contUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].contUrlSuffix");
-//            if (!contUrlSuffix.contains("reqEncryptParam")) {
-//                list.add(freeContUrlPrefix + contUrlSuffix);
-//            } else {
-//                String shortContUrlSuffix = (String) StringUtil.jsonPathRead(menuListJsonStr, "$[" + index + "].shortContUrlSuffix");
-//                list.add(shortContUrlPrefix + shortContUrlSuffix);
-//            }
-//        }
-//        return list;
-//    }
 }
