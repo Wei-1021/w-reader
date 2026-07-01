@@ -12,6 +12,7 @@ import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.wm.CustomStatusBarWidget;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup;
 import com.intellij.ui.ClickListener;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBLabel;
@@ -137,6 +138,7 @@ public class ReaderStatusBarWidget implements CustomStatusBarWidget {
             return;
         }
 
+        configYaml = ConfigYaml.getInstance();
         ListPopup popup = JBPopupFactory.getInstance()
                 .createActionGroupPopup(
                         configYaml.getName(),
@@ -167,12 +169,20 @@ public class ReaderStatusBarWidget implements CustomStatusBarWidget {
 
     @Override
     public void dispose() {
-        statusBar = null;
-        cacheService = null;
-        configYaml = null;
-        selectedBookInfo = null;
-        settings = null;
-        contentArr = null;
+//        statusBar = null;
+//        cacheService = null;
+//        configYaml = null;
+//        selectedBookInfo = null;
+//        settings = null;
+//        contentArr = null;
+    }
+
+    /**
+     * 设置状态栏组件可见性
+     */
+    public void setVisible(boolean visible) {
+        label.setVisible(visible);
+        refresh();
     }
 
     public void setText() {
@@ -213,7 +223,8 @@ public class ReaderStatusBarWidget implements CustomStatusBarWidget {
         if (fontSize <= 0) {
             fontSize = (int) ConstUtil.DEFAULT_FONT_SIZE;
         }
-        label.setFont(JBFont.label().deriveFont(Font.BOLD, (float) fontSize));
+        JBFont labelFont = JBFont.label().deriveFont(Font.BOLD, (float) fontSize);
+        label.setFont(labelFont);
 
         String fontColorHex = cacheService.getFontColorHex();
         if (fontColorHex != null && !fontColorHex.isEmpty()) {

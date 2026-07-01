@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.wei.wreader.content.ContentFormatter;
 import com.wei.wreader.content.ContentParser;
 import com.wei.wreader.content.HtmlContentRenderer;
+import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.*;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.service.AppStateService;
@@ -23,6 +24,7 @@ import org.jsoup.nodes.Element;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * 阅读器协调器 - 协调所有阅读器操作
@@ -175,13 +177,13 @@ public final class ReaderOrchestrator {
         chapterNavigator.nextPageChapter(runnable);
     }
 
-    public void showBookDirectory(com.wei.wreader.listener.BookDirectoryListener listener) {
+    public void showBookDirectory(BookDirectoryListener listener) {
         chapterNavigator.showBookDirectory(listener);
     }
 
     // --- 内容加载 ---
 
-    public void searchBookContentRemote(String url, java.util.function.Consumer<SearchBookCallParam> callback) {
+    public void searchBookContentRemote(String url, Consumer<SearchBookCallParam> callback) {
         chapterNavigator.searchBookContentRemote(url, callback);
     }
 

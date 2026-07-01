@@ -1,7 +1,5 @@
 package com.wei.wreader.search;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -22,6 +20,7 @@ import com.wei.wreader.model.Settings;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.reader.FontManager;
 import com.wei.wreader.reader.ReaderOrchestrator;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jsoup.nodes.Element;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.util.data.ConstUtil;
@@ -73,7 +72,8 @@ public class SearchDialog {
 
     // UI组件 - 右侧（章节列表）
     private DefaultListModel<String> chapterListModel;
-    private JBList<String> chapterList;
+    private JBList<String> chapterJBList;
+    private List<String> chapterList = new ArrayList<>();
     private List<String> chapterUrlList = new ArrayList<>();
 
     public SearchDialog(Project project) {
@@ -220,10 +220,10 @@ public class SearchDialog {
         ));
 
         chapterListModel = new DefaultListModel<>();
-        chapterList = new JBList<>(chapterListModel);
-        chapterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        chapterJBList = new JBList<>(chapterListModel);
+        chapterJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        JBScrollPane scrollPane = new JBScrollPane(chapterList);
+        JBScrollPane scrollPane = new JBScrollPane(chapterJBList);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -246,9 +246,9 @@ public class SearchDialog {
      * 设置章节列表选择监听器
      */
     private void setupChapterListListener(BookDirectoryListener listener) {
-        chapterList.addListSelectionListener(e -> {
+        chapterJBList.addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
-            int idx = chapterList.getSelectedIndex();
+            int idx = chapterJBList.getSelectedIndex();
             if (idx < 0 || idx >= chapterListModel.size()) return;
             handleChapterSelection(idx, listener);
         });
@@ -331,8 +331,6 @@ public class SearchDialog {
         SiteBean selectedSite = siteBeanList.get(siteIndex);
 
         // 缓存选中的站点信息
-        cacheService.setSelectedSiteBean(selectedSite);
-        cacheService.setSelectedBookSiteIndex(siteIndex);
         cacheService.setTempSelectedSiteBean(selectedSite);
         cacheService.setTempSelectedBookSiteIndex(siteIndex);
 
@@ -369,20 +367,14 @@ public class SearchDialog {
      */
     private void handleBookSelection(int selectedIndex, BookDirectoryListener listener) {
         BookInfo selectedBook = bookInfoList.get(selectedIndex);
-        cacheService.setTempSelectedBookInfo(selectedBook);
-        cacheService.setSelectedBookInfo(selectedBook);
 
         // 清空章节列表
         chapterListModel.clear();
+        chapterList.clear();
         chapterUrlList.clear();
 
-        // 清空章节内容缓存
-        cacheService.setChapterList(null);
-        cacheService.setChapterUrlList(null);
-        cacheService.setChapterContentList(null);
-        cacheService.setSelectedChapterInfo(null);
-
-        // 加载目录
+        // 加载目录（selectedBook 作为参数传入，不写入 temp 缓存）
+        // temp 缓存仅在用户选择章节时写入，避免关闭对话框后残留脏数据
         searchService.loadBookDirectory(selectedBook,
                 chapterNames -> {
                     if (chapterNames == null || chapterNames.isEmpty()) {
@@ -390,18 +382,31 @@ public class SearchDialog {
                         return;
                     }
 
-                    // 获取章节URL列表
-                    List<String> urls = cacheService.getChapterUrlList();
-                    if (urls != null) {
-                        chapterUrlList.addAll(urls);
-                    }
-
-                    // 更新章节列表
+                    chapterList.addAll(chapterNames);
                     for (String name : chapterNames) {
                         chapterListModel.addElement(name);
                     }
                 },
-                chapterUrls -> {}
+                chapterUrls -> {
+                    if (chapterUrls == null || chapterUrls.isEmpty()) {
+                        return;
+                    }
+                    chapterUrlList.addAll(chapterUrls);
+                },
+                // 下一页目录追加回调
+                appendResult -> {
+                    List<String> extraNames = appendResult.get("chapterNames");
+                    List<String> extraUrls = appendResult.get("chapterUrls");
+                    if (extraNames != null && !extraNames.isEmpty()) {
+                        chapterList.addAll(extraNames);
+                        for (String name : extraNames) {
+                            chapterListModel.addElement(name);
+                        }
+                    }
+                    if (extraUrls != null) {
+                        chapterUrlList.addAll(extraUrls);
+                    }
+                }
         );
     }
 
@@ -413,42 +418,26 @@ public class SearchDialog {
         String chapterSuffixUrl = (idx < chapterUrlList.size()) ? chapterUrlList.get(idx) : "";
         String chapterUrl = buildFullChapterUrl(chapterSuffixUrl);
 
+        // 用户确认选择章节时，才写入 temp 缓存
+        int bookIdx = bookList.getSelectedIndex();
+        if (bookIdx >= 0 && bookIdx < bookInfoList.size()) {
+            cacheService.setTempSelectedBookInfo(bookInfoList.get(bookIdx));
+        }
+
         // 缓存选中的章节信息
         ChapterInfo chapterInfo = new ChapterInfo();
         chapterInfo.setChapterTitle(chapterTitle);
         chapterInfo.setChapterUrl(chapterUrl);
         chapterInfo.setSelectedChapterIndex(idx);
-        cacheService.setSelectedChapterInfo(chapterInfo);
 
         // 缓存章节列表和URL列表
         List<String> chapterNames = new ArrayList<>();
         for (int i = 0; i < chapterListModel.size(); i++) {
             chapterNames.add(chapterListModel.get(i));
         }
-        cacheService.setChapterList(chapterNames);
-        cacheService.setChapterUrlList(chapterUrlList);
-
-        // 缓存选择信息（从临时缓存转为正式缓存）
-        SiteBean siteBean = cacheService.getTempSelectedSiteBean();
-        if (siteBean != null) {
-            cacheService.setSelectedSiteBean(siteBean);
-        }
-        cacheService.setSelectedBookSiteIndex(cacheService.getTempSelectedBookSiteIndex());
-        BookInfo bookInfo = cacheService.getTempSelectedBookInfo();
-        if (bookInfo != null) {
-            cacheService.setSelectedBookInfo(bookInfo);
-        }
-
-        // 设置数据加载类型为网络加载
-        Settings settings = cacheService.getSettings();
-        if (settings == null) {
-            settings = new Settings();
-        }
-        settings.setDataLoadType(DataLoadType.NETWORK.toLegacyValue());
-        cacheService.setSettings(settings);
 
         // 获取章节内容
-        searchService.searchBookContentRemote(chapterUrl, param -> {
+        searchService.searchBookContentRemote(chapterUrl, chapterInfo, param -> {
             processChapterContent(param, chapterInfo, idx, chapterNames, chapterUrlList, listener);
         });
 
@@ -484,6 +473,9 @@ public class SearchDialog {
     private void processChapterContent(SearchBookCallParam param, ChapterInfo chapterInfo,
                                        int selectedIndex, List<String> chapterNames,
                                        List<String> chapterUrls, BookDirectoryListener listener) {
+        // 更新缓存信息
+        updateCacheData();
+
         String fontColorHex = fontManager.getFontColorHex();
         String fontFamily = fontManager.getFontFamily();
         int fontSize = fontManager.getFontSize();
@@ -496,17 +488,25 @@ public class SearchDialog {
         chapterInfo.setSelectedChapterIndex(selectedIndex);
 
         Settings settings = cacheService.getSettings();
-        int singleLineChars = (settings != null) ? settings.getSingleLineChars() : 30;
+        if (settings == null) {
+            settings = configYaml.getSettings();
+        }
+        int singleLineChars = settings.getSingleLineChars();
         chapterInfo.initLineNum(1, 2, 1, singleLineChars);
-
         cacheService.setSelectedChapterInfo(chapterInfo);
 
-        ToolWindowUtil.updateContentText(project, textPane -> {
-            if (content != null) {
-                textPane.setText(content);
-                textPane.setCaretPosition(0);
-            }
-        });
+        // 根据显示模式更新显示
+        int displayType = settings.getDisplayType();
+        if (displayType == Settings.DISPLAY_TYPE_SIDEBAR) {
+            ToolWindowUtil.updateContentText(project, textPane -> {
+                if (content != null) {
+                    textPane.setText(content);
+                    textPane.setCaretPosition(0);
+                }
+            });
+        } else if (displayType == Settings.DISPLAY_TYPE_STATUSBAR) {
+            ReaderStatusBarWidget.update(project);
+        }
 
         // 加载本章节下一页内容（分页加载）
         Element bodyElement = param.getBodyElement();
@@ -559,5 +559,31 @@ public class SearchDialog {
                         (StringUtils.isNotBlank(book.getBookAuthor()) ? " - " + book.getBookAuthor() : ""));
             }
         }
+    }
+
+    private void updateCacheData() {
+        // 缓存章节信息（防御性拷贝，避免后续 chapterList.clear() 污染缓存）
+        cacheService.setChapterList(new ArrayList<>(chapterList));
+        cacheService.setChapterUrlList(new ArrayList<>(chapterUrlList));
+
+        // 缓存选择信息（从临时缓存转为正式缓存）--选择的书源
+        SiteBean siteBean = cacheService.getTempSelectedSiteBean();
+        if (siteBean != null) {
+            cacheService.setSelectedSiteBean(siteBean);
+        }
+        // 缓存选择信息（从临时缓存转为正式缓存）--选择的小说信息
+        cacheService.setSelectedBookSiteIndex(cacheService.getTempSelectedBookSiteIndex());
+        BookInfo bookInfo = cacheService.getTempSelectedBookInfo();
+        if (bookInfo != null) {
+            cacheService.setSelectedBookInfo(bookInfo);
+        }
+
+        // 设置数据加载类型为网络加载
+        Settings settings = cacheService.getSettings();
+        if (settings == null) {
+            settings = new Settings();
+        }
+        settings.setDataLoadType(DataLoadType.NETWORK.toLegacyValue());
+        cacheService.setSettings(settings);
     }
 }

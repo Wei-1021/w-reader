@@ -40,6 +40,7 @@ import com.wei.wreader.util.data.NumberUtil;
 import com.wei.wreader.tts.edge.VoiceStyle;
 import com.wei.wreader.util.ui.GroupedComboBoxs.OptionItem;
 import com.wei.wreader.widget.ReaderStatusBarWidget;
+import com.wei.wreader.widget.manager.ReaderStatusBarManager;
 import org.apache.commons.lang3.StringUtils;
 import com.wei.wreader.tts.edge.VoiceRole;
 import com.wei.wreader.tts.enums.TtsEngineEnum;
@@ -503,8 +504,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         WReaderToolWindowFactory wReaderToolWindowFactory = new WReaderToolWindowFactory();
         wReaderToolWindowFactory.setEnabled(project);
 
-        WReaderStatusBarFactory wReaderStatusBarFactory = new WReaderStatusBarFactory();
-        wReaderStatusBarFactory.setEnabled(project, false);
+        ReaderStatusBarManager readerStatusBarManager = new ReaderStatusBarManager();
+        readerStatusBarManager.setEnabled(project);
 
         // 更新状态栏字体
         ReaderStatusBarWidget.updateFont(project);

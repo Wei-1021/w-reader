@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -22,6 +23,7 @@ import com.wei.wreader.util.comm.StringTemplateEngine;
 import com.wei.wreader.util.comm.UrlUtil;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.JsonUtil;
+import com.wei.wreader.util.http.HttpRequestConfigParser;
 import com.wei.wreader.util.http.HttpUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -38,8 +40,10 @@ import org.jsoup.select.Elements;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -53,6 +57,11 @@ public class SearchService {
     private final AppConfigService appConfig;
     private final SiteRuleService siteRuleService;
     private final CustomSiteUtil customSiteUtil;
+
+    private Task.Backgroundable searchTask;
+    private Task.Backgroundable loadListMainTask;
+    private Task.Backgroundable nextListMainTask;
+    private Task.Backgroundable chapterContentTask;
 
     public SearchService(Project project) {
         this.project = project;
@@ -82,7 +91,10 @@ public class SearchService {
         // Build search URL
         String fullUrl = buildSearchUrl(searchUrl, keyword, siteBean.getBaseUrl());
 
-        new Task.Backgroundable(project, "【W-Reader】正在搜索...") {
+        if (searchTask != null) {
+            searchTask.onCancel();
+        }
+        searchTask = new Task.Backgroundable(project, "【W-Reader】正在搜索...") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
@@ -102,15 +114,28 @@ public class SearchService {
                     });
                 }
             }
-        }.queue();
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+            }
+        };
+        searchTask.queue();
     }
 
     /**
      * 加载书籍目录
+     *
+     * @param bookInfo              书籍信息
+     * @param chapterNamesCallback  初始章节名列表回调
+     * @param chapterUrlsCallback   初始章节URL列表回调
+     * @param appendChaptersCallback 追加章节回调（下一页目录），参数为 Map("chapterNames", ..., "chapterUrls", ...)
      */
-    public void loadBookDirectory(BookInfo bookInfo, Consumer<List<String>> chapterNamesCallback,
-                                   Consumer<List<String>> chapterUrlsCallback) {
-        SiteBean siteBean = cacheService.getSelectedSiteBean();
+    public void loadBookDirectory(BookInfo bookInfo,
+                                  Consumer<List<String>> chapterNamesCallback,
+                                  Consumer<List<String>> chapterUrlsCallback,
+                                  Consumer<Map<String, List<String>>> appendChaptersCallback) {
+        SiteBean siteBean = cacheService.getTempSelectedSiteBean();
         if (siteBean == null || siteBean.getListMainRules() == null) {
             return;
         }
@@ -121,33 +146,45 @@ public class SearchService {
         // 构建目录URL（与原项目getListMainUrl逻辑一致）
         String fullUrl = buildListMainUrl(listMainRules.getUrl(), searchRules, bookInfo, siteBean);
 
-        new Task.Backgroundable(project, "【W-Reader】正在加载目录...") {
+        if (loadListMainTask != null) {
+            loadListMainTask.onCancel();
+        }
+        loadListMainTask = new Task.Backgroundable(project, "【W-Reader】正在加载目录...") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
                 try {
                     List<String> chapterNames = new ArrayList<>();
                     List<String> chapterUrls = new ArrayList<>();
+                    String[] bodyHolder = {""};
+                    Element[] bodyElementHolder = {null};
 
-                    // 判断使用API还是HTML方式获取目录（与原项目searchBookDirectory逻辑一致）
+                    // 判断使用API还是HTML方式获取目录
                     String listMainUrl = listMainRules.getUrl();
                     String listMainUrlDataRule = listMainRules.getUrlDataRule();
                     boolean useApi = StringUtils.isNotBlank(listMainUrl) && StringUtils.isNotBlank(listMainUrlDataRule);
 
                     if (useApi) {
-                        loadDirectoryViaApi(fullUrl, siteBean, listMainRules, chapterNames, chapterUrls);
+                        loadDirectoryViaApi(fullUrl, siteBean, listMainRules, bookInfo,
+                                chapterNames, chapterUrls, bodyHolder);
                     } else {
-                        loadDirectoryViaHtml(fullUrl, listMainRules, siteBean.getBaseUrl(), chapterNames, chapterUrls);
+                        loadDirectoryViaHtml(fullUrl, listMainRules, siteBean.getBaseUrl(),
+                                chapterNames, chapterUrls, bodyHolder, bodyElementHolder);
                     }
-
-                    // Cache results
-                    cacheService.setChapterList(chapterNames);
-                    cacheService.setChapterUrlList(chapterUrls);
-                    cacheService.setSelectedBookInfo(bookInfo);
 
                     ApplicationManager.getApplication().invokeLater(() -> {
                         chapterNamesCallback.accept(chapterNames);
                         chapterUrlsCallback.accept(chapterUrls);
+
+                        // 触发下一页目录加载
+                        if (appendChaptersCallback != null) {
+                            loadNextListMain(
+                                    bodyHolder[0],
+                                    bodyElementHolder[0],
+                                    fullUrl,
+                                    appendChaptersCallback
+                            );
+                        }
                     });
                 } catch (Exception e) {
                     LOG.error("Directory load failed", e);
@@ -156,7 +193,13 @@ public class SearchService {
                     });
                 }
             }
-        }.queue();
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+            }
+        };
+        loadListMainTask.queue();
     }
 
     /**
@@ -190,8 +233,8 @@ public class SearchService {
         return bookUrl;
     }
 
-    private void loadDirectoryViaApi(String url, SiteBean siteBean, ListMainRules rules,
-                                      List<String> chapterNames, List<String> chapterUrls) throws Exception {
+    private void loadDirectoryViaApi(String url, SiteBean siteBean, ListMainRules rules, BookInfo bookInfo,
+                                     List<String> chapterNames, List<String> chapterUrls, String[] bodyHolder) throws Exception {
         HttpRequestBase requestBase = HttpUtil.commonRequest(url);
         requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
 
@@ -200,6 +243,10 @@ public class SearchService {
             if (response.getStatusLine().getStatusCode() == 200) {
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
+
+                if (StringUtils.isNotBlank(result)) {
+                    bodyHolder[0] = result;
+                }
 
                 String dataRule = rules.getUrlDataRule();
                 ArrayList<Map<String, Object>> resultMapList = JsonPath.read(result, dataRule);
@@ -210,7 +257,6 @@ public class SearchService {
                         "menuListJsonStr", itemListStr
                 );
 
-                BookInfo bookInfo = cacheService.getSelectedBookInfo();
                 ChapterRules chapterRules = siteBean.getChapterRules();
                 String chapterUrlTemplate = chapterRules != null ? chapterRules.getUrl() : "";
                 boolean useJavaCode = ScriptCodeUtil.isJavaCodeConfig(chapterUrlTemplate);
@@ -219,7 +265,7 @@ public class SearchService {
                 List<Integer> itemIndexList = new ArrayList<>();
 
                 // 处理目录项（与原项目processDirectoryItems逻辑一致）
-                processDirectoryItems(resultMapList, rules, bookInfo,
+                processDirectoryItems(resultMapList, rules, chapterRules, bookInfo,
                         itemIdList, itemIndexList, chapterNames, chapterUrls,
                         paramMap, useJavaCode);
 
@@ -239,7 +285,8 @@ public class SearchService {
     /**
      * 处理目录项（对应原项目processDirectoryItems）
      */
-    private void processDirectoryItems(ArrayList<Map<String, Object>> jsonArray, ListMainRules listMainRules,
+    private void processDirectoryItems(ArrayList<Map<String, Object>> jsonArray,
+                                       ListMainRules listMainRules, ChapterRules chapterRules,
                                        BookInfo bookInfo, List<String> itemIdList, List<Integer> itemIndexList,
                                        List<String> chapterList, List<String> chapterUrlList,
                                        Map<String, Object> paramMap, boolean useJavaCode) throws MalformedURLException {
@@ -258,7 +305,8 @@ public class SearchService {
                 chapterList.add(title);
             } else {
                 // 模板配置模式：直接构建URL
-                String itemUrl = buildItemUrl(bookInfo.getBookId(), itemId, paramMap, itemJson, listMainRules);
+                String itemUrl = buildItemUrl(bookInfo.getBookId(), itemId, paramMap, itemJson,
+                        listMainRules, chapterRules);
                 chapterList.add(title);
                 chapterUrlList.add(itemUrl);
             }
@@ -269,31 +317,44 @@ public class SearchService {
      * 构建项目URL（对应原项目buildItemUrl）
      */
     private String buildItemUrl(String bookId, String itemId, Map<String, Object> paramMap,
-                                Map<String, Object> itemJson, ListMainRules listMainRules) throws MalformedURLException {
+                                Map<String, Object> itemJson, ListMainRules listMainRules,
+                                ChapterRules chapterRules) throws MalformedURLException {
         String itemUrlField = listMainRules.getItemUrlField();
-        String itemUrl = getStringFromMap(itemJson, itemUrlField);
+        String itemUrl = "";
+        if (StringUtils.isNotBlank(itemUrlField)) {
+            itemUrl = getStringFromMap(itemJson, itemUrlField);
 
-        if (StringUtils.isNotBlank(itemUrl)) {
-            SiteBean tempSiteBean = cacheService.getTempSelectedSiteBean();
-            if (tempSiteBean != null) {
-                itemUrl = UrlUtil.buildFullURL(tempSiteBean.getBaseUrl(), itemUrl.trim());
-            }
-        } else {
-            // 如果没有URL字段，尝试使用urlDataHandleRule脚本
-            String urlDataHandleRule = listMainRules.getUrlDataHandleRule();
-            if (StringUtils.isNotBlank(urlDataHandleRule)) {
-                try {
-                    itemUrl = (String) ScriptCodeUtil.getScriptCodeExeResult(
-                            urlDataHandleRule,
-                            new Class[]{Map.class, Map.class, String.class},
-                            new Object[]{paramMap, itemJson, itemId},
-                            paramMap
-                    );
-                } catch (Exception e) {
-                    LOG.warn("URL data handle script execution failed", e);
+            if (StringUtils.isNotBlank(itemUrl)) {
+                SiteBean tempSiteBean = cacheService.getTempSelectedSiteBean();
+                if (tempSiteBean != null) {
+                    itemUrl = UrlUtil.buildFullURL(tempSiteBean.getBaseUrl(), itemUrl.trim());
+                }
+            } else {
+                // 如果没有URL字段，尝试使用urlDataHandleRule脚本
+                String urlDataHandleRule = listMainRules.getUrlDataHandleRule();
+                if (StringUtils.isNotBlank(urlDataHandleRule)) {
+                    try {
+                        itemUrl = (String) ScriptCodeUtil.getScriptCodeExeResult(
+                                urlDataHandleRule,
+                                new Class[]{Map.class, Map.class, String.class},
+                                new Object[]{paramMap, itemJson, itemId},
+                                paramMap
+                        );
+                    } catch (Exception e) {
+                        LOG.warn("URL data handle script execution failed", e);
+                    }
                 }
             }
+        } else {
+            String chapterRulesUrl = chapterRules.getUrl();
+            if (StringUtils.isNotBlank(chapterRulesUrl)) {
+                itemUrl = StringTemplateEngine.render(chapterRulesUrl, new HashMap<>() {{
+                    put("bookId", bookId);
+                    put("itemId", itemId);
+                }});
+            }
         }
+
         return itemUrl != null ? itemUrl : "";
     }
 
@@ -330,13 +391,22 @@ public class SearchService {
     }
 
     private void loadDirectoryViaHtml(String url, ListMainRules rules, String baseUrl,
-                                       List<String> chapterNames, List<String> chapterUrls) throws Exception {
+                                       List<String> chapterNames, List<String> chapterUrls,
+                                       String[] bodyHolder, Element[] bodyElementHolder) throws Exception {
         Document document = Jsoup.connect(url)
                 .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
                 .get();
 
+        Element body = document.body();
+        if (bodyHolder != null) {
+            bodyHolder[0] = body.toString();
+        }
+        if (bodyElementHolder != null) {
+            bodyElementHolder[0] = body;
+        }
+
         String listMainElementName = rules.getListMainElementName();
-        Elements listMainElements = document.select(listMainElementName);
+        Elements listMainElements = body.select(listMainElementName);
         String location = document.location();
 
         String urlElement = StringUtils.defaultIfBlank(rules.getUrlElement(), "a");
@@ -445,9 +515,18 @@ public class SearchService {
      * 通过HTML搜索书籍列表
      */
     private String searchBookListHtml(String url, SearchRules searchRules, BookInfoRules bookInfoRules) throws Exception {
-        Document document = Jsoup.connect(url)
-                .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
-                .get();
+        // 解析HTTP请求配置
+        HttpRequestConfigParser parser = new HttpRequestConfigParser(url);
+        String requestUrl = parser.getUrl();
+        String requestMethod = parser.getMethod();
+        Map<String, String> queryParams = parser.getQueryParams();
+        Map<String, String> bodyParams = parser.getBodyParams();
+        Map<String, String> headers = parser.getHeader();
+
+        Document document = HttpUtil.requestHtml(requestUrl, requestMethod, queryParams, bodyParams, headers);
+        if (document == null) {
+            return "";
+        }
 
         Elements bookElements = document.select(searchRules.getBookListElementName());
         JsonArray jsonArray = new JsonArray();
@@ -493,14 +572,17 @@ public class SearchService {
      * @param url      章节内容页面URL
      * @param callback 获取成功后的回调处理
      */
-    public void searchBookContentRemote(String url, Consumer<SearchBookCallParam> callback) {
-        new Task.Backgroundable(project, "【W-Reader】正在获取内容...") {
+    public void searchBookContentRemote(String url, ChapterInfo chapterInfo, Consumer<SearchBookCallParam> callback) {
+        if (chapterContentTask != null) {
+            chapterContentTask.onCancel();
+        }
+        chapterContentTask = new Task.Backgroundable(project, "【W-Reader】正在获取内容...") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setText("【W-Reader】正在获取内容...");
                 indicator.setIndeterminate(true);
 
-                SiteBean siteBean = cacheService.getSelectedSiteBean();
+                SiteBean siteBean = cacheService.getTempSelectedSiteBean();
                 if (siteBean == null || StringUtils.isBlank(siteBean.getId())) {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         Messages.showErrorDialog(ConstUtil.WREADER_SITE_BEAN_ERROR, "提示");
@@ -529,7 +611,6 @@ public class SearchService {
                     chapterContent = ContentParser.handleContent(chapterContent, siteBean);
 
                     // Add chapter title as header
-                    ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
                     String fontColorHex = cacheService.getFontColorHex();
                     if (fontColorHex == null) fontColorHex = "#cccccc";
 
@@ -554,7 +635,13 @@ public class SearchService {
                     });
                 }
             }
-        }.queue();
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+            }
+        };
+        chapterContentTask.queue();
     }
 
     /**
@@ -603,5 +690,252 @@ public class SearchService {
             }
         }
         return "";
+    }
+
+    // ==================== 下一页目录加载 ====================
+
+    /**
+     * 加载下一页目录
+     * 当书源的目录分多页时，通过脚本循环获取后续页面并追加章节
+     *
+     * @param bodyContentStr      当前页面HTML字符串
+     * @param bodyElement         当前页面DOM元素
+     * @param listMainUrl         当前目录页URL
+     * @param nextChapterCallback 追加章节的回调（章节名列表, 章节URL列表）
+     */
+    public void loadNextListMain(String bodyContentStr, Element bodyElement,
+                                 String listMainUrl,
+                                 Consumer<Map<String, List<String>>> nextChapterCallback) {
+        SiteBean siteBean = cacheService.getTempSelectedSiteBean();
+        if (siteBean == null || siteBean.getListMainRules() == null) {
+            return;
+        }
+        ListMainRules listMainRules = siteBean.getListMainRules();
+        String nextUrl = listMainRules.getNextListMainUrl();
+
+        if (StringUtils.isEmpty(nextUrl) || !ScriptCodeUtil.isJavaCodeConfig(nextUrl)) {
+            return;
+        }
+
+        // 取消之前的任务
+        if (nextListMainTask != null) {
+            nextListMainTask.onCancel();
+        }
+        nextListMainTask = new Task.Backgroundable(project, "【W-Reader】加载下一页目录...") {
+            private volatile boolean running = true;
+            private final List<String> extraChapterNames = new ArrayList<>();
+            private final List<String> extraChapterUrls = new ArrayList<>();
+
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                try {
+                    String baseUrl = siteBean.getBaseUrl();
+                    String previousUrl = listMainUrl;
+                    AtomicReference<String> currentBodyStr = new AtomicReference<>(bodyContentStr);
+                    AtomicReference<Element> currentBody = new AtomicReference<>(bodyElement);
+                    int pageIndex = 1;
+
+                    while (running) {
+                        indicator.checkCanceled();
+                        pageIndex++;
+                        indicator.setText2("正在加载第" + pageIndex + "页...");
+
+                        // 执行脚本获取下一页URL
+                        String nextResultUrl = executeNextListMainScript(
+                                nextUrl, baseUrl, pageIndex, previousUrl,
+                                currentBodyStr.get(), currentBody.get()
+                        );
+
+                        if (StringUtils.isEmpty(nextResultUrl)) {
+                            break;
+                        }
+                        previousUrl = nextResultUrl;
+
+                        // 请求下一页目录
+                        Map<String, List<String>> pageResult = requestNextListMain(
+                                nextResultUrl, listMainRules, siteBean,
+                                bodyStr -> currentBodyStr.set(bodyStr),
+                                body -> currentBody.set(body));
+
+                        extraChapterNames.addAll(pageResult.get("chapterNames"));
+                        extraChapterUrls.addAll(pageResult.get("chapterUrls"));
+
+                        if (pageResult.get("chapterNames").isEmpty()) {
+                            break;
+                        }
+
+                        Thread.sleep(1000);
+                    }
+                } catch (ProcessCanceledException ignored) {
+                } catch (Exception e) {
+                    LOG.error("Next page directory load failed", e);
+                }
+            }
+
+            @Override
+            public void onSuccess() {
+                if (!extraChapterNames.isEmpty() && nextChapterCallback != null) {
+                    nextChapterCallback.accept(Map.of(
+                            "chapterNames", extraChapterNames,
+                            "chapterUrls", extraChapterUrls
+                    ));
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                running = false;
+                super.onCancel();
+            }
+        };
+        nextListMainTask.queue();
+    }
+
+    /**
+     * 执行下一页目录脚本
+     * 脚本参数：baseUrl, pageIndex, previousUrl, bodyStr, bodyElement
+     */
+    private String executeNextListMainScript(String script, String baseUrl, int pageIndex,
+                                             String previousUrl, String bodyStr, Element bodyElement) {
+        try {
+            return (String) ScriptCodeUtil.getScriptCodeExeResult(
+                    script,
+                    new Class[]{String.class, Integer.class, String.class, String.class, Element.class},
+                    new Object[]{baseUrl, pageIndex, previousUrl, bodyStr, bodyElement},
+                    Map.of(
+                            "baseUrl", baseUrl,
+                            "pageIndex", pageIndex,
+                            "preUrl", previousUrl,
+                            "bodyElementStr", bodyStr,
+                            "bodyElement", bodyElement
+                    )
+            );
+        } catch (Exception e) {
+            LOG.error("Next list main script execution failed", e);
+            return "";
+        }
+    }
+
+    /**
+     * 请求下一页目录内容
+     */
+    private Map<String, List<String>> requestNextListMain(String url, ListMainRules rules,
+                                                           SiteBean siteBean,
+                                                           Consumer<String> bodyStrCallback,
+                                                           Consumer<Element> bodyCallback) {
+        List<String> chapterNames = new ArrayList<>();
+        List<String> chapterUrls = new ArrayList<>();
+
+        try {
+            if (rules.isUseNextListMainApi()) {
+                requestNextListMainApi(url, rules, chapterNames, chapterUrls, bodyStrCallback);
+            } else {
+                requestNextListMainHtml(url, rules, siteBean.getBaseUrl(),
+                        chapterNames, chapterUrls, bodyStrCallback, bodyCallback);
+            }
+        } catch (Exception e) {
+            LOG.error("Request next list main failed", e);
+        }
+
+        return Map.of("chapterNames", chapterNames, "chapterUrls", chapterUrls);
+    }
+
+    /**
+     * 通过API方式请求下一页目录
+     */
+    private void requestNextListMainApi(String url, ListMainRules rules,
+                                         List<String> chapterNames, List<String> chapterUrls,
+                                         Consumer<String> bodyStrCallback) throws Exception {
+        HttpRequestBase requestBase = HttpUtil.commonRequest(url);
+        requestBase.setHeader("User-Agent", ConstUtil.HEADER_USER_AGENT);
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(requestBase)) {
+            if (response.getStatusLine().getStatusCode() == 200) {
+                HttpEntity entity = response.getEntity();
+                String result = EntityUtils.toString(entity);
+                bodyStrCallback.accept(result);
+
+                String dataRule = rules.getNextListMainApiDataRule();
+                List<Map<String, Object>> items = JsonPath.read(result, dataRule);
+
+                String itemIdField = rules.getItemIdField();
+                String itemTitleField = rules.getItemTitleField();
+
+                for (Map<String, Object> item : items) {
+                    String itemId = item.get(itemIdField) != null ? item.get(itemIdField).toString() : "";
+                    String title = item.get(itemTitleField) != null ? item.get(itemTitleField).toString() : "";
+
+                    // 尝试从 itemUrlField 获取 URL，否则用模板构建
+                    String itemUrl = "";
+                    String itemUrlField = rules.getItemUrlField();
+                    if (StringUtils.isNotBlank(itemUrlField) && item.get(itemUrlField) != null) {
+                        itemUrl = item.get(itemUrlField).toString();
+                    } else if (StringUtils.isNotBlank(rules.getUrlDataHandleRule())) {
+                        try {
+                            itemUrl = (String) ScriptCodeUtil.getScriptCodeExeResult(
+                                    rules.getUrlDataHandleRule(),
+                                    new Class[]{Map.class, Map.class, String.class},
+                                    new Object[]{result, item, itemId},
+                                    Map.of("result", result, "itemMap", item, "itemId", itemId)
+                            );
+                        } catch (Exception e) {
+                            LOG.warn("URL data handle script failed for next page item", e);
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(title)) {
+                        chapterNames.add(title);
+                        chapterUrls.add(itemUrl);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 通过HTML方式请求下一页目录
+     */
+    private void requestNextListMainHtml(String url, ListMainRules rules, String baseUrl,
+                                          List<String> chapterNames, List<String> chapterUrls,
+                                          Consumer<String> bodyStrCallback,
+                                          Consumer<Element> bodyCallback) throws Exception {
+        Document document = Jsoup.connect(url)
+                .header("User-Agent", ConstUtil.HEADER_USER_AGENT)
+                .get();
+
+        Element body = document.body();
+        bodyStrCallback.accept(body.toString());
+        bodyCallback.accept(body);
+
+        Elements elements = body.select(rules.getListMainElementName());
+        String urlElement = StringUtils.defaultIfBlank(rules.getUrlElement(), "a");
+        String titleElement = rules.getTitleElement();
+        String location = document.location();
+
+        for (Element element : elements) {
+            String chapterUrl = "";
+            Elements urlElements = element.select(urlElement);
+            if (!urlElements.isEmpty()) {
+                chapterUrl = urlElements.first().attr("href");
+            }
+
+            String chapterTitle = "";
+            if (StringUtils.isNotBlank(titleElement)) {
+                Elements titleElements = element.select(titleElement);
+                if (!titleElements.isEmpty()) {
+                    chapterTitle = titleElements.first().text();
+                }
+            } else {
+                chapterTitle = element.text();
+            }
+
+            if (StringUtils.isNotBlank(chapterTitle)) {
+                chapterNames.add(chapterTitle);
+                chapterUrl = UrlUtil.buildFullURL(location, chapterUrl);
+                chapterUrls.add(chapterUrl);
+            }
+        }
     }
 }

@@ -5,7 +5,6 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.wei.wreader.model.ChapterInfo;
 import com.wei.wreader.model.Settings;
@@ -49,7 +48,6 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         cacheService = CacheService.getInstance();
         settings = cacheService.getSettings();
 
-//        return new WReaderStatusBarWidget(project);
         return new ReaderStatusBarWidget(project);
     }
 
@@ -57,7 +55,6 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
     public void disposeWidget(@NotNull StatusBarWidget widget) {
         widget.dispose();
     }
-
 
     @Override
     public boolean isAvailable(@NotNull Project project) {
@@ -67,61 +64,11 @@ public class WReaderStatusBarFactory implements StatusBarWidgetFactory {
         return settings != null && settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
     }
 
-
     @Override
     public boolean canBeEnabledOn(@NotNull StatusBar statusBar) {
         cacheService = CacheService.getInstance();
         settings = cacheService.getSettings();
         return settings != null && settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
-    }
-
-    /**
-     * 是否启用底部状态栏
-     * @param project
-     * @param isStartupApp 是否是启动项目
-     */
-    public void setEnabled(@NotNull Project project, boolean isStartupApp) {
-        cacheService = CacheService.getInstance();
-        settings = cacheService.getSettings();
-        configYaml = ConfigYaml.getInstance();
-        if (settings == null) {
-            settings = configYaml.getSettings();
-        }
-
-        if (!isStartupApp) {
-            boolean isExistStatusBarWidget = false;
-
-            // 获取状态栏实例
-            WindowManager windowManager = WindowManager.getInstance();
-            StatusBar statusBar = windowManager.getStatusBar(project);
-            if (statusBar != null) {
-                // 获取状态栏组件
-                StatusBarWidget wReaderStatusBarWidget = statusBar.getWidget(ReaderStatusBarWidget.ID);
-                if (wReaderStatusBarWidget != null) {
-                    isExistStatusBarWidget = true;
-                }
-            }
-
-            // 状态栏组件不存在，则创建，反之则不创建，防止重复创建出现视图重叠
-            if (!isExistStatusBarWidget) {
-                StatusBarWidgetsManager statusBarWidgetsManager = project.getService(StatusBarWidgetsManager.class);
-                statusBarWidgetsManager.updateWidget(this);
-            }
-
-            boolean isVisible = settings.getDisplayType() == Settings.DISPLAY_TYPE_STATUSBAR;
-            if (isVisible) {
-                // 初始化章节内容缓存信息，避免修改设置时无法第一时间生效
-                ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
-                if (selectedChapterInfo != null) {
-                    String chapterContentStr = selectedChapterInfo.getChapterContentStr();
-                    int singleLineChars = settings.getSingleLineChars();
-                    List<String> contentList = StringUtil.splitStringByMaxCharList(chapterContentStr, singleLineChars);
-                    selectedChapterInfo.setChapterContentList(contentList);
-                }
-            }
-
-            ReaderStatusBarWidget.update(project);
-        }
     }
 
 }

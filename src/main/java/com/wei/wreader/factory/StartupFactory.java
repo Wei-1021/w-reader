@@ -8,6 +8,7 @@ import com.wei.wreader.service.CacheService;
 import com.wei.wreader.ui.CustomSiteRuleDialogNew;
 import com.wei.wreader.util.file.CacheMigrationUtil;
 import com.wei.wreader.util.yml.ConfigYaml;
+import com.wei.wreader.widget.manager.ReaderStatusBarManager;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,8 +51,9 @@ public class StartupFactory implements StartupActivity {
 
             WReaderToolWindowFactory wReaderToolWindowFactory = new WReaderToolWindowFactory();
             wReaderToolWindowFactory.setEnabled(project);
-            WReaderStatusBarFactory wReaderStatusBarFactory = new WReaderStatusBarFactory();
-            wReaderStatusBarFactory.setEnabled(project, true);
+
+            ReaderStatusBarManager readerStatusBarManager = new ReaderStatusBarManager();
+            readerStatusBarManager.setEnabled(project);
 
         });
     }

@@ -173,7 +173,7 @@ wreader:
         bookDescField: bookDesc
         bookImgUrlField: bookImgUrl
       hasHtml: true
-    - enabled: true
+    - enabled: false
       id: appi.kuwo.cn
       name: 酷我小说
       baseUrl: http://appi.kuwo.cn
@@ -288,7 +288,7 @@ wreader:
         bookDescField: description
         bookImgUrlField: icon
       hasHtml: false
-    - enabled: true
+    - enabled: false
       id: www.shuqi.com
       name: 书旗小说
       baseUrl: https://www.shuqi.com
@@ -336,7 +336,7 @@ wreader:
         bookDescField: desc
         bookImgUrlField: cover
       hasHtml: false
-    - enabled: true
+    - enabled: false
       id: www.wtzw.com
       name: 梧桐文学
       baseUrl: https://www.wtzw.com
@@ -374,7 +374,7 @@ wreader:
         bookDescField: bookDesc
         bookImgUrlField: bookImgUrl
       hasHtml: true
-    - enabled: true
+    - enabled: false
       id: www.jjwxc.net
       name: 晋江文学
       baseUrl: http://app.jjwxc.org
