@@ -95,13 +95,21 @@ public class SearchDialog {
     private void initSiteBeanList() {
         String selectedRuleKey = siteRuleService.getSelectedCustomSiteRuleKey();
 
-        if (StringUtils.isBlank(selectedRuleKey) ||
-                ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedRuleKey)) {
+        if (StringUtils.isBlank(selectedRuleKey)) {
             siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
+        } else if(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedRuleKey)) {
+            Map<String, List<SiteBean>> customSiteRuleGroupMap = siteRuleService.getCustomSiteRuleGroupMap();
+            if (customSiteRuleGroupMap == null || customSiteRuleGroupMap.isEmpty()) {
+                siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
+            } else {
+                siteBeanList = customSiteRuleGroupMap.get(selectedRuleKey);
+            }
         } else {
             Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
             List<SiteBean> customList = siteMap.get(selectedRuleKey);
-            siteBeanList = customList != null ? customList : configYaml.getSiteList();
+            siteBeanList = customList != null ?
+                    customList :
+                    FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
         }
 
         if (siteBeanList == null) {

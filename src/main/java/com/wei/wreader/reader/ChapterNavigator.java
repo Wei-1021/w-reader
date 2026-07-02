@@ -822,6 +822,7 @@ public class ChapterNavigator {
                     pageCount++;
                     indicator.setText2("正在加载第 " + pageCount + " 页...");
 
+                    // 执行脚本获取下一页URL
                     returnResult = executeNextContentScript(chapterUrl, pageCount,
                             previousContentUrl, initialBodyContent, initialBodyElement);
 
@@ -830,13 +831,16 @@ public class ChapterNavigator {
                         break;
                     }
 
+                    // 构建完整的URL
                     returnResult = UrlUtil.buildFullURL(baseUrl, returnResult);
                     previousContentUrl = returnResult;
 
-                    nextContent.append(requestNextPageContent(returnResult, (resContent, resElement) -> {
+                    // 请求下一页内容
+                    String nextPageContent = requestNextPageContent(returnResult, (resContent, resElement) -> {
                         initialBodyContent = resContent;
                         initialBodyElement = resElement;
-                    }));
+                    });
+                    nextContent.append(nextPageContent);
 
                     Thread.sleep(1000);
                 }
@@ -881,12 +885,18 @@ public class ChapterNavigator {
 
         @Override
         public void onSuccess() {
+            SiteBean siteBean = cacheService.getSelectedSiteBean();
             ChapterInfo selectedChapterInfo = cacheService.getSelectedChapterInfo();
             if (selectedChapterInfo == null) {
                 return;
             }
 
-            String text = nextContent.toString();
+            String text = nextContent.toString();// 处理内容
+            try {
+                text = ContentParser.handleContent(text, siteBean);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             String fontColorHex = cacheService.getFontColorHex();
             if (fontColorHex == null) fontColorHex = "#cccccc";
             text = "<h3 style=\"text-align: center;margin-bottom: 20px;color:" +

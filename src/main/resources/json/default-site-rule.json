@@ -53,23 +53,23 @@
   },
   {
     "enabled": true,
-    "id": "xbiquzw.com",
+    "id": "badaoge.org",
     "name": "笔尖小说",
-    "baseUrl": "http://www.xbiquzw.com",
+    "baseUrl": "http://www.badaoge.org",
     "header": "",
     "searchRules": {
-      "url": "http://www.xbiquzw.com/modules/article/search.php?searchkey=${key}",
+      "url": "{'url':'http://www.badaoge.org/modules/article/search.php','method':'POST','queryParams':{},'bodyParams':{'searchkey':'${key}'},'header':{}}",
       "dataBookListRule": "",
-      "bookListElementName": ".grid tr:not(:first-child)",
-      "bookListUrlElement": ":nth-child(1) > a",
-      "bookListTitleElement": ":nth-child(1) > a"
+      "bookListElementName": "#hotcontent .ll .item",
+      "bookListUrlElement": "dl dt a",
+      "bookListTitleElement": "dl dt a"
     },
     "listMainRules": {
       "url": "",
       "urlDataRule": "",
       "itemIdField": "",
       "itemTitleField": "",
-      "listMainElementName": "#list dl dd",
+      "listMainElementName": "#list dl dt:nth-of-type(2)~dd",
       "urlElement": "a",
       "titleElement": "a"
     },
@@ -83,7 +83,10 @@
       "nextContentUrl": "",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
-      "contentRegexList": null
+      "contentRegexList": [
+        "<br\\s*/+>@replace:",
+        "<\\s*div\\s[^>]*?id\\s*=\\s*\"content_tip\"\\s*>[\\s\\S]*?<\\/\\s*div\\s*>@replace:"
+      ]
     },
     "bookInfoRules": {
       "bookIdField": "book_id",
@@ -125,11 +128,11 @@
     "chapterRules": {
       "url": "",
       "urlDataRule": "",
-      "contentHandleRule": "",
+      "contentHandleRule": "@js:var qsbs = {\n    _keyStr: \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\",\n    bb: function (input) {\n        var output = \"\";\n        var chr1, chr2, chr3;\n        var enc1, enc2, enc3, enc4;\n        var i = 0;\n        input = input.replace(/[^A-Za-z0-9\\+\\/\\=]/g, \"\");\n        while (i < input.length) {\n            enc1 = this._keyStr.indexOf(input.charAt(i++));\n            enc2 = this._keyStr.indexOf(input.charAt(i++));\n            enc3 = this._keyStr.indexOf(input.charAt(i++));\n            enc4 = this._keyStr.indexOf(input.charAt(i++));\n            chr1 = (enc1 << 2) | (enc2 >> 4);\n            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);\n            chr3 = ((enc3 & 3) << 6) | enc4;\n            output = output + String.fromCharCode(chr1);\n            if (enc3 != 64) {\n                output = output + String.fromCharCode(chr2)\n            }\n            if (enc4 != 64) {\n                output = output + String.fromCharCode(chr3)\n            }\n        }\n        output = qsbs._utf8_decode(output);\n        return output\n    },\n    _utf8_decode: function (utftext) {\n        var string = \"\";\n        var i = 0;\n        var c = c1 = c2 = 0;\n        while (i < utftext.length) {\n            c = utftext.charCodeAt(i);\n            if (c < 128) {\n                string += String.fromCharCode(c);\n                i++\n            } else if ((c > 191) && (c < 224)) {\n                c2 = utftext.charCodeAt(i + 1);\n                string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));\n                i += 2\n            } else {\n                c2 = utftext.charCodeAt(i + 1);\n                c3 = utftext.charCodeAt(i + 2);\n                string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));\n                i += 3\n            }\n        }\n        return string\n    }\n}\nfunction handle() {\n    const regex = /document\\.writeln\\((qsbs.bb\\(.+?\\))\\)/g;\n    let match;\n    let results = \"\";\n    while ((match = regex.exec(content)) !== null) {\n        results += eval(match[1]);\n    }\n    return results;\n}\n(handle())",
       "useContentOriginalStyle": false,
       "replaceContentOriginalRegex": "",
       "contentElementName": "#content",
-      "nextContentUrl": "@js:\nfunction execute() {\n    let nextElement = prePageElement.selectFirst('.bottem2 .next');\n    if (nextElement == null) {\n        return \"\";\n    }\n    let nextUrl = nextElement.attr(\"href\");\n    if (!nextUrl || nextUrl == '') {\n        return \"\";\n    }\n    let pattern = /_\\d+\\.html$/;\n    let isNextPage = pattern.test(nextUrl);\n    return isNextPage ? nextUrl : \"\";\n}\n(execute())\n",
+      "nextContentUrl": "@js:\nfunction execute() {\n    let nextElement = prePageElement.selectFirst('.bottem2 .next');\n    if (nextElement == null) {\n        return \"\";\n    }\n    if (loadingPage == 1) {\n        return chapterUrl;\n    }\n    let nextUrl = nextElement.attr(\"href\");\n    if (!nextUrl || nextUrl == '') {\n        return \"\";\n    }\n\n    let pattern = /_\\d+\\.html$/;\n    let isNextPage = pattern.test(nextUrl);\n    return isNextPage ? nextUrl : \"\";\n}\n(execute())",
       "useNextContentApi": false,
       "nextContentApiDataRule": "",
       "contentRegexList": null
@@ -321,5 +324,55 @@
       "bookImgUrlField": "bookpic"
     },
     "hasHtml": true
+  },
+  {
+    "enabled": true,
+    "id": "min-yuan.com",
+    "name": "小原文学网",
+    "baseUrl": "https://www.min-yuan.com",
+    "header": "",
+    "hasHtml": true,
+    "searchRules": {
+      "url": "https://www.min-yuan.com/search/?searchkey=${key}",
+      "dataBookListRule": "",
+      "bookListElementName": "div.hotcontent div.l.rank div.item",
+      "bookListUrlElement": "div.image a",
+      "bookListTitleElement": "dl dt a"
+    },
+    "listMainRules": {
+      "url": "",
+      "urlDataRule": "",
+      "itemIdField": "",
+      "itemTitleField": "",
+      "itemUrlField": "",
+      "urlDataHandleRule": "",
+      "listMainElementName": "#list #newlist dd",
+      "urlElement": "a",
+      "titleElement": "a",
+      "nextListMainUrl": "",
+      "useNextListMainApi": false,
+      "nextListMainApiDataRule": ""
+    },
+    "chapterRules": {
+      "url": "",
+      "urlDataRule": "",
+      "contentHandleRule": "",
+      "useContentOriginalStyle": false,
+      "replaceContentOriginalRegex": "",
+      "contentElementName": "#chaptercontent #booktxt",
+      "nextContentUrl": "@js:\nfunction exe() {\n    if (loadingPage == 1) return chapterUrl;\n    let nextLink = prePageElement.selectFirst('a[rel=next]');\n    if (nextLink == null) return '';\n    let href = nextLink.attr('href');\n    if (href == null || href == '') return '';\n    if (href.matches('.*_\\\\d+\\\\.html$')) return href;\n}\n(exe())",
+      "useNextContentApi": false,
+      "nextContentApiDataRule": "",
+      "contentRegexList": []
+    },
+    "bookInfoRules": {
+      "bookIdField": "bookId",
+      "bookNameField": "bookName",
+      "bookUrlField": "bookUrl",
+      "bookAuthorField": "bookAuthor",
+      "bookDescField": "bookDesc",
+      "bookImgUrlField": "bookImgUrl"
+    }
   }
+
 ]

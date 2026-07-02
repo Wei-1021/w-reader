@@ -15,6 +15,7 @@ import com.wei.wreader.reader.ReaderOrchestrator;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.util.*;
 import com.wei.wreader.util.data.ConstUtil;
+import com.wei.wreader.util.file.FileUtil;
 import com.wei.wreader.util.file.ImagePreviewer;
 import com.wei.wreader.util.yml.ConfigYaml;
 import groovy.util.logging.Log4j2;
@@ -240,7 +241,7 @@ public class WReaderToolWindow {
 
             // 站点列表信息
             // TODO: 新版配置文件测试
-            siteBeanList = configYaml.getSiteList();
+            siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
 //            siteList = configYaml.getEnableSiteList();
 
             // 加载持久化数据--站点信息

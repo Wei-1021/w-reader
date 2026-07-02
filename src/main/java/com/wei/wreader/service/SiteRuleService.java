@@ -12,11 +12,23 @@ import java.util.Map;
 @Service(Service.Level.APP)
 @State(name = "CustomSiteRuleCacheServer", storages = {@Storage("w-reader-custom-site-rule.xml")})
 public final class SiteRuleService implements PersistentStateComponent<SiteRuleService> {
+    /**
+     * 自定义书源规则
+     */
     private Map<String, List<SiteBean>> customSiteRuleGroupMap;
+    /**
+     * 自定义书源规则原始字符串
+     */
     private Map<String, String> customSiteRuleOriginalStrMap;
+    /**
+     * 选中的自定义书源规则key
+     */
     private String selectedCustomSiteRuleKey;
+    /**
+     * 临时选中的自定义书源规则key
+     */
     private String tempSelectedCustomSiteRuleKey;
-
+    
     public Map<String, List<SiteBean>> getCustomSiteRuleGroupMap() { return customSiteRuleGroupMap; }
     public void setCustomSiteRuleGroupMap(Map<String, List<SiteBean>> customSiteRuleGroupMap) { this.customSiteRuleGroupMap = customSiteRuleGroupMap; }
 

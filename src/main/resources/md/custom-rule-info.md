@@ -605,7 +605,7 @@ ____________________________
 > ##### <font color="grey">chapterRules</font>.<font color="249aff">useNextContentApi</font>：
 > 获取下一页的返回结果是否为JSON格式数据，布尔类型。
 > ____________________________
-> ##### <font color="grey">chapterRules</font>.<font color="249aff">nextContentUrlDataRule</font>：
+> ##### <font color="grey">chapterRules</font>.<font color="249aff">nextContentApiDataRule</font>：
 > 获取下一页内容的`JSONPath`语法规则。只有当`useNextContentApi`为`true`时（即请求结果返回JSON格式的数据时）才需要填写，填写规则请参考`JSONPath`，需要通过`JSONPath`获取下一页内容，例如：
 >> ```json
 >> {
@@ -619,7 +619,7 @@ ____________________________
 >>   "message": "success"
 >> 
 >> ```
->> 要获取章节下一页内容，那么`nextContentUrlDataRule`填写：`$.modelData.content`
+>> 要获取章节下一页内容，那么`nextContentApiDataRule`填写：`$.modelData.content`
 > ____________________________
 > ##### <font color="grey">chapterRules</font>.<font color="249aff">contentRegexList</font>`数组`：
 > 章节内容处理规则的正则表达式列表，可以通过正则表达式对内容进行过滤，如空行替换，删除广告等等。这里是一个数组，所以记得使用[]包起来。  

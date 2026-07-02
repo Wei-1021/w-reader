@@ -56,7 +56,13 @@ public class CustomSiteUtil {
         }
 
         if (siteMap.isEmpty()) {
-            siteMap.put(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY, configYaml.getSiteList());
+            siteMap.put(
+                    ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY,
+                    FileUtil.readResourcesJsonList(
+                            CustomSiteUtil.DEFAULT_SITE_RULE_PATH,
+                            SiteBean.class
+                    )
+            );
             siteRuleService.setSelectedCustomSiteRuleKey(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY);
             siteRuleService.setCustomSiteRuleGroupMap(siteMap);
 

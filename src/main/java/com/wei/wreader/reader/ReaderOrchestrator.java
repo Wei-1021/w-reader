@@ -16,6 +16,7 @@ import com.wei.wreader.tts.TtsService;
 import com.wei.wreader.util.CustomSiteUtil;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.data.ListUtil;
+import com.wei.wreader.util.file.FileUtil;
 import com.wei.wreader.util.ui.ToolWindowUtil;
 import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
@@ -101,13 +102,21 @@ public final class ReaderOrchestrator {
         String selectedCustomSiteRuleKey = siteRuleService.getSelectedCustomSiteRuleKey();
 
         List<SiteBean> siteBeanList;
-        if (StringUtils.isBlank(selectedCustomSiteRuleKey) ||
-                ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedCustomSiteRuleKey)) {
-            siteBeanList = appConfig.getSiteList();
+        if (StringUtils.isBlank(selectedCustomSiteRuleKey)) {
+            siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
+        } else if(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equals(selectedCustomSiteRuleKey)) {
+            Map<String, List<SiteBean>> customSiteRuleGroupMap = siteRuleService.getCustomSiteRuleGroupMap();
+            if (customSiteRuleGroupMap == null || customSiteRuleGroupMap.isEmpty()) {
+                siteBeanList = FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
+            } else {
+                siteBeanList = customSiteRuleGroupMap.get(selectedCustomSiteRuleKey);
+            }
         } else {
             Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
             List<SiteBean> customList = siteMap.get(selectedCustomSiteRuleKey);
-            siteBeanList = customList != null ? customList : appConfig.getSiteList();
+            siteBeanList = customList != null ?
+                    customList :
+                    FileUtil.readResourcesJsonList(CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
         }
         final List<SiteBean> finalSiteBeanList = siteBeanList;
 
