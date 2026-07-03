@@ -311,6 +311,11 @@
                 icon="com.wei.wreader.util.WReaderIcons.CUSTOM_SITE">
             <keyboard-shortcut keymap="$default" first-keystroke="alt DECIMAL"/>
         </action>
+        <action id="wreader.AiGenerateSiteRuleAction" class="com.wei.wreader.action.AiGenerateSiteRuleAction"
+                text="AI生成书源规则"
+                icon="com.wei.wreader.util.WReaderIcons.AI_GENERATE">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD5"/>
+        </action>
         <!--endregion-->
 
         <!--region Group-->
@@ -321,82 +326,86 @@
         <!-- 编辑器右键 -->
         <group id="wreader.group.editorPopupMenu" text="WReader" description="WReader" popup="true"
                icon="/icon/mainIcon.svg">
-            <reference id="wreader.EditorMessageAction"/>
-            <reference id="wreader.CommentBlockAction"/>
-            <reference id="wreader.AudioReadingAction"/>
+            <reference ref="wreader.EditorMessageAction"/>
+            <reference ref="wreader.CommentBlockAction"/>
+            <reference ref="wreader.AudioReadingAction"/>
             <separator/>
-            <reference id="wreader.FontSizeSubAction"/>
-            <reference id="wreader.FontSizeAddAction"/>
-            <reference id="wreader.PrevChapterAction"/>
-            <reference id="wreader.NextChapterAction"/>
+            <reference ref="wreader.FontSizeSubAction"/>
+            <reference ref="wreader.FontSizeAddAction"/>
+            <reference ref="wreader.PrevChapterAction"/>
+            <reference ref="wreader.NextChapterAction"/>
             <separator/>
-            <reference id="wreader.ChangeFontColorAction"/>
-            <reference id="wreader.LoadLocalFileAction"/>
-            <reference id="wreader.WReaderSetting"/>
-            <reference id="wreader.CustomSiteRuleAction"/>
-            <reference id="wreader.HelpAction"/>
-            <reference id="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.ChangeFontColorAction"/>
+            <reference ref="wreader.LoadLocalFileAction"/>
+            <reference ref="wreader.WReaderSetting"/>
+            <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+            <reference ref="wreader.HelpAction"/>
+            <reference ref="wreader.ShowBookInfoAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->
         <group id="wreader.group.toolMenu">
-            <reference id="wreader.WReaderSetting"/>
-            <reference id="wreader.HelpAction"/>
-            <reference id="wreader.ShowBookInfoAction"/>
-            <reference id="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.WReaderSetting"/>
+            <reference ref="wreader.HelpAction"/>
+            <reference ref="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
             <separator/>
-            <reference id="wreader.LoadLocalFileAction"/>
-            <reference id="wreader.EditorMessageAction"/>
-            <reference id="wreader.CommentBlockAction"/>
-            <reference id="wreader.AudioReadingAction"/>
+            <reference ref="wreader.LoadLocalFileAction"/>
+            <reference ref="wreader.EditorMessageAction"/>
+            <reference ref="wreader.CommentBlockAction"/>
+            <reference ref="wreader.AudioReadingAction"/>
             <separator/>
-            <reference id="wreader.SearchBookName"/>
-            <reference id="wreader.ChapterListAction"/>
-            <reference id="wreader.PrevChapterAction"/>
-            <reference id="wreader.NextChapterAction"/>
+            <reference ref="wreader.SearchBookName"/>
+            <reference ref="wreader.ChapterListAction"/>
+            <reference ref="wreader.PrevChapterAction"/>
+            <reference ref="wreader.NextChapterAction"/>
             <add-to-group group-id="wreader.group.WReader"/>
             <separator/>
         </group>
-        <!-- 工具窗口ToolBar -->
+        <!-- 侧边栏工具窗口的ToolBar -->
         <group id="wreader.group.toolWindowBar">
-            <reference id="wreader.SearchBookName"/>
-            <reference id="wreader.ChapterListAction"/>
-            <reference id="wreader.AudioReadingAction"/>
+            <reference ref="wreader.SearchBookName"/>
+            <reference ref="wreader.ChapterListAction"/>
+            <reference ref="wreader.AudioReadingAction"/>
             <separator/>
-            <reference id="wreader.FontSizeSubAction"/>
-            <reference id="wreader.FontSizeAddAction"/>
-            <reference id="wreader.PrevChapterAction"/>
-            <reference id="wreader.NextChapterAction"/>
+            <reference ref="wreader.FontSizeSubAction"/>
+            <reference ref="wreader.FontSizeAddAction"/>
+            <reference ref="wreader.PrevChapterAction"/>
+            <reference ref="wreader.NextChapterAction"/>
             <separator/>
-            <reference id="wreader.ChangeFontColorAction"/>
-            <reference id="wreader.LoadLocalFileAction"/>
-            <reference id="wreader.WReaderSetting"/>
-            <reference id="wreader.CustomSiteRuleAction"/>
-            <reference id="wreader.HelpAction"/>
-            <reference id="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.ChangeFontColorAction"/>
+            <reference ref="wreader.LoadLocalFileAction"/>
+            <reference ref="wreader.WReaderSetting"/>
+            <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+            <reference ref="wreader.HelpAction"/>
+            <reference ref="wreader.ShowBookInfoAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
-            <reference id="wreader.WReaderSetting"/>
-            <reference id="wreader.CustomSiteRuleAction"/>
-            <reference id="wreader.HelpAction"/>
-            <reference id="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.WReaderSetting"/>
+            <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+            <reference ref="wreader.HelpAction"/>
+            <reference ref="wreader.ShowBookInfoAction"/>
             <separator/>
-            <reference id="wreader.SearchBookName"/>
-            <reference id="wreader.LoadLocalFileAction"/>
-            <reference id="wreader.ChapterListAction"/>
-            <reference id="wreader.HideTextAction"/>
-            <reference id="wreader.AutoReadAction"/>
-            <reference id="wreader.AudioReadingAction"/>
+            <reference ref="wreader.SearchBookName"/>
+            <reference ref="wreader.LoadLocalFileAction"/>
+            <reference ref="wreader.ChapterListAction"/>
+            <reference ref="wreader.HideTextAction"/>
+            <reference ref="wreader.AutoReadAction"/>
+            <reference ref="wreader.AudioReadingAction"/>
             <separator/>
-            <reference id="wreader.PrevChapterAction"/>
-            <reference id="wreader.NextChapterAction"/>
-            <reference id="wreader.PrevLineAction"/>
-            <reference id="wreader.NextLineAction"/>
+            <reference ref="wreader.PrevChapterAction"/>
+            <reference ref="wreader.NextChapterAction"/>
+            <reference ref="wreader.PrevLineAction"/>
+            <reference ref="wreader.NextLineAction"/>
             <separator/>
-            <reference id="wreader.FontSizeSubAction"/>
-            <reference id="wreader.FontSizeAddAction"/>
-            <reference id="wreader.ChangeFontColorAction"/>
+            <reference ref="wreader.FontSizeSubAction"/>
+            <reference ref="wreader.FontSizeAddAction"/>
+            <reference ref="wreader.ChangeFontColorAction"/>
         </group>
         <!--endregion-->
     </actions>
