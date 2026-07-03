@@ -20,6 +20,7 @@ import com.wei.wreader.model.Settings;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.reader.FontManager;
 import com.wei.wreader.reader.ReaderOrchestrator;
+import com.wei.wreader.util.comm.StringTemplateEngine;
 import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.jsoup.nodes.Element;
 import com.wei.wreader.service.AppConfigService;
@@ -364,7 +365,7 @@ public class SearchDialog {
      */
     private String buildSearchUrl(String searchUrlTemplate, String keyword) {
         if (searchUrlTemplate.contains("${")) {
-            return com.wei.wreader.util.comm.StringTemplateEngine.render(
+            return StringTemplateEngine.render(
                     searchUrlTemplate, Map.of("key", keyword, "page", 1));
         }
         return searchUrlTemplate.replace("{keyword}", keyword);

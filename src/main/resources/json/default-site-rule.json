@@ -105,7 +105,7 @@
     "baseUrl": "http://www.lianjianxsw.com",
     "header": "",
     "searchRules": {
-      "url": "{'url':'http://www.lianjianxsw.com/search.html','method':'POST','queryParams':{},'bodyParams':{'s':'${key}'},'header':{}}",
+      "url": "{'url':'http://www.lianjianxsw.com/search.html','method':'POST','queryParams':{},'bodyParams':{'s':'${key}'},'header':{'Host': 'www.lianjianxsw.com'}}",
       "dataBookListRule": "",
       "bookListElementName": "#newscontent ul li",
       "bookListUrlElement": ".s2 a",
@@ -374,5 +374,4 @@
       "bookImgUrlField": "bookImgUrl"
     }
   }
-
 ]

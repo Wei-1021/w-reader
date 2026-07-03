@@ -1,6 +1,7 @@
 package com.wei.wreader.util.http;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.wei.wreader.util.data.ConstUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -131,6 +132,7 @@ public class HttpUtil {
                         .ignoreContentType(true)  // 忽略内容类型检查
                         .ignoreHttpErrors(true);  // 忽略HTTP错误
 
+                connection.userAgent(ConstUtil.HEADER_USER_AGENT);
                 // 禁用GZIP压缩以避免EOFException
                 connection.header("Accept-Encoding", "identity");
 
