@@ -142,12 +142,11 @@ public class HttpUtil {
                 // 设置请求方法和参数
                 if (HttpUtil.POST.equals(method)) {
                     connection.method(Connection.Method.POST);
-                    if (bodyParams != null) {
-                        for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
-                            connection.data(entry.getKey(), entry.getValue());
-                        }
+                    // 先设置 Content-Type，再设置 body 参数
+                    // Jsoup 的 data() 方法会自动处理请求体，但不能在之后覆盖 Content-Type
+                    if (bodyParams != null && !bodyParams.isEmpty()) {
+                        connection.data(bodyParams);
                     }
-                    connection.header("Content-Type", "application/x-www-form-urlencoded");
                 } else {
                     connection.method(Connection.Method.GET);
                 }
