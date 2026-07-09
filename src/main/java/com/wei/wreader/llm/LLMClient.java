@@ -8,6 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -133,6 +135,63 @@ public class LLMClient {
 
     public void setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    // ==================== 多轮对话 ====================
+
+    /**
+     * 创建一个多轮对话实例，共享 system prompt，提升缓存命中率
+     */
+    public Conversation createConversation(String systemPrompt) {
+        return new Conversation(systemPrompt);
+    }
+
+    /**
+     * 多轮对话 - 所有消息共享同一个上下文，LLM 可缓存前缀
+     */
+    public class Conversation {
+        private final List<Map<String, String>> messages = new ArrayList<>();
+
+        private Conversation(String systemPrompt) {
+            messages.add(Map.of("role", "system", "content", systemPrompt));
+        }
+
+        /**
+         * 发送一条用户消息，返回助手回复。历史消息自动保留。
+         */
+        public String send(String userMessage) throws LLMException {
+            messages.add(Map.of("role", "user", "content", userMessage));
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", messages);
+            requestBody.put("stream", false);
+            requestBody.put("temperature", 0.1);
+
+            try {
+                String jsonBody = objectMapper.writeValueAsString(requestBody);
+                String response = sendPostRequest("/chat/completions", jsonBody);
+                String content = parseContent(response);
+                messages.add(Map.of("role", "assistant", "content", content));
+                return content;
+            } catch (IOException e) {
+                throw new LLMException("请求AI接口失败: " + e.getMessage(), e);
+            }
+        }
+
+        /**
+         * 获取当前对话轮数（不含 system）
+         */
+        public int getTurnCount() {
+            return (messages.size() - 1) / 2;
+        }
+
+        /**
+         * 获取完整消息列表（用于调试）
+         */
+        public List<Map<String, String>> getMessages() {
+            return new ArrayList<>(messages);
+        }
     }
 
     /**

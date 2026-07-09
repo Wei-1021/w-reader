@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.wei.wreader.llm.LLMClient;
+import com.wei.wreader.llm.LLMClient.Conversation;
 import com.wei.wreader.service.WebsiteExplorer.*;
 import com.wei.wreader.util.CustomSiteUtil;
 import org.jsoup.Jsoup;
@@ -37,6 +38,7 @@ public class SiteRuleGenerator {
     private static class StepContext {
         WebsiteExplorer explorer;
         LLMClient llmClient;
+        Conversation conversation; // 共享对话上下文，提升缓存命中率
         String baseUrl;
         String siteName;
         SearchInfo searchInfo;
@@ -55,6 +57,7 @@ public class SiteRuleGenerator {
             StepContext ctx = new StepContext();
             ctx.explorer = new WebsiteExplorer();
             ctx.llmClient = new LLMClient(llmBaseUrl, llmApiKey, llmModel);
+            ctx.conversation = ctx.llmClient.createConversation(buildSystemPrompt());
             ctx.baseUrl = ctx.explorer.normalizeBaseUrl(websiteUrl);
 
             // Step 1: 首页
@@ -103,12 +106,11 @@ public class SiteRuleGenerator {
         // LLM 分析首页
         progress.accept("AI 正在分析首页结构...");
         System.out.println("[Step 1] 正在调用LLM分析首页HTML (" + len(homePage.cleanedHtml) + "字节)...");
-        String analysis = llmAnalyze(ctx.llmClient,
+        String analysis = llmSend(ctx,
                 "分析这个小说网站首页的HTML，找出页面中书籍列表/推荐书籍的容器结构。\n\n"
                         + "请用JSON回答（不要markdown代码块）：\n"
                         + "{\"siteName\":\"网站名称\",\"bookListSelector\":\"书籍列表容器CSS选择器\",\"bookLinkSelector\":\"链接选择器(相对)\",\"bookTitleSelector\":\"标题选择器(相对)\"}\n\n"
-                        + "如果首页没有书籍列表，bookListSelector填null。\n\nHTML:\n" + homePage.cleanedHtml,
-                "你是一个HTML分析专家。只输出JSON，不要其他文字。");
+                        + "如果首页没有书籍列表，bookListSelector填null。\n\nHTML:\n" + homePage.cleanedHtml);
 
         JsonNode json = parseJson(analysis);
         ctx.siteName = getJsonString(json, "siteName", "");
@@ -142,13 +144,12 @@ public class SiteRuleGenerator {
         }
 
         progress.accept("AI 正在分析搜索结果页面...");
-        ctx.searchAnalysis = llmAnalyze(ctx.llmClient,
+        ctx.searchAnalysis = llmSend(ctx,
                 "分析这个小说搜索结果页面，找出搜索结果列表的结构。\n\n"
                         + "搜索URL: " + searchPage.url + "\n响应类型: " + (searchPage.isJson ? "JSON" : "HTML") + "\n\n"
                         + "请用JSON回答（不要markdown代码块）：\n"
                         + "{\"resultListSelector\":\"结果列表CSS选择器\",\"linkSelector\":\"链接选择器(相对)\",\"titleSelector\":\"标题选择器(相对)\",\"firstBookUrl\":\"第一个结果URL\",\"jsonPath\":\"JSON响应的JsonPath\"}\n\n"
-                        + "响应内容:\n" + content,
-                "你是一个HTML/JSON分析专家。只输出JSON，不要其他文字。");
+                        + "响应内容:\n" + content);
 
         JsonNode json = parseJson(ctx.searchAnalysis);
         ctx.firstBookUrl = getJsonString(json, "firstBookUrl", null);
@@ -220,7 +221,7 @@ public class SiteRuleGenerator {
                     + "HTML:\n" + bookPage.cleanedHtml;
         }
 
-        ctx.bookAnalysis = llmAnalyze(ctx.llmClient, prompt, "你是一个HTML分析专家。只输出JSON，不要其他文字。");
+        ctx.bookAnalysis = llmSend(ctx, prompt);
         System.out.println("[Step 3] LLM书籍页分析结果:\n" + ctx.bookAnalysis);
     }
 
@@ -296,7 +297,7 @@ public class SiteRuleGenerator {
         }
 
         progress.accept("AI 正在分析章节内容页...");
-        ctx.chapterAnalysis = llmAnalyze(ctx.llmClient,
+        ctx.chapterAnalysis = llmSend(ctx,
                 "分析这个小说章节内容页面，判断内容是如何加载的，并找出正文内容的结构。\n\n"
                         + "## 分析要点\n"
                         + "1. 如果页面中有 `<div class=\"content\">` 等容器但内容为空，说明内容是通过JS动态加载的\n"
@@ -317,8 +318,7 @@ public class SiteRuleGenerator {
                         + "  \"nextPageUrl\": \"下一页URL\"\n"
                         + "}\n\n"
                         + "## 章节页面HTML\n" + chapterPage.cleanedHtml
-                        + extraContext,
-                "你是一个HTML/JS分析专家。仔细分析页面结构和脚本，判断内容加载方式。只输出JSON，不要其他文字。");
+                        + extraContext);
         System.out.println("[Step 4] LLM章节页分析结果:\n" + ctx.chapterAnalysis);
     }
 
@@ -333,8 +333,8 @@ public class SiteRuleGenerator {
                 + " | chapter=" + (ctx.chapterAnalysis != null ? "有" : "无"));
 
         String finalPrompt = buildFinalRulePrompt(ctx);
-        System.out.println("[Step 5] 正在调用LLM生成最终规则 (prompt " + finalPrompt.length() + "字节)...");
-        String ruleResponse = safeCompletion(ctx.llmClient, buildSystemPrompt(), finalPrompt);
+        System.out.println("[Step 5] 正在调用LLM生成最终规则 (prompt " + finalPrompt.length() + "字节, 对话轮数=" + ctx.conversation.getTurnCount() + ")...");
+        String ruleResponse = llmSend(ctx, finalPrompt);
         System.out.println("[Step 5] LLM响应 (" + len(ruleResponse) + "字节): "
                 + (ruleResponse != null ? ruleResponse.substring(0, Math.min(500, ruleResponse.length())) : "null"));
 
@@ -364,7 +364,7 @@ public class SiteRuleGenerator {
             progress.accept("校验失败，正在自动修正...");
             try {
                 String fixPrompt = "JSON校验错误:\n" + validationError[0] + "\n\n请修正以下JSON，只输出修正后的JSON数组:\n" + jsonStr;
-                String fixedResponse = safeCompletion(ctx.llmClient, buildSystemPrompt(), fixPrompt);
+                String fixedResponse = llmSend(ctx, fixPrompt);
                 String fixedJson = extractJsonArray(fixedResponse);
                 if (fixedJson != null) {
                     finalJson = fixedJson;
@@ -425,17 +425,16 @@ public class SiteRuleGenerator {
 
     // ==================== LLM ====================
 
-    private String llmAnalyze(LLMClient client, String prompt, String systemPrompt) {
-        System.out.println("[LLM] 调用分析接口 (prompt " + prompt.length() + "字节)...");
-        String response = safeCompletion(client, systemPrompt, prompt);
-        System.out.println("[LLM] 分析响应 (" + len(response) + "字节): "
-                + (response != null ? response.substring(0, Math.min(300, response.length())) : "null"));
-        return response;
-    }
-
-    private String safeCompletion(LLMClient client, String system, String user) {
+    /**
+     * 通过共享对话发送消息，提升缓存命中率
+     */
+    private String llmSend(StepContext ctx, String prompt) {
+        System.out.println("[LLM] 对话第" + (ctx.conversation.getTurnCount() + 1) + "轮 (prompt " + prompt.length() + "字节)...");
         try {
-            return client.chatCompletion(system, user);
+            String response = ctx.conversation.send(prompt);
+            System.out.println("[LLM] 响应 (" + len(response) + "字节): "
+                    + (response != null ? response.substring(0, Math.min(300, response.length())) : "null"));
+            return response;
         } catch (LLMClient.LLMException e) {
             System.out.println("[LLM] 调用失败: " + e.getUserFriendlyMessage());
             LOG.warn("LLM call failed", e);
