@@ -9,6 +9,7 @@ import com.wei.wreader.service.WebsiteExplorer.*;
 import com.wei.wreader.util.CustomSiteUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -167,7 +168,6 @@ public class SiteRuleGenerator {
             System.out.println("[Step 3] 书籍URL(来自搜索): " + bookUrl);
         }
         if (bookUrl == null) {
-            Document homeDoc = safeParse(null, ctx.baseUrl); // 需要重新获取，但这里用 firstBookUrl 兜底
             System.out.println("[Step 3] 未找到书籍链接，跳过");
             return;
         }
@@ -181,14 +181,81 @@ public class SiteRuleGenerator {
             return;
         }
 
+        // 检测是否有"查看全部章节"链接，获取完整目录页
+        String fullChapterListHtml = null;
+        String fullChapterListUrl = findFullChapterListLink(bookPage.cleanedHtml, bookUrl);
+        if (fullChapterListUrl != null) {
+            System.out.println("[Step 3] 发现完整目录页链接: " + fullChapterListUrl);
+            FetchedPage fullListPage = ctx.explorer.fetchAndClean(fullChapterListUrl);
+            if (fullListPage != null && fullListPage.statusCode == 200 && fullListPage.cleanedHtml != null) {
+                fullChapterListHtml = fullListPage.cleanedHtml;
+                System.out.println("[Step 3] 完整目录页获取成功: " + fullChapterListHtml.length() + "字节");
+            }
+        }
+
         progress.accept("AI 正在分析书籍详情页...");
-        ctx.bookAnalysis = llmAnalyze(ctx.llmClient,
-                "分析这个小说书籍详情页面，找出章节目录和书籍信息的结构。\n\n"
-                        + "请用JSON回答（不要markdown代码块）：\n"
-                        + "{\"chapterListSelector\":\"章节目录CSS选择器\",\"chapterLinkSelector\":\"章节链接选择器(相对)\",\"bookTitleSelector\":\"书名选择器\",\"authorSelector\":\"作者选择器\",\"firstChapterUrl\":\"第一个章节URL\",\"totalChapters\":\"估计章节数\"}\n\n"
-                        + "HTML:\n" + bookPage.cleanedHtml,
-                "你是一个HTML分析专家。只输出JSON，不要其他文字。");
+
+        // 构造 prompt：如果找到了完整目录页，一起发给 LLM
+        String prompt;
+        if (fullChapterListHtml != null) {
+            prompt = "分析这个小说书籍详情页面和完整章节目录页，找出书籍信息和章节结构。\n\n"
+                    + "注意：书籍详情页可能只显示部分章节，完整目录在另一个页面中。\n\n"
+                    + "请用JSON回答（不要markdown代码块）：\n"
+                    + "{\n"
+                    + "  \"chapterListSelector\": \"章节目录CSS选择器（优先从完整目录页中提取）\",\n"
+                    + "  \"chapterLinkSelector\": \"章节链接选择器(相对)\",\n"
+                    + "  \"bookTitleSelector\": \"书名选择器\",\n"
+                    + "  \"authorSelector\": \"作者选择器\",\n"
+                    + "  \"firstChapterUrl\": \"第一个章节URL\",\n"
+                    + "  \"totalChapters\": \"估计章节数\",\n"
+                    + "  \"fullChapterListUrl\": \"" + fullChapterListUrl + "\",\n"
+                    + "  \"fullChapterListSelector\": \"完整目录页中章节列表的CSS选择器\"\n"
+                    + "}\n\n"
+                    + "## 书籍详情页HTML:\n" + bookPage.cleanedHtml
+                    + "\n\n## 完整章节目录页HTML:\n" + fullChapterListHtml;
+        } else {
+            prompt = "分析这个小说书籍详情页面，找出章节目录和书籍信息的结构。\n\n"
+                    + "请用JSON回答（不要markdown代码块）：\n"
+                    + "{\"chapterListSelector\":\"章节目录CSS选择器\",\"chapterLinkSelector\":\"章节链接选择器(相对)\",\"bookTitleSelector\":\"书名选择器\",\"authorSelector\":\"作者选择器\",\"firstChapterUrl\":\"第一个章节URL\",\"totalChapters\":\"估计章节数\"}\n\n"
+                    + "HTML:\n" + bookPage.cleanedHtml;
+        }
+
+        ctx.bookAnalysis = llmAnalyze(ctx.llmClient, prompt, "你是一个HTML分析专家。只输出JSON，不要其他文字。");
         System.out.println("[Step 3] LLM书籍页分析结果:\n" + ctx.bookAnalysis);
+    }
+
+    /**
+     * 从书籍详情页中查找"查看全部章节"/"完整目录"类型的链接
+     */
+    private String findFullChapterListLink(String html, String bookUrl) {
+        if (html == null) return null;
+        Document doc = Jsoup.parse(html, bookUrl);
+
+        // 匹配包含"查看所有章节"/"全部章节"/"完整目录"/"更多章节"等文字的链接
+        String[] keywords = {"查看所有章节", "全部章节", "完整目录", "更多章节", "章节目录", "全部目录"};
+        for (Element a : doc.select("a[href]")) {
+            String text = a.text();
+            for (String keyword : keywords) {
+                if (text.contains(keyword)) {
+                    String href = a.attr("href");
+                    if (!href.isEmpty() && !href.equals("#")) {
+                        return resolveUrl(bookUrl, href);
+                    }
+                }
+            }
+        }
+
+        // 兜底：查找 href 中包含 chapters/catalog 且文字较短的链接
+        for (Element a : doc.select("a[href]")) {
+            String href = a.attr("href");
+            String text = a.text();
+            if ((href.contains("chapter") || href.contains("catalog") || href.contains("mulu"))
+                    && text.length() < 20 && !text.isEmpty()) {
+                return resolveUrl(bookUrl, href);
+            }
+        }
+
+        return null;
     }
 
     // ==================== Step 4: 章节内容页 ====================
@@ -208,8 +275,6 @@ public class SiteRuleGenerator {
             return;
         }
 
-        // 需要 bookUrl 来 resolve，从 step3 的 bookAnalysis 中无法直接获取 bookUrl
-        // 但 firstChapter 通常是相对路径，需要 baseUrl
         String chapterUrl = ctx.explorer.resolveUrl(ctx.baseUrl, firstChapter);
         System.out.println("[Step 4] 章节URL: " + chapterUrl);
 
@@ -222,14 +287,38 @@ public class SiteRuleGenerator {
             return;
         }
 
+        // 检测是否有 JS 动态加载内容的脚本，并尝试获取
+        String tokenJsContent = fetchTokenScripts(chapterPage.cleanedHtml, chapterUrl);
+        String extraContext = "";
+        if (tokenJsContent != null) {
+            extraContext = "\n\n## 该页面的内容加载脚本（token/API信息）:\n" + tokenJsContent;
+            System.out.println("[Step 4] 获取到token脚本 (" + tokenJsContent.length() + "字节)");
+        }
+
         progress.accept("AI 正在分析章节内容页...");
         ctx.chapterAnalysis = llmAnalyze(ctx.llmClient,
-                "分析这个小说章节内容页面，找出正文内容和分页的结构。\n\n"
-                        + "若页面返回内容不是正常文字，而是被编码过的字符（包括但不限于如<script>document.writeln(qsbs.bb('PHA+55S3PC9wPg=='));</script>等形式的内容）时，请将页面内容显示出来，\n"
-                        + "请用JSON回答（不要markdown代码块）：\n"
-                        + "{\"contentSelector\":\"正文CSS选择器\", contentCoding:\"被编码过的内容\",\"titleSelector\":\"标题选择器\",\"hasPagination\":true或false,\"nextPageSelector\":\"下一页选择器\",\"nextPageUrl\":\"下一页URL\"}\n\n"
-                        + "HTML:\n" + chapterPage.cleanedHtml,
-                "你是一个HTML分析专家。只输出JSON，不要其他文字。");
+                "分析这个小说章节内容页面，判断内容是如何加载的，并找出正文内容的结构。\n\n"
+                        + "## 分析要点\n"
+                        + "1. 如果页面中有 `<div class=\"content\">` 等容器但内容为空，说明内容是通过JS动态加载的\n"
+                        + "2. 如果页面中有 `document.writeln` 或 `eval` 等调用，说明内容是编码后通过JS解码写入的\n"
+                        + "3. 如果页面中有 `chapter.js.php` 或类似的内容加载脚本，说明需要先请求该脚本获取token，再通过API获取内容\n"
+                        + "4. 如果页面中有 `fetch()` 或 `XMLHttpRequest` 调用，说明是通过API获取内容\n\n"
+                        + "## 请用JSON回答（不要markdown代码块）\n"
+                        + "{\n"
+                        + "  \"contentLoadMethod\": \"html/js-decode/js-api/js-fetch/unknown\",\n"
+                        + "  \"contentSelector\": \"正文CSS选择器（如果内容在HTML中）\",\n"
+                        + "  \"contentDescription\": \"如果内容不在HTML中，描述内容是如何加载的（如：需要先请求chapter.js.php获取token，然后通过fetch调用API获取内容）\",\n"
+                        + "  \"apiUrl\": \"如果能找到API端点，填写完整URL（含参数模式）\",\n"
+                        + "  \"apiMethod\": \"GET或POST\",\n"
+                        + "  \"apiParams\": \"API参数说明\",\n"
+                        + "  \"encodedContent\": \"如果页面中有编码内容（如base64），提取出来\",\n"
+                        + "  \"titleSelector\": \"标题选择器\",\n"
+                        + "  \"hasPagination\": false,\n"
+                        + "  \"nextPageUrl\": \"下一页URL\"\n"
+                        + "}\n\n"
+                        + "## 章节页面HTML\n" + chapterPage.cleanedHtml
+                        + extraContext,
+                "你是一个HTML/JS分析专家。仔细分析页面结构和脚本，判断内容加载方式。只输出JSON，不要其他文字。");
         System.out.println("[Step 4] LLM章节页分析结果:\n" + ctx.chapterAnalysis);
     }
 
@@ -367,6 +456,55 @@ public class SiteRuleGenerator {
         if (page.errorMsg != null) System.out.println(tag + " " + name + "错误: " + page.errorMsg);
     }
 
+    /**
+     * 从章节页面中检测并获取内容加载相关的 JS 脚本（如 chapter.js.php 等 token 脚本）
+     */
+    private String fetchTokenScripts(String html, String pageUrl) {
+        if (html == null) return null;
+        StringBuilder result = new StringBuilder();
+
+        // 匹配可能的内容加载脚本：chapter.js, content.js, read.js 等
+        Pattern scriptPattern = Pattern.compile("<script[^>]*src=['\"]([^'\"]*(?:chapter|content|read|token|yuedu)[^'\"]*\\.js[^'\"]*?)['\"][^>]*>", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = scriptPattern.matcher(html);
+
+        while (matcher.find()) {
+            String scriptSrc = matcher.group(1);
+            String scriptUrl = resolveUrl(pageUrl, scriptSrc);
+            if (scriptUrl == null) continue;
+
+            System.out.println("[Step 4] 发现内容加载脚本: " + scriptUrl);
+            try {
+                org.apache.http.client.methods.HttpGet request = new org.apache.http.client.methods.HttpGet(scriptUrl);
+                request.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                request.setHeader("Referer", pageUrl);
+                request.setHeader("Accept-Encoding", "identity");
+                try (org.apache.http.impl.client.CloseableHttpClient client = org.apache.http.impl.client.HttpClients.createDefault();
+                     org.apache.http.client.methods.CloseableHttpResponse response = client.execute(request)) {
+                    if (response.getStatusLine().getStatusCode() == 200 && response.getEntity() != null) {
+                        String content = org.apache.http.util.EntityUtils.toString(response.getEntity(), java.nio.charset.StandardCharsets.UTF_8);
+                        // 限制长度
+                        if (content.length() > 3000) content = content.substring(0, 3000) + "... (truncated)";
+                        result.append("### 脚本: ").append(scriptUrl).append("\n```\n").append(content).append("\n```\n\n");
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("[Step 4] 获取脚本失败: " + scriptUrl + " - " + e.getMessage());
+            }
+        }
+
+        // 也检测内联 script 中的 document.writeln / eval 模式
+        Pattern inlinePattern = Pattern.compile("<script[^>]*>([\\s\\S]*?(?:document\\.writeln|eval|qsbs|base64)[\\s\\S]*?)</script>", Pattern.CASE_INSENSITIVE);
+        Matcher inlineMatcher = inlinePattern.matcher(html);
+        while (inlineMatcher.find()) {
+            String scriptContent = inlineMatcher.group(1).trim();
+            if (scriptContent.length() > 10 && scriptContent.length() < 2000) {
+                result.append("### 内联脚本 (编码内容):\n```\n").append(scriptContent).append("\n```\n\n");
+            }
+        }
+
+        return result.length() > 0 ? result.toString() : null;
+    }
+
     private Document safeParse(String html, String baseUrl) {
         try { return Jsoup.parse(html != null ? html : "", baseUrl); }
         catch (Exception e) { return Document.createShell(baseUrl); }
@@ -404,4 +542,17 @@ public class SiteRuleGenerator {
 
     private int len(String s) { return s != null ? s.length() : 0; }
     private String or(String s, String def) { return s != null && !s.isEmpty() ? s : def; }
+
+    private String resolveUrl(String baseUrl, String relativeUrl) {
+        if (relativeUrl == null || relativeUrl.isEmpty()) return null;
+        if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) return relativeUrl;
+        if (relativeUrl.startsWith("//")) return "https:" + relativeUrl;
+        try {
+            java.net.URL base = new java.net.URL(baseUrl);
+            java.net.URL resolved = new java.net.URL(base, relativeUrl);
+            return resolved.toString();
+        } catch (Exception e) {
+            return relativeUrl.startsWith("/") ? baseUrl + relativeUrl : baseUrl + "/" + relativeUrl;
+        }
+    }
 }
