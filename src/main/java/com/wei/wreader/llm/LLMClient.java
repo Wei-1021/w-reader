@@ -2,6 +2,7 @@ package com.wei.wreader.llm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -96,7 +97,8 @@ public class LLMClient {
             JsonNode root = objectMapper.readTree(responseBody);
             JsonNode choices = root.path("choices");
             if (choices.isArray() && choices.size() > 0) {
-                return choices.get(0).path("message").path("content").asText("");
+                String text = choices.get(0).path("message").path("content").asText();
+                return StringUtils.isNotBlank(text) ? text : "";
             }
             throw new LLMException("AI返回数据中未找到内容");
         } catch (IOException e) {
@@ -109,7 +111,8 @@ public class LLMClient {
             JsonNode root = objectMapper.readTree(errorBody);
             JsonNode error = root.path("error");
             if (!error.isMissingNode()) {
-                return error.path("message").asText(errorBody);
+                String message = error.path("message").asText();
+                return StringUtils.isNotBlank(message) ? message : errorBody;
             }
             return errorBody;
         } catch (Exception e) {

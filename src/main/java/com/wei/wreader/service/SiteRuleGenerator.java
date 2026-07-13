@@ -14,6 +14,8 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -547,8 +549,8 @@ public class SiteRuleGenerator {
         if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) return relativeUrl;
         if (relativeUrl.startsWith("//")) return "https:" + relativeUrl;
         try {
-            java.net.URL base = new java.net.URL(baseUrl);
-            java.net.URL resolved = new java.net.URL(base, relativeUrl);
+            URI base = URI.create(baseUrl);
+            URL resolved = base.resolve(relativeUrl).toURL();
             return resolved.toString();
         } catch (Exception e) {
             return relativeUrl.startsWith("/") ? baseUrl + relativeUrl : baseUrl + "/" + relativeUrl;

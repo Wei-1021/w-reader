@@ -15,6 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -513,8 +514,8 @@ public class WebsiteExplorer {
         if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) return relativeUrl;
         if (relativeUrl.startsWith("//")) return "https:" + relativeUrl;
         try {
-            URL base = new URL(baseUrl);
-            URL resolved = new URL(base, relativeUrl);
+            URI base = URI.create(baseUrl);
+            URL resolved = base.resolve(relativeUrl).toURL();
             return resolved.toString();
         } catch (Exception e) {
             return relativeUrl.startsWith("/") ? baseUrl + relativeUrl : baseUrl + "/" + relativeUrl;
