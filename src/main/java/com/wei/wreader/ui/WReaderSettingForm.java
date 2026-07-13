@@ -120,12 +120,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JButton mimoVoiceDescPresetButton;
     private JLabel mimoVoiceDescHintLabel;
     private JBScrollPane mimoVoiceDescTextAreaScroll;
+    private JPanel mimoApiKeyPanel;
 
     // 状态栏字体设置
     private JSpinner fontSizeSpinner;
     private JButton fontColorButton;
     private JLabel fontColorPreview;
     private JPanel statusBarFontPanel;
+    private JCheckBox fontBoldCheckBox;
 
     private final ConfigYaml configYaml;
     private final CacheService cacheService;
@@ -351,6 +353,10 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (!currentFontColorHex.equalsIgnoreCase(previewColorHex)) {
             return true;
         }
+        // 状态栏字体加粗
+        if (cacheService.isFontBold() != fontBoldCheckBox.isSelected()) {
+            return true;
+        }
 
         // TTS引擎
         String selectedTtsEngine = (String) ttsEngineComboBox.getSelectedItem();
@@ -458,6 +464,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         Color newColor = fontColorPreview.getBackground();
         String newColorHex = String.format("#%02X%02X%02X", newColor.getRed(), newColor.getGreen(), newColor.getBlue());
         cacheService.setFontColorHex(newColorHex);
+        // 状态栏字体加粗
+        cacheService.setFontBold(fontBoldCheckBox.isSelected());
 
         // TTS引擎
         String selectedEngine = (String) ttsEngineComboBox.getSelectedItem();
@@ -681,6 +689,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         mimoApiKeyHintLabel.setIcon(AllIcons.General.Information);
         mimoApiKeyHintLabel.setToolTipText(mimoEngine.getApiKeyHint());
         mimoApiKeyLink.setText("API Keys");
+        mimoApiKeyLink.setToolTipText(mimoEngine.getApiKeyHint());
         mimoApiKeyLink.setExternalLinkIcon();
         mimoApiKeyLink.addActionListener(e -> {
             BrowserUtil.browse(mimoEngine.getApiKeyUrl());
@@ -1054,14 +1063,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         Border sbBorder = JBUI.Borders.customLine(JBUI.CurrentTheme.Popup.separatorColor(), 1, 0, 0, 0);
         TitledBorder sbFontTitledBorder = new TitledBorder(sbBorder, SettingConstants.BORDER_TITLE_STATUS_BAR_FONT);
         statusBarFontPanel.setBorder(sbFontTitledBorder);
-        statusBarFontPanel.setLayout(new GridLayoutManager(1, 4));
+        statusBarFontPanel.setLayout(new GridLayoutManager(2, 4));
 
+        // Row 0: 字体大小 + 字体颜色
         // 字体大小
         JLabel fontSizeLabel = new JLabel("字体大小");
+        fontSizeLabel.setPreferredSize(new Dimension(80, 40));
         GridConstraints fontSizeLabelGrid = new GridConstraints();
         fontSizeLabelGrid.setRow(0);
         fontSizeLabelGrid.setColumn(0);
-        fontSizeLabelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        fontSizeLabelGrid.setAnchor(GridConstraints.ANCHOR_EAST);
         statusBarFontPanel.add(fontSizeLabel, fontSizeLabelGrid);
 
         int currentFontSize = cacheService.getFontSize();
@@ -1078,10 +1089,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         // 字体颜色
         JLabel fontColorLabel = new JLabel("字体颜色");
+        fontColorLabel.setPreferredSize(new Dimension(80, 40));
         GridConstraints fontColorLabelGrid = new GridConstraints();
         fontColorLabelGrid.setRow(0);
         fontColorLabelGrid.setColumn(2);
-        fontColorLabelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        fontColorLabelGrid.setAnchor(GridConstraints.ANCHOR_EAST);
         fontColorLabelGrid.setIndent(5);
         statusBarFontPanel.add(fontColorLabel, fontColorLabelGrid);
 
@@ -1125,6 +1137,23 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         colorPanelGrid.setColumn(3);
         colorPanelGrid.setAnchor(GridConstraints.ANCHOR_WEST);
         statusBarFontPanel.add(colorChooserPanel, colorPanelGrid);
+
+        // Row 1: 字体加粗
+        JLabel fontBoldLabel = new JLabel("  ");
+        GridConstraints fontBoldLabelGrid = new GridConstraints();
+        fontBoldLabelGrid.setRow(1);
+        fontBoldLabelGrid.setColumn(0);
+        fontBoldLabelGrid.setAnchor(GridConstraints.ANCHOR_EAST);
+        fontBoldLabel.setPreferredSize(new Dimension(80, 40));
+        statusBarFontPanel.add(fontBoldLabel, fontBoldLabelGrid);
+
+        fontBoldCheckBox = new JCheckBox("字体加粗");
+        fontBoldCheckBox.setSelected(cacheService.isFontBold());
+        GridConstraints fontBoldGrid = new GridConstraints();
+        fontBoldGrid.setRow(1);
+        fontBoldGrid.setColumn(1);
+        fontBoldGrid.setAnchor(GridConstraints.ANCHOR_WEST);
+        statusBarFontPanel.add(fontBoldCheckBox, fontBoldGrid);
 
         // 插入到 settingPanel 中，位于 generalPanel 和 audioManagePanel 之间
         insertStatusBarFontPanel();

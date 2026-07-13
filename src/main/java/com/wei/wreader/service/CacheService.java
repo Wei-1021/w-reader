@@ -19,6 +19,7 @@ public final class CacheService implements PersistentStateComponent<CacheService
     private String fontFamily;
     private int fontSize;
     private String fontColorHex;
+    private boolean fontBold = true;
     private BookInfo selectedBookInfo;
     private int editorMessageVerticalScrollValue;
     private boolean isHideText;
@@ -143,6 +144,15 @@ public final class CacheService implements PersistentStateComponent<CacheService
     public void setFontColorHex(String fontColorHex) {
         lock.writeLock().lock();
         try { this.fontColorHex = fontColorHex; } finally { lock.writeLock().unlock(); }
+    }
+
+    public boolean isFontBold() {
+        lock.readLock().lock();
+        try { return fontBold; } finally { lock.readLock().unlock(); }
+    }
+    public void setFontBold(boolean fontBold) {
+        lock.writeLock().lock();
+        try { this.fontBold = fontBold; } finally { lock.writeLock().unlock(); }
     }
 
     public int getFontSize() {

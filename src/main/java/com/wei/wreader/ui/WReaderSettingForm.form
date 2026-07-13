@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="settingPanel" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="843" height="555"/>
+      <xy x="20" y="20" width="920" height="555"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -199,7 +199,7 @@
           </grid>
         </children>
       </grid>
-      <grid id="39b81" binding="audioManagePanel" layout-manager="GridLayoutManager" row-count="8" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="39b81" binding="audioManagePanel" layout-manager="GridLayoutManager" row-count="8" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -229,31 +229,6 @@
               <text value=" API Key"/>
             </properties>
           </component>
-          <component id="mimoApiKeyField" class="com.intellij.ui.components.JBPasswordField" binding="mimoApiKeyTextField">
-            <constraints>
-              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <minimum-size width="120" height="-1"/>
-                <preferred-size width="180" height="34"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="mimoApiKeyHint" class="javax.swing.JLabel" binding="mimoApiKeyHintLabel">
-            <constraints>
-              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <toolTipText value="&lt;html&gt;MiMo API Key 不支持 Token Plan 的 API Key&lt;br&gt;请前往「API Keys」页面申请 API Key&lt;/html&gt;"/>
-            </properties>
-          </component>
-          <component id="mimoApiKeyLink" class="com.intellij.ui.components.ActionLink" binding="mimoApiKeyLink">
-            <constraints>
-              <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="API Keys"/>
-            </properties>
-          </component>
           <component id="mimoModelTypeLabel" class="javax.swing.JLabel" binding="mimoModelTypeLabel">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
@@ -264,7 +239,7 @@
           </component>
           <component id="mimoModelTypeCombo" class="javax.swing.JComboBox" binding="mimoModelTypeComboBox">
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="1" row-span="1" col-span="4" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
@@ -298,7 +273,7 @@
           </scrollpane>
           <component id="mimoVoiceDescPresetBtn" class="javax.swing.JButton" binding="mimoVoiceDescPresetButton">
             <constraints>
-              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="预设"/>
@@ -306,7 +281,7 @@
           </component>
           <component id="mimoVoiceDescHint" class="javax.swing.JLabel" binding="mimoVoiceDescHintLabel">
             <constraints>
-              <grid row="3" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="1" row-span="1" col-span="4" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value=""/>
@@ -338,7 +313,7 @@
           </component>
           <component id="78c26" class="javax.swing.JComboBox" binding="volumeComboBox">
             <constraints>
-              <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
@@ -376,7 +351,7 @@
           </component>
           <component id="38fd9" class="javax.swing.JTextField" binding="timeoutTextField">
             <constraints>
-              <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+              <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <minimum-size width="80" height="-1"/>
                 <preferred-size width="217" height="34"/>
                 <maximum-size width="80" height="-1"/>
@@ -394,6 +369,41 @@
             <properties/>
             <border type="none"/>
             <children/>
+          </grid>
+          <grid id="aabfd" binding="mimoApiKeyPanel" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="mimoApiKeyHint" class="javax.swing.JLabel" binding="mimoApiKeyHintLabel">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <toolTipText value="&lt;html&gt;MiMo API Key 不支持 Token Plan 的 API Key&lt;br&gt;请前往「API Keys」页面申请 API Key&lt;/html&gt;"/>
+                </properties>
+              </component>
+              <component id="mimoApiKeyLink" class="com.intellij.ui.components.ActionLink" binding="mimoApiKeyLink">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="API Keys"/>
+                </properties>
+              </component>
+              <component id="mimoApiKeyField" class="com.intellij.ui.components.JBPasswordField" binding="mimoApiKeyTextField">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <minimum-size width="120" height="-1"/>
+                    <preferred-size width="180" height="34"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
           </grid>
         </children>
       </grid>

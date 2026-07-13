@@ -216,14 +216,15 @@ public class ReaderStatusBarWidget implements CustomStatusBarWidget {
     }
 
     /**
-     * 从缓存读取字体大小和颜色并应用到 label
+     * 从缓存读取字体大小、颜色和加粗设置并应用到 label
      */
     private void applyFont() {
         int fontSize = cacheService.getFontSize();
         if (fontSize <= 0) {
             fontSize = (int) ConstUtil.DEFAULT_FONT_SIZE;
         }
-        JBFont labelFont = JBFont.label().deriveFont(Font.BOLD, (float) fontSize);
+        int fontStyle = cacheService.isFontBold() ? Font.BOLD : Font.PLAIN;
+        JBFont labelFont = JBFont.label().deriveFont(fontStyle, (float) fontSize);
         label.setFont(labelFont);
 
         String fontColorHex = cacheService.getFontColorHex();

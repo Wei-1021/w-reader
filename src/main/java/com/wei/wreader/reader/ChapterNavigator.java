@@ -125,7 +125,6 @@ public class ChapterNavigator {
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             chapterListJBList.setBorder(JBUI.Borders.empty());
             chapterListJBList.setSelectedIndex(currentChapterIndex);
-            chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
 
             chapterListJBList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
@@ -135,6 +134,9 @@ public class ChapterNavigator {
 
             JBScrollPane scrollPane = new JBScrollPane(chapterListJBList);
             scrollPane.setPreferredSize(new Dimension(400, 500));
+
+            chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
+
             MessageDialogUtil.showMessage(project, "目录", scrollPane);
         });
     }
