@@ -95,7 +95,8 @@ public class StreamTTSPlayer {
 
     /**
      * 使用 VoiceDesign 模型播放
-     * @param voiceDescription 音色描述（user 消息）
+     * @param voiceDescription (风格指令)音色描述（user 消息）
+     * @param voice 音色
      * @param text 要合成的文本（assistant 消息）
      */
     public void startPresetWithInstruction(String voiceDescription, Voice voice, String text) throws MimoTTSException {

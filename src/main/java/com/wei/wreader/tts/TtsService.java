@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  */
 public class TtsService {
     private static final Logger LOG = Logger.getInstance(TtsService.class);
-    
+
     /**
      * MiMo TTS 每批最大文本长度
      */
@@ -159,12 +159,15 @@ public class TtsService {
         String cleanedContent = cleanTextForTTS(chapterContent);
 
         // 获取风格和风格控制类型
+        // 风格标签
         String audioStyle = settings.getAudioStyle();
+        // 风格指令描述
+        String voiceDescription = settings.getMimoVoiceDescription();
+        // 风格控制类型
         int styleControlType = settings.getMimoStyleControlType();
 
         // 兼容性处理：当风格控制没有值时，根据风格指令/音频标签自动推断
         if (styleControlType <= 0) {
-            String voiceDescription = settings.getMimoVoiceDescription();
             if (StringUtils.isNotBlank(voiceDescription)) {
                 // 风格指令有值，默认使用"自然语言控制"
                 styleControlType = Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE;
@@ -172,6 +175,11 @@ public class TtsService {
                 // 否则使用"音频标签控制"
                 styleControlType = Settings.MIMO_STYLE_CONTROL_AUDIO_TAG;
             }
+        }
+
+        // 若使用"自然语言控制"，则将风格指令描述作为风格标签
+        if (styleControlType == Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE) {
+            audioStyle = voiceDescription;
         }
 
         // 分批处理文本
@@ -228,13 +236,13 @@ public class TtsService {
 
         // 分批处理文本
         List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
-        
+
         // 如果只有一批，直接处理
         if (textChunks.size() <= 1) {
             synthesizeAndPlayVoiceDesign(apiKey, voiceDescription, cleanedContent, false);
             return;
         }
-        
+
         // 多批处理
         batchThread = new Thread(() -> {
             try {
@@ -280,7 +288,12 @@ public class TtsService {
      * @param settings         设置
      * @param waitComplete     是否等待播放完成
      */
-    private void synthesizeAndPlayWithStyleControl(String apiKey, String text, String style, int styleControlType, Settings settings, boolean waitComplete) {
+    private void synthesizeAndPlayWithStyleControl(String apiKey,
+                                                   String text,
+                                                   String style,
+                                                   int styleControlType,
+                                                   Settings settings,
+                                                   boolean waitComplete) {
         if (userStopped) return;
         try {
             // 获取Voice
@@ -333,15 +346,15 @@ public class TtsService {
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
                     .model(MimoTTSRequest.MODEL_VOICE_DESIGN)
                     .build();
-            
+
             MimoTTS mimoTTS = new MimoTTS(config);
             mimoTTS.setVoiceDescription(voiceDescription);
-            
+
             currentEngine = new MimoTtsEngineWrapper(mimoTTS);
             currentEngineType = "mimo";
             currentEngine.synthesize(text);
             currentEngine.start();
-            
+
             if (waitComplete) {
                 while (currentEngine != null && currentEngine.isPlaying()) {
                     Thread.sleep(100);
@@ -366,36 +379,37 @@ public class TtsService {
 
     /**
      * 将文本分割成多个批次，在自然边界处分割
-     * @param text 原始文本
+     *
+     * @param text      原始文本
      * @param maxLength 每批最大长度
      * @return 分割后的文本列表
      */
     private List<String> splitTextIntoChunks(String text, int maxLength) {
         List<String> chunks = new ArrayList<>();
-        
+
         if (text == null || text.isEmpty()) {
             return chunks;
         }
-        
+
         // 如果文本长度小于最大值，直接返回
         if (text.length() <= maxLength) {
             chunks.add(text);
             return chunks;
         }
-        
+
         int startPos = 0;
         while (startPos < text.length()) {
             int endPos = Math.min(startPos + maxLength, text.length());
-            
+
             // 如果不是最后一批，尝试在自然边界处分割
             if (endPos < text.length()) {
                 endPos = findSplitPosition(text, startPos, endPos);
             }
-            
+
             chunks.add(text.substring(startPos, endPos));
             startPos = endPos;
         }
-        
+
         return chunks;
     }
 
@@ -407,18 +421,18 @@ public class TtsService {
         // 在 [start, end] 范围内从后向前查找分割点
         for (int i = end - 1; i > start; i--) {
             char c = text.charAt(i);
-            
+
             // 段落分隔（最高优先级）
             if (c == '\n') {
                 return i + 1;
             }
-            
+
             // 句号、问号、感叹号
             if (c == '。' || c == '？' || c == '！' || c == '.' || c == '?' || c == '!') {
                 return i + 1;
             }
         }
-        
+
         // 如果没找到标点，尝试在逗号处分割
         for (int i = end - 1; i > start; i--) {
             char c = text.charAt(i);
@@ -426,14 +440,14 @@ public class TtsService {
                 return i + 1;
             }
         }
-        
+
         // 如果都没找到，在空格处分割
         for (int i = end - 1; i > start; i--) {
             if (text.charAt(i) == ' ') {
                 return i + 1;
             }
         }
-        
+
         // 如果实在找不到合适的分割点，强制在 maxLength 处分割
         return end;
     }

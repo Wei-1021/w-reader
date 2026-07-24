@@ -43,8 +43,8 @@ public class MimoTTSRequest {
         Map<String, Object> map = new HashMap<>();
         map.put("model", model);
         map.put("stream", stream);
-        map.put("temperature", temperature);
-        map.put("top_p", topP);
+//        map.put("temperature", temperature);
+//        map.put("top_p", topP);
 
         // 消息列表
         List<Map<String, String>> messageList = new ArrayList<>();
@@ -143,6 +143,9 @@ public class MimoTTSRequest {
 
     /**
      * 使用预置音色 + 自然语言风格指令合成
+     * @param text 要合成的文本（assistant 消息）
+     * @param voice 音色
+     * @param instruction 风格指令
      */
     public static Builder ofPresetWithInstruction(String text, Voice voice, String instruction) {
         Builder builder = new Builder()
