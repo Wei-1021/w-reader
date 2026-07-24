@@ -14,6 +14,16 @@ public final class SettingConstants {
     // ==================== 自动阅读 ====================
     public static final float AUTO_READ_TIME_DEFAULT = 5f;
 
+    // ==================== 自动滚屏 ====================
+    public static final Integer[] AUTO_SCROLL_SPEED_OPTIONS = {0, 10, 20, 30, 50, 70, 100, 150, 200};
+    public static final String[] AUTO_SCROLL_SPEED_LABELS = {
+        "0 (关闭)", "10%/s (极慢)", "20%/s (慢速)", "30%/s (较慢)",
+        "50%/s (适中)", "70%/s (较快)", "100%/s (快速)",
+        "150%/s (很快)", "200%/s (极快)"
+    };
+    public static final int AUTO_SCROLL_SPEED_DEFAULT = 50;
+    public static final int AUTO_SCROLL_SPEED_OFF = 0;
+
     // ==================== 主图标风格 ====================
     public static final int ICON_STYLE_DEFAULT = 1;
     public static final int ICON_STYLE_LIGHT = 2;

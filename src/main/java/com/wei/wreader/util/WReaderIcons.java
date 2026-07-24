@@ -14,6 +14,8 @@ public class WReaderIcons {
     public static final Icon MAIN_ICON_BLEAK = IconLoader.getIcon("/icon/mainIcon_bleak.svg", WReaderIcons.class);
     public static final Icon AUTO_READ_PLAY = IconLoader.getIcon("/icon/auto_read_play.svg", WReaderIcons.class);
     public static final Icon AUTO_READ_STOP = IconLoader.getIcon("/icon/auto_read_stop.svg", WReaderIcons.class);
+    public static final Icon AUTO_SCROLL_PLAY = IconLoader.getIcon("/icon/auto_scroll_play.svg", WReaderIcons.class);
+    public static final Icon AUTO_SCROLL_STOP = IconLoader.getIcon("/icon/auto_scroll_stop.svg", WReaderIcons.class);
     public static final Icon AUDIO_READING_PLAY = IconLoader.getIcon("/icon/audio_reading_play.svg", WReaderIcons.class);
     public static final Icon LISTEN_BOOK = IconLoader.getIcon("/icon/listen_book.svg", WReaderIcons.class);
     public static final Icon BOOK_INFO = IconLoader.getIcon("/icon/book_info.svg", WReaderIcons.class);

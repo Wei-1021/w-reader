@@ -302,6 +302,10 @@
                 class="com.wei.wreader.action.AutoReadAction"
                 text="自动阅读"
                 icon="com.wei.wreader.util.WReaderIcons.AUTO_READ_PLAY"/>
+        <action id="wreader.AutoScrollAction"
+                class="com.wei.wreader.action.AutoScrollAction"
+                text="自动滚屏"
+                icon="com.wei.wreader.util.WReaderIcons.AUTO_SCROLL_PLAY"/>
         <action id="wreader.AudioReadingAction"
                 class="com.wei.wreader.action.AudioReadingAction"
                 text="听书"
@@ -340,6 +344,7 @@
             <reference ref="wreader.EditorMessageAction"/>
             <reference ref="wreader.CommentBlockAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.FontSizeSubAction"/>
             <reference ref="wreader.FontSizeAddAction"/>
@@ -369,6 +374,7 @@
             <reference ref="wreader.EditorMessageAction"/>
             <reference ref="wreader.CommentBlockAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.SearchBookName"/>
             <reference ref="wreader.ChapterListAction"/>
@@ -382,6 +388,7 @@
             <reference ref="wreader.SearchBookName"/>
             <reference ref="wreader.ChapterListAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.FontSizeSubAction"/>
             <reference ref="wreader.FontSizeAddAction"/>
