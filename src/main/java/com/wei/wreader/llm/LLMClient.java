@@ -197,6 +197,210 @@ public class LLMClient {
         }
     }
 
+    // ==================== Agent 对话（支持 tool_calls） ====================
+
+    /**
+     * 创建一个 Agent 对话实例，支持 function calling / tool_calls
+     *
+     * @param systemPrompt 系统提示词
+     * @param tools        工具定义列表
+     */
+    public AgentConversation createAgentConversation(String systemPrompt, List<ToolDefinition> tools) {
+        return new AgentConversation(systemPrompt, tools);
+    }
+
+    /**
+     * 工具定义（OpenAI function calling 格式）
+     */
+    public static class ToolDefinition {
+        private final String name;
+        private final String description;
+        private final String parametersSchema; // JSON Schema 字符串
+
+        public ToolDefinition(String name, String description, String parametersSchema) {
+            this.name = name;
+            this.description = description;
+            this.parametersSchema = parametersSchema;
+        }
+
+        public String getName() { return name; }
+        public String getDescription() { return description; }
+        public String getParametersSchema() { return parametersSchema; }
+    }
+
+    /**
+     * 工具调用信息
+     */
+    public static class ToolCall {
+        private final String id;
+        private final String functionName;
+        private final String arguments;
+
+        public ToolCall(String id, String functionName, String arguments) {
+            this.id = id;
+            this.functionName = functionName;
+            this.arguments = arguments;
+        }
+
+        public String getId() { return id; }
+        public String getFunctionName() { return functionName; }
+        public String getArguments() { return arguments; }
+    }
+
+    /**
+     * Agent 响应（可能包含文本和/或工具调用）
+     */
+    public static class AgentResponse {
+        private final String content;
+        private final List<ToolCall> toolCalls;
+        private final String finishReason;
+
+        public AgentResponse(String content, List<ToolCall> toolCalls, String finishReason) {
+            this.content = content;
+            this.toolCalls = toolCalls != null ? toolCalls : List.of();
+            this.finishReason = finishReason;
+        }
+
+        public String getContent() { return content; }
+        public List<ToolCall> getToolCalls() { return toolCalls; }
+        public String getFinishReason() { return finishReason; }
+        public boolean hasToolCalls() { return !toolCalls.isEmpty(); }
+    }
+
+    /**
+     * Agent 对话 - 支持 tool_calls 的多轮对话
+     */
+    public class AgentConversation {
+        private final List<Map<String, Object>> messages = new ArrayList<>();
+        private final List<Map<String, Object>> tools;
+        private int maxIterations = 20;
+        private int currentIteration = 0;
+
+        private AgentConversation(String systemPrompt, List<ToolDefinition> toolDefs) {
+            messages.add(Map.of("role", "system", "content", systemPrompt));
+
+            // 构建 tools 数组（OpenAI 格式）
+            this.tools = new ArrayList<>();
+            if (toolDefs != null) {
+                for (ToolDefinition tool : toolDefs) {
+                    Map<String, Object> toolMap = new HashMap<>();
+                    toolMap.put("type", "function");
+                    Map<String, Object> function = new HashMap<>();
+                    function.put("name", tool.getName());
+                    function.put("description", tool.getDescription());
+                    try {
+                        function.put("parameters", objectMapper.readTree(tool.getParametersSchema()));
+                    } catch (Exception e) {
+                        function.put("parameters", objectMapper.createObjectNode());
+                    }
+                    toolMap.put("function", function);
+                    this.tools.add(toolMap);
+                }
+            }
+        }
+
+        /**
+         * 发送用户消息，返回 Agent 响应（可能包含 tool_calls）
+         */
+        public AgentResponse send(String userMessage) throws LLMException {
+            messages.add(Map.of("role", "user", "content", userMessage));
+            return callLLM();
+        }
+
+        /**
+         * 提交工具执行结果，返回下一个 Agent 响应
+         *
+         * @param toolCallId 工具调用 ID
+         * @param result     工具执行结果
+         */
+        public AgentResponse submitToolResult(String toolCallId, String result) throws LLMException {
+            Map<String, Object> toolMessage = new HashMap<>();
+            toolMessage.put("role", "tool");
+            toolMessage.put("tool_call_id", toolCallId);
+            toolMessage.put("content", result);
+            messages.add(toolMessage);
+            currentIteration++;
+            return callLLM();
+        }
+
+        private AgentResponse callLLM() throws LLMException {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", messages);
+            requestBody.put("stream", false);
+            requestBody.put("temperature", 0.1);
+            if (!tools.isEmpty()) {
+                requestBody.put("tools", tools);
+            }
+
+            try {
+                String jsonBody = objectMapper.writeValueAsString(requestBody);
+                String response = sendPostRequest("/chat/completions", jsonBody);
+                return parseAgentResponse(response);
+            } catch (IOException e) {
+                throw new LLMException("请求AI接口失败: " + e.getMessage(), e);
+            }
+        }
+
+        private AgentResponse parseAgentResponse(String responseBody) throws LLMException {
+            try {
+                JsonNode root = objectMapper.readTree(responseBody);
+                JsonNode choices = root.path("choices");
+                if (!choices.isArray() || choices.size() == 0) {
+                    throw new LLMException("AI返回数据中未找到内容");
+                }
+
+                JsonNode choice = choices.get(0);
+                JsonNode message = choice.path("message");
+                String finishReason = choice.path("finish_reason").asText("");
+
+                String content = message.path("content").isTextual()
+                        ? message.path("content").asText() : null;
+
+                List<ToolCall> toolCalls = new ArrayList<>();
+                JsonNode toolCallsNode = message.path("tool_calls");
+                if (toolCallsNode.isArray()) {
+                    for (JsonNode tc : toolCallsNode) {
+                        String id = tc.path("id").asText();
+                        String functionName = tc.path("function").path("name").asText();
+                        String arguments = tc.path("function").path("arguments").asText();
+                        toolCalls.add(new ToolCall(id, functionName, arguments));
+                    }
+                }
+
+                // 将 assistant 消息加入历史（保留 tool_calls 信息）
+                Map<String, Object> assistantMsg = new HashMap<>();
+                assistantMsg.put("role", "assistant");
+                if (content != null && !content.isEmpty()) {
+                    assistantMsg.put("content", content);
+                }
+                if (!toolCalls.isEmpty()) {
+                    List<Map<String, Object>> tcList = new ArrayList<>();
+                    for (ToolCall tc : toolCalls) {
+                        Map<String, Object> tcMap = new HashMap<>();
+                        tcMap.put("id", tc.getId());
+                        tcMap.put("type", "function");
+                        tcMap.put("function", Map.of("name", tc.getFunctionName(), "arguments", tc.getArguments()));
+                        tcList.add(tcMap);
+                    }
+                    assistantMsg.put("tool_calls", tcList);
+                }
+                messages.add(assistantMsg);
+
+                return new AgentResponse(content, toolCalls, finishReason);
+            } catch (IOException e) {
+                throw new LLMException("解析AI返回数据失败: " + e.getMessage(), e);
+            }
+        }
+
+        public int getCurrentIteration() { return currentIteration; }
+        public int getMaxIterations() { return maxIterations; }
+        public void setMaxIterations(int maxIterations) { this.maxIterations = maxIterations; }
+        public boolean isMaxIterationsReached() { return currentIteration >= maxIterations; }
+
+        public List<Map<String, Object>> getMessages() { return new ArrayList<>(messages); }
+    }
+
     /**
      * LLM 调用异常
      */

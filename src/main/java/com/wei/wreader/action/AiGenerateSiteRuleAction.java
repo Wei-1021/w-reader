@@ -1,17 +1,19 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.wei.wreader.ui.AiGenerateSiteRuleDialog;
+import com.wei.wreader.ui.AgentSiteRuleDialog;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * AI生成书源规则Action
+ * AI Agent 生成书源规则 Action
+ *
+ * @author weizhanjie
  */
 public class AiGenerateSiteRuleAction extends BaseAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         super.actionPerformed(anActionEvent);
-        new AiGenerateSiteRuleDialog(project).show();
+        new AgentSiteRuleDialog(project).show();
     }
 }

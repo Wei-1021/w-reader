@@ -122,6 +122,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JBScrollPane mimoVoiceDescTextAreaScroll;
     private JPanel mimoApiKeyPanel;
 
+    // MiMo 风格控制类型
+    private JLabel mimoStyleControlLabel;
+    private JPanel mimoStyleControlPanel;
+    private ButtonGroup mimoStyleControlRadioGroup;
+
     // 状态栏字体设置
     private JSpinner fontSizeSpinner;
     private JButton fontColorButton;
@@ -183,6 +188,23 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 语音风格
         if (StringUtils.isBlank(settings.getAudioStyle())) {
             settings.setAudioStyle(configYaml.getSettings().getAudioStyle());
+        }
+
+        // MiMo 风格控制类型兼容性处理
+        // 当风格控制没有值（为0），且风格指令/音频标签有值时，自动设置默认值
+        if (settings.getMimoStyleControlType() <= 0) {
+            String voiceDescription = settings.getMimoVoiceDescription();
+            String audioStyle = settings.getAudioStyle();
+            if (StringUtils.isNotBlank(voiceDescription)) {
+                // 风格指令有值，默认设置为"自然语言控制"
+                settings.setMimoStyleControlType(Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE);
+            } else if (StringUtils.isNotBlank(audioStyle) && !"默认".equals(audioStyle)) {
+                // 风格标签有值，默认设置为"音频标签控制"
+                settings.setMimoStyleControlType(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG);
+            } else {
+                // 都没有值，使用默认值"音频标签控制"
+                settings.setMimoStyleControlType(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG);
+            }
         }
 
     }
@@ -388,6 +410,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         if (!currentVoiceDescription.equals(voiceRoleDescription)) {
             return true;
         }
+        // MiMo 风格控制类型
+        if (mimoStyleControlRadioGroup != null) {
+            ButtonModel styleControlSelection = mimoStyleControlRadioGroup.getSelection();
+            if (styleControlSelection != null) {
+                int selectedStyleControlType = NumberUtil.parseInt(styleControlSelection.getActionCommand());
+                if (settings.getMimoStyleControlType() != selectedStyleControlType) {
+                    return true;
+                }
+            }
+        }
         // 音频超时
         if (settings.getAudioTimeout() != NumberUtil.parseInt(timeoutTextField.getText())) {
             return true;
@@ -474,11 +506,22 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // MiMo API Key - 保存到 CredentialService
         CredentialService.getInstance().saveMimoApiKey(new String(mimoApiKeyTextField.getPassword()));
 
-        // MiMo 模型类型和音色描述
+        // MiMo 模型类型、音色描述和风格控制类型
         if (TtsEngineEnum.MIMO.getEngineId().equals(selectedEngine)) {
             MimoModel selectedModel = MimoModel.fromIndex(mimoModelTypeComboBox.getSelectedIndex());
             settings.setMimoModelType(selectedModel.getModelId());
             settings.setMimoVoiceDescription(mimoVoiceDescTextArea.getText());
+
+            // 保存风格控制类型
+            if (mimoStyleControlRadioGroup != null) {
+                ButtonModel styleControlSelection = mimoStyleControlRadioGroup.getSelection();
+                if (styleControlSelection != null) {
+                    int selectedStyleControlType = NumberUtil.parseInt(styleControlSelection.getActionCommand());
+                    settings.setMimoStyleControlType(selectedStyleControlType);
+                } else {
+                    settings.setMimoStyleControlType(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG);
+                }
+            }
         }
 
         // 保存音色 - 根据引擎类型处理
@@ -724,10 +767,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         mimoVoiceDescHintLabel.setForeground(UIManager.getColor("Component.infoForeground"));
         mimoVoiceDescHintLabel.setBorder(JBUI.Borders.emptyLeft(0));
 
+        // MiMo 风格控制类型
+        initMimoStyleControlUI();
+
         // 模型类型切换监听器 - VoiceDesign 时隐藏预置音色选择
         mimoModelTypeComboBox.addActionListener(e -> {
             MimoModel selectedModel = MimoModel.fromIndex(mimoModelTypeComboBox.getSelectedIndex());
             boolean isVoiceDesign = (selectedModel == MimoModel.VOICE_DESIGN);
+            boolean isPresetModel = (selectedModel == MimoModel.PRESET);
             // VoiceDesign 模型时隐藏预置音色选择
             voiceRoleGroupComboBox.setVisible(!isVoiceDesign);
             // 更新音色描述label文字
@@ -743,6 +790,35 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 // 音色描述预设为空
                 changeVoiceDescPreset = new String[][]{};
                 mimoVoiceDescPresetButton.setVisible(false);
+            }
+
+            // 更新风格控制可见性 - 仅 mimo-v2.5-tts 模型显示
+            if (mimoStyleControlPanel != null) {
+                mimoStyleControlPanel.setVisible(isPresetModel);
+            }
+            if (isPresetModel) {
+                // mimo-v2.5-tts 模型：根据风格控制类型显示对应组件
+                boolean isAudioTagControl = true;
+                if (mimoStyleControlRadioGroup != null && mimoStyleControlRadioGroup.getSelection() != null) {
+                    int controlType = NumberUtil.parseInt(mimoStyleControlRadioGroup.getSelection().getActionCommand());
+                    isAudioTagControl = (controlType != Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE);
+                }
+                audioStyleLabel.setVisible(isAudioTagControl);
+                audioStyleComboBox.setVisible(isAudioTagControl);
+                mimoVoiceDescLabel.setVisible(!isAudioTagControl);
+                mimoVoiceDescTextAreaScroll.setVisible(!isAudioTagControl);
+                mimoVoiceDescTextArea.setVisible(!isAudioTagControl);
+                mimoVoiceDescPresetButton.setVisible(!isAudioTagControl);
+                mimoVoiceDescHintLabel.setVisible(!isAudioTagControl);
+            } else if (isVoiceDesign) {
+                // VoiceDesign 模型：显示风格指令，隐藏风格选择
+                audioStyleLabel.setVisible(false);
+                audioStyleComboBox.setVisible(false);
+                mimoVoiceDescLabel.setVisible(true);
+                mimoVoiceDescTextAreaScroll.setVisible(true);
+                mimoVoiceDescTextArea.setVisible(true);
+                mimoVoiceDescPresetButton.setVisible(true);
+                mimoVoiceDescHintLabel.setVisible(true);
             }
         });
 
@@ -761,13 +837,110 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     }
 
     /**
+     * 初始化 MiMo 风格控制类型 UI
+     */
+    private void initMimoStyleControlUI() {
+        // mimoStyleControlPanel 已在 form 中绑定，直接使用
+
+        // 创建标签
+        mimoStyleControlLabel = new JLabel("风格控制");
+        mimoStyleControlLabel.setPreferredSize(new Dimension(80, 40));
+
+        // 创建单选按钮
+        mimoStyleControlRadioGroup = new ButtonGroup();
+        JBRadioButton audioTagRadio = new JBRadioButton(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG_TEXT);
+        JBRadioButton naturalLanguageRadio = new JBRadioButton(Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE_TEXT);
+
+        audioTagRadio.setActionCommand(String.valueOf(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG));
+        naturalLanguageRadio.setActionCommand(String.valueOf(Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE));
+
+        mimoStyleControlRadioGroup.add(audioTagRadio);
+        mimoStyleControlRadioGroup.add(naturalLanguageRadio);
+
+        // 设置当前选中状态
+        int currentStyleControlType = settings.getMimoStyleControlType();
+        if (currentStyleControlType == Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE) {
+            naturalLanguageRadio.setSelected(true);
+        } else {
+            // 默认为音频标签控制
+            audioTagRadio.setSelected(true);
+        }
+
+        // 创建提示标签
+        JLabel audioTagHint = new JLabel(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG_HINT);
+        audioTagHint.setForeground(UIManager.getColor("Component.infoForeground"));
+        audioTagHint.setFont(audioTagHint.getFont().deriveFont(Font.PLAIN, 10));
+
+        JLabel naturalLanguageHint = new JLabel(Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE_HINT);
+        naturalLanguageHint.setForeground(UIManager.getColor("Component.infoForeground"));
+        naturalLanguageHint.setFont(naturalLanguageHint.getFont().deriveFont(Font.PLAIN, 10));
+
+        // 布局 - 使用 FlowLayout
+        mimoStyleControlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 2));
+
+        // 标签
+        mimoStyleControlPanel.add(mimoStyleControlLabel);
+
+        // 音频标签控制单选按钮和提示
+        JPanel audioTagPanel = new JPanel(new BorderLayout(2, 0));
+        audioTagPanel.add(audioTagRadio, BorderLayout.NORTH);
+        audioTagPanel.add(audioTagHint, BorderLayout.SOUTH);
+        mimoStyleControlPanel.add(audioTagPanel);
+
+        // 自然语言控制单选按钮和提示
+        JPanel naturalLangPanel = new JPanel(new BorderLayout(2, 0));
+        naturalLangPanel.add(naturalLanguageRadio, BorderLayout.NORTH);
+        naturalLangPanel.add(naturalLanguageHint, BorderLayout.SOUTH);
+        mimoStyleControlPanel.add(naturalLangPanel);
+
+        // 添加监听器 - 根据选择更新UI可见性
+        audioTagRadio.addActionListener(e -> updateStyleControlVisibility(true));
+        naturalLanguageRadio.addActionListener(e -> updateStyleControlVisibility(false));
+
+        // 初始化时根据当前选择设置可见性
+        updateStyleControlVisibility(currentStyleControlType != Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE);
+    }
+
+    /**
+     * 根据风格控制类型更新UI组件可见性
+     * @param isAudioTagControl true=音频标签控制，false=自然语言控制
+     */
+    private void updateStyleControlVisibility(boolean isAudioTagControl) {
+        // 音频标签控制相关组件（风格选择）
+        if (audioStyleLabel != null) {
+            audioStyleLabel.setVisible(isAudioTagControl);
+        }
+        if (audioStyleComboBox != null) {
+            audioStyleComboBox.setVisible(isAudioTagControl);
+        }
+
+        // 自然语言控制相关组件（风格指令）
+        if (mimoVoiceDescLabel != null) {
+            mimoVoiceDescLabel.setVisible(!isAudioTagControl);
+        }
+        if (mimoVoiceDescTextAreaScroll != null) {
+            mimoVoiceDescTextAreaScroll.setVisible(!isAudioTagControl);
+        }
+        if (mimoVoiceDescTextArea != null) {
+            mimoVoiceDescTextArea.setVisible(!isAudioTagControl);
+        }
+        if (mimoVoiceDescPresetButton != null) {
+            mimoVoiceDescPresetButton.setVisible(!isAudioTagControl);
+        }
+        if (mimoVoiceDescHintLabel != null) {
+            mimoVoiceDescHintLabel.setVisible(!isAudioTagControl);
+        }
+    }
+
+    /**
      * 根据TTS引擎更新UI组件可见性
      */
     private void updateUIVisibilityForEngine(String engineType) {
         boolean isMiMo = TtsEngineEnum.MIMO.getEngineId().equals(engineType);
         MimoModel selectedModel = MimoModel.fromIndex(mimoModelTypeComboBox.getSelectedIndex());
         boolean isVoiceDesign = isMiMo && (selectedModel == MimoModel.VOICE_DESIGN);
-        
+        boolean isPresetModel = isMiMo && (selectedModel == MimoModel.PRESET);
+
         // MiMo 专属组件
         mimoApiKeyLabel.setVisible(isMiMo);
         mimoApiKeyTextField.setVisible(isMiMo);
@@ -775,14 +948,55 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         mimoApiKeyLink.setVisible(isMiMo);
         mimoModelTypeLabel.setVisible(isMiMo);
         mimoModelTypeComboBox.setVisible(isMiMo);
-        mimoVoiceDescLabel.setVisible(isMiMo);  // MiMo 两个模型都需要音色描述
-        mimoVoiceDescTextAreaScroll.setVisible(isMiMo);
-        mimoVoiceDescTextArea.setVisible(isMiMo);
-        mimoVoiceDescPresetButton.setVisible(isMiMo);
-        mimoVoiceDescHintLabel.setVisible(isMiMo);
-        
+
+        // MiMo 风格控制类型 - 仅 mimo-v2.5-tts 预置音色模型时显示
+        boolean showStyleControl = isPresetModel;
+        if (mimoStyleControlPanel != null) {
+            mimoStyleControlPanel.setVisible(showStyleControl);
+        }
+
+        // 根据风格控制类型决定显示风格选择还是风格指令
+        if (showStyleControl) {
+            // 获取当前风格控制类型
+            boolean isAudioTagControl = true;
+            if (mimoStyleControlRadioGroup != null && mimoStyleControlRadioGroup.getSelection() != null) {
+                int controlType = NumberUtil.parseInt(mimoStyleControlRadioGroup.getSelection().getActionCommand());
+                isAudioTagControl = (controlType != Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE);
+            }
+            // 音频标签控制相关组件（风格选择）
+            audioStyleLabel.setVisible(isAudioTagControl);
+            audioStyleComboBox.setVisible(isAudioTagControl);
+            // 自然语言控制相关组件（风格指令）
+            mimoVoiceDescLabel.setVisible(!isAudioTagControl);
+            mimoVoiceDescTextAreaScroll.setVisible(!isAudioTagControl);
+            mimoVoiceDescTextArea.setVisible(!isAudioTagControl);
+            mimoVoiceDescPresetButton.setVisible(!isAudioTagControl);
+            mimoVoiceDescHintLabel.setVisible(!isAudioTagControl);
+        } else {
+            // 非 mimo-v2.5-tts 模型时
+            if (isMiMo && isVoiceDesign) {
+                // VoiceDesign 模型：显示风格指令，隐藏风格选择
+                audioStyleLabel.setVisible(false);
+                audioStyleComboBox.setVisible(false);
+                mimoVoiceDescLabel.setVisible(true);
+                mimoVoiceDescTextAreaScroll.setVisible(true);
+                mimoVoiceDescTextArea.setVisible(true);
+                mimoVoiceDescPresetButton.setVisible(true);
+                mimoVoiceDescHintLabel.setVisible(true);
+            } else if (!isMiMo) {
+                // Edge TTS：显示风格选择，隐藏风格指令
+                audioStyleLabel.setVisible(true);
+                audioStyleComboBox.setVisible(true);
+                mimoVoiceDescLabel.setVisible(false);
+                mimoVoiceDescTextAreaScroll.setVisible(false);
+                mimoVoiceDescTextArea.setVisible(false);
+                mimoVoiceDescPresetButton.setVisible(false);
+                mimoVoiceDescHintLabel.setVisible(false);
+            }
+        }
+
         // Edge TTS 专属组件 - 无（音色和风格两个引擎共用）
-        
+
         // 预置音色选择 - VoiceDesign 时隐藏
         if (voiceRoleGroupComboBox != null) {
             voiceRoleGroupComboBox.setVisible(!isVoiceDesign);

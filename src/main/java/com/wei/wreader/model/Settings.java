@@ -69,6 +69,31 @@ public class Settings {
      * 自定义书源规则本文区域类型--2-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
      */
     public static final String CUSTOM_SITE_RULE_TEXT_AREA_TYPE_EDITOR_HINT = "拥有行数、高亮、报错、折叠等功能，但更消耗性能";
+
+    /**
+     * MiMo TTS 风格控制类型：1-音频标签控制（风格标签放在 assistant 消息中）
+     */
+    public static final int MIMO_STYLE_CONTROL_AUDIO_TAG = 1;
+    /**
+     * MiMo TTS 风格控制类型：2-自然语言控制（风格指令放在 user 消息中）
+     */
+    public static final int MIMO_STYLE_CONTROL_NATURAL_LANGUAGE = 2;
+    /**
+     * MiMo TTS 风格控制类型显示文本：音频标签控制
+     */
+    public static final String MIMO_STYLE_CONTROL_AUDIO_TAG_TEXT = "音频标签控制";
+    /**
+     * MiMo TTS 风格控制类型显示文本：自然语言控制
+     */
+    public static final String MIMO_STYLE_CONTROL_NATURAL_LANGUAGE_TEXT = "自然语言控制";
+    /**
+     * MiMo TTS 风格控制类型提示：音频标签控制
+     */
+    public static final String MIMO_STYLE_CONTROL_AUDIO_TAG_HINT = "风格标签(如：开心、温柔)";
+    /**
+     * MiMo TTS 风格控制类型提示：自然语言控制
+     */
+    public static final String MIMO_STYLE_CONTROL_NATURAL_LANGUAGE_HINT = "使用自然语言描述语音风格";
     /**
      * 最大单行字数
      */
@@ -155,6 +180,10 @@ public class Settings {
      * 语音风格
      */
     private String audioStyle;
+    /**
+     * MiMo TTS 风格控制类型：1-音频标签控制，2-自然语言控制
+     */
+    private int mimoStyleControlType;
 
 
     public int getSingleLineChars() {
@@ -317,6 +346,14 @@ public class Settings {
         this.mimoVoiceDescription = mimoVoiceDescription;
     }
 
+    public int getMimoStyleControlType() {
+        return mimoStyleControlType;
+    }
+
+    public void setMimoStyleControlType(int mimoStyleControlType) {
+        this.mimoStyleControlType = mimoStyleControlType;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -336,6 +373,7 @@ public class Settings {
                 ", rate=" + rate +
                 ", volume=" + volume +
                 ", audioStyle='" + audioStyle + '\'' +
+                ", mimoStyleControlType=" + mimoStyleControlType +
                 '}';
     }
 }

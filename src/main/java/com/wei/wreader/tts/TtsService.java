@@ -157,22 +157,35 @@ public class TtsService {
     private void mimoTTSWithPresetVoice(String apiKey, String chapterContent, Settings settings) {
         // 清理文本中的特殊字符
         String cleanedContent = cleanTextForTTS(chapterContent);
-        
-        // 获取风格
+
+        // 获取风格和风格控制类型
         String audioStyle = settings.getAudioStyle();
-        
+        int styleControlType = settings.getMimoStyleControlType();
+
+        // 兼容性处理：当风格控制没有值时，根据风格指令/音频标签自动推断
+        if (styleControlType <= 0) {
+            String voiceDescription = settings.getMimoVoiceDescription();
+            if (StringUtils.isNotBlank(voiceDescription)) {
+                // 风格指令有值，默认使用"自然语言控制"
+                styleControlType = Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE;
+            } else {
+                // 否则使用"音频标签控制"
+                styleControlType = Settings.MIMO_STYLE_CONTROL_AUDIO_TAG;
+            }
+        }
+
         // 分批处理文本
         List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
-        
+
         // 如果只有一批，直接处理
         if (textChunks.size() <= 1) {
-            String textWithStyle = applyStyleTag(cleanedContent, audioStyle);
-            synthesizeAndPlay(apiKey, textWithStyle, settings, false);
+            synthesizeAndPlayWithStyleControl(apiKey, cleanedContent, audioStyle, styleControlType, settings, false);
             return;
         }
-        
+
         // 多批处理：启动后台线程顺序处理
         final String style = audioStyle;
+        final int controlType = styleControlType;
         batchThread = new Thread(() -> {
             try {
                 for (int i = 0; i < textChunks.size(); i++) {
@@ -181,9 +194,7 @@ public class TtsService {
                     }
 
                     String chunk = textChunks.get(i);
-                    String textWithStyle = applyStyleTag(chunk, style);
-
-                    synthesizeAndPlay(apiKey, textWithStyle, settings, true);
+                    synthesizeAndPlayWithStyleControl(apiKey, chunk, style, controlType, settings, true);
 
                     if (i < textChunks.size() - 1) {
                         try {
@@ -253,12 +264,25 @@ public class TtsService {
     }
 
     /**
-     * 合成并播放（预置音色）
+     * 合成并播放（预置音色）- 保留向后兼容
      */
     private void synthesizeAndPlay(String apiKey, String text, Settings settings, boolean waitComplete) {
+        synthesizeAndPlayWithStyleControl(apiKey, text, settings.getAudioStyle(), settings.getMimoStyleControlType(), settings, waitComplete);
+    }
+
+    /**
+     * 合成并播放（预置音色）- 支持风格控制类型
+     *
+     * @param apiKey           API密钥
+     * @param text             要合成的文本
+     * @param style            风格内容（标签或自然语言指令）
+     * @param styleControlType 风格控制类型：1-音频标签控制，2-自然语言控制
+     * @param settings         设置
+     * @param waitComplete     是否等待播放完成
+     */
+    private void synthesizeAndPlayWithStyleControl(String apiKey, String text, String style, int styleControlType, Settings settings, boolean waitComplete) {
         if (userStopped) return;
         try {
-            String voiceDescription = settings.getMimoVoiceDescription();
             // 获取Voice
             Voice voice = Voice.fromValue(settings.getVoiceRole());
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
@@ -269,15 +293,26 @@ public class TtsService {
             MimoTTS mimoTTS = new MimoTTS(config);
             configureMimoTTS(mimoTTS);
 
-            if (StringUtils.isNotBlank(voiceDescription)) {
-                mimoTTS.setStyleInstruction(voiceDescription);
+            // 根据风格控制类型处理
+            if (styleControlType == Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE) {
+                // 自然语言控制：将风格指令放在 role: user 的 content 中
+                if (StringUtils.isNotBlank(style) && !"默认".equals(style)) {
+                    mimoTTS.setStyleInstruction(style);
+                }
+                // 文本保持原样，不添加风格标签
+                currentEngine = new MimoTtsEngineWrapper(mimoTTS);
+                currentEngineType = "mimo";
+                currentEngine.synthesize(text);
+            } else {
+                // 音频标签控制（默认）：将风格标签放在 role: assistant 的 content 中
+                String textWithStyle = applyStyleTag(text, style);
+                currentEngine = new MimoTtsEngineWrapper(mimoTTS);
+                currentEngineType = "mimo";
+                currentEngine.synthesize(textWithStyle);
             }
-            
-            currentEngine = new MimoTtsEngineWrapper(mimoTTS);
-            currentEngineType = "mimo";
-            currentEngine.synthesize(text);
+
             currentEngine.start();
-            
+
             // 等待播放完成
             if (waitComplete) {
                 while (currentEngine != null && currentEngine.isPlaying()) {

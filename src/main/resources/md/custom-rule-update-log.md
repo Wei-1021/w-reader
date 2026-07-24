@@ -9,9 +9,8 @@
       - `useNextListMainApi`: 目录列表的下一页目录是否为使用API请求的方式获取。<br>true: 使用API请求方式获取。<br> false: 使用HTML页面获取。
       - `nextListMainApiDataRule`: 目录列表的下一页目录为API请求时，获取下一页目录的JSONPath规则
   - 【新增】 部分规则支持`JavaScript`代码的执行，详细规则请查阅规则说明，支持的字段：
-    - `searchRules.url`
-    - 
-      
+* **V0.3.2:**
+  - 【更新】 `bookListUrlElement`更新`@back:`和`@front:`标记的用法。
 
 
 

@@ -323,6 +323,10 @@
                 icon="com.wei.wreader.util.WReaderIcons.AI_GENERATE">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD5"/>
         </action>
+<!--        <action id="wreader.LegadoConvertAction" class="com.wei.wreader.action.LegadoConvertAction"-->
+<!--                text="导入Legado书源"-->
+<!--                icon="com.wei.wreader.util.WReaderIcons.CUSTOM_SITE">-->
+<!--        </action>-->
         <!--endregion-->
 
         <!--region Group-->
@@ -346,7 +350,8 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
@@ -357,7 +362,8 @@
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <separator/>
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.EditorMessageAction"/>
@@ -386,7 +392,8 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
         </group>
@@ -394,7 +401,7 @@
         <group id="wreader.group.statusBar">
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
+            <reference ref="wreader.AiGenerateSiteRuleAction"/>
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
             <separator/>
