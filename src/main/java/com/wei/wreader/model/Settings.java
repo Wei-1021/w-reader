@@ -125,6 +125,11 @@ public class Settings {
      */
     private int autoScrollSpeed;
     /**
+     * 自动滚屏帧率（fps），下拉框选择
+     * 可选值：15、24、30、60
+     */
+    private int autoScrollFps;
+    /**
      * 本地加载时是否显示图片
      */
     private boolean showLocalImg;
@@ -246,6 +251,14 @@ public class Settings {
 
     public void setAutoScrollSpeed(int autoScrollSpeed) {
         this.autoScrollSpeed = autoScrollSpeed;
+    }
+
+    public int getAutoScrollFps() {
+        return autoScrollFps;
+    }
+
+    public void setAutoScrollFps(int autoScrollFps) {
+        this.autoScrollFps = autoScrollFps;
     }
 
     public boolean isShowLocalImg() {
@@ -378,6 +391,7 @@ public class Settings {
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
                 ", autoScrollSpeed=" + autoScrollSpeed +
+                ", autoScrollFps=" + autoScrollFps +
                 ", showLocalImg=" + showLocalImg +
                 ", mainIconStyle=" + mainIconStyle +
                 ", editorHintWidth=" + editorHintWidth +

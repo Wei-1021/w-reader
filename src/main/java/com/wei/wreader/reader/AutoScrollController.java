@@ -3,6 +3,7 @@ package com.wei.wreader.reader;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBScrollPane;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.util.SettingConstants;
@@ -63,7 +64,7 @@ public class AutoScrollController {
 
         if (isRunning) return;
 
-        LOG.info("Auto-scroll: starting with speed " + settings.getAutoScrollSpeed() + "%/s");
+        LOG.info("Auto-scroll: starting with speed " + settings.getAutoScrollSpeed() + "%/s, fps=" + settings.getAutoScrollFps());
         isRunning = true;
         isPausedByCursor = false;
 
@@ -73,8 +74,14 @@ public class AutoScrollController {
 
         registerMouseListener();
 
-        Runnable scrollTask = createScrollTask();
-        executorService.scheduleAtFixedRate(scrollTask, 100, 100, TimeUnit.MILLISECONDS);
+        int fps = settings.getAutoScrollFps();
+        if (fps <= 0) {
+            fps = SettingConstants.AUTO_SCROLL_FPS_DEFAULT;
+        }
+        int intervalMs = 1000 / fps;
+
+        Runnable scrollTask = createScrollTask(fps);
+        executorService.scheduleAtFixedRate(scrollTask, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
     }
 
     public void stopAutoScroll() {
@@ -96,7 +103,7 @@ public class AutoScrollController {
         return isRunning;
     }
 
-    private Runnable createScrollTask() {
+    private Runnable createScrollTask(int fps) {
         return () -> {
             try {
                 if (!isRunning) return;
@@ -115,7 +122,7 @@ public class AutoScrollController {
                     try {
                         if (!isRunning) return;
 
-                        JScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
+                        JBScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
                         if (scrollPane == null) {
                             LOG.warn("Auto-scroll: scrollPane is null, stopping");
                             stopAutoScroll();
@@ -132,7 +139,8 @@ public class AutoScrollController {
 
                         int visibleAmount = verticalBar.getVisibleAmount();
                         int speedPercent = settings.getAutoScrollSpeed();
-                        int scrollStep = Math.max(1, (int) ((speedPercent / 100.0) * visibleAmount / 10));
+                        // 步长 = 速度百分比 * 可见区域 / 帧率，保证不同帧率下总速度一致
+                        int scrollStep = Math.max(1, (int) ((speedPercent / 100.0) * visibleAmount / fps));
 
                         int currentValue = verticalBar.getValue();
                         int newValue = Math.min(currentValue + scrollStep, verticalBar.getMaximum());
@@ -158,7 +166,7 @@ public class AutoScrollController {
     }
 
     private void registerMouseListener() {
-        JScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
+        JBScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
         if (scrollPane == null) {
             LOG.warn("Auto-scroll: cannot register mouse listener, scrollPane is null");
             return;
@@ -184,7 +192,7 @@ public class AutoScrollController {
 
     private void unregisterMouseListener() {
         if (mouseAdapter != null) {
-            JScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
+            JBScrollPane scrollPane = ToolWindowUtil.getContentScrollPane(project);
             if (scrollPane != null) {
                 scrollPane.removeMouseListener(mouseAdapter);
             }

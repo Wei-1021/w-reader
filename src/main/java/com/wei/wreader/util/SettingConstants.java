@@ -24,6 +24,13 @@ public final class SettingConstants {
     public static final int AUTO_SCROLL_SPEED_DEFAULT = 50;
     public static final int AUTO_SCROLL_SPEED_OFF = 0;
 
+    // ==================== 自动滚屏帧率 ====================
+    public static final Integer[] AUTO_SCROLL_FPS_OPTIONS = {15, 24, 30, 60};
+    public static final String[] AUTO_SCROLL_FPS_LABELS = {
+        "15 fps (省电)", "24 fps (电影)", "30 fps (流畅)", "60 fps (丝滑)"
+    };
+    public static final int AUTO_SCROLL_FPS_DEFAULT = 60;
+
     // ==================== 主图标风格 ====================
     public static final int ICON_STYLE_DEFAULT = 1;
     public static final int ICON_STYLE_LIGHT = 2;

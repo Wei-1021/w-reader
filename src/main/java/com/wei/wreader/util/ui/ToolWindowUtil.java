@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.wei.wreader.factory.WReaderToolWindowFactory;
@@ -61,11 +62,11 @@ public class ToolWindowUtil {
      * @param rootContent
      * @return
      */
-    public static JScrollPane getContentScrollPane(Content rootContent) {
+    public static JBScrollPane getContentScrollPane(Content rootContent) {
         JPanel contentPanel = getContentPanel(rootContent);
         if (contentPanel.getComponentCount() > 0) {
             Component contentScrollComponent = contentPanel.getComponent(0);
-            if (contentScrollComponent instanceof JScrollPane contentScrollPane) {
+            if (contentScrollComponent instanceof JBScrollPane contentScrollPane) {
                 return contentScrollPane;
             }
         }
@@ -78,7 +79,7 @@ public class ToolWindowUtil {
      * @param project
      * @return
      */
-    public static JScrollPane getContentScrollPane(Project project) {
+    public static JBScrollPane getContentScrollPane(Project project) {
         if (project == null || project.isDisposed()) return null;
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
@@ -97,7 +98,7 @@ public class ToolWindowUtil {
      * @return
      */
     public static JTextPane getContentTextPanel(Content rootContent) {
-        JScrollPane contentScrollPane = getContentScrollPane(rootContent);
+        JBScrollPane contentScrollPane = getContentScrollPane(rootContent);
         if (contentScrollPane != null) {
             return (JTextPane) contentScrollPane.getViewport().getView();
         }
