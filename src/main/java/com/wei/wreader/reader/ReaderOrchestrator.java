@@ -44,6 +44,7 @@ public final class ReaderOrchestrator {
     private final TtsService ttsService;
     private final ChapterNavigator chapterNavigator;
     private final AutoReadController autoReadController;
+    private final AutoScrollController autoScrollController;
     private final FontManager fontManager;
 
     public static ReaderOrchestrator getInstance(Project project) {
@@ -61,6 +62,8 @@ public final class ReaderOrchestrator {
         this.chapterNavigator = new ChapterNavigator(project, cacheService, appConfig, siteRuleService, appState, customSiteUtil);
         this.autoReadController = AutoReadController.getInstance();
         this.autoReadController.init(project, cacheService, appState);
+        this.autoScrollController = AutoScrollController.getInstance();
+        this.autoScrollController.init(project, cacheService);
         this.fontManager = new FontManager(cacheService, appConfig);
 
         initialize();
@@ -219,8 +222,17 @@ public final class ReaderOrchestrator {
         autoReadController.autoReadNextLine();
     }
 
+    public void toggleAutoScroll() {
+        autoScrollController.toggleAutoScroll();
+    }
+
+    public void stopAutoScroll() {
+        autoScrollController.stopAutoScroll();
+    }
+
     public void executorServiceShutdown() {
         autoReadController.shutdown();
+        autoScrollController.shutdown();
     }
 
     // --- 字体管理 ---
@@ -303,6 +315,7 @@ public final class ReaderOrchestrator {
     public FontManager getFontManager() { return fontManager; }
     public ChapterNavigator getChapterNavigator() { return chapterNavigator; }
     public AutoReadController getAutoReadController() { return autoReadController; }
+    public AutoScrollController getAutoScrollController() { return autoScrollController; }
 
     /**
      * 加载本章节下一页内容

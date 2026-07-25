@@ -79,6 +79,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JPanel displayTypeRadioPanel;
     private JTextField autoReadTimeTextField;
     private JLabel autoReadTimeLabel;
+    private JComboBox<String> autoScrollSpeedComboBox;
+    private JLabel autoScrollSpeedLabel;
     private JPanel generalPanel;
     private JPanel audioManagePanel;
     private JLabel voiceRoleLabel;
@@ -253,6 +255,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         createUICharset();
         // 自动阅读
         createUIAutoReadTime();
+        // 自动滚屏速率
+        createUIAutoScrollSpeed();
         // 设置主图标风格
         createUIMainIconStyle();
         // 编辑器消息窗口
@@ -322,6 +326,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         String autoReadTime = autoReadTimeTextField.getText();
 
         if (!NumberUtil.parseFloat(autoReadTime).equals(settings.getAutoReadTime())) {
+            return true;
+        }
+        // 自动滚屏速率
+        int selectedAutoScrollSpeed = getSelectedAutoScrollSpeed();
+        if (settings.getAutoScrollSpeed() != selectedAutoScrollSpeed) {
             return true;
         }
         // 主图标风格
@@ -467,6 +476,8 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         settings.setCharset(charsetSelectedItem == null ? settings.getCharset() : charsetSelectedItem.getText());
         // 自动阅读
         settings.setAutoReadTime(NumberUtil.parseFloat(autoReadTimeTextField.getText()));
+        // 自动滚屏速率
+        settings.setAutoScrollSpeed(getSelectedAutoScrollSpeed());
         // 主图标风格
         ButtonModel mainIconStyleSelection = selectIconStyleRadioButtonGroup.getSelection();
         if (mainIconStyleSelection == null) {
@@ -613,6 +624,38 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             autoReadTime = 5f;
         }
         autoReadTimeTextField.setText(String.valueOf(autoReadTime));
+    }
+
+    /**
+     * 创建自动滚屏速率UI
+     */
+    private void createUIAutoScrollSpeed() {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        for (int i = 0; i < SettingConstants.AUTO_SCROLL_SPEED_OPTIONS.length; i++) {
+            model.addElement(SettingConstants.AUTO_SCROLL_SPEED_LABELS[i]);
+        }
+        autoScrollSpeedComboBox.setModel(model);
+
+        int currentSpeed = settings.getAutoScrollSpeed();
+        int selectedIndex = 0;
+        for (int i = 0; i < SettingConstants.AUTO_SCROLL_SPEED_OPTIONS.length; i++) {
+            if (SettingConstants.AUTO_SCROLL_SPEED_OPTIONS[i] == currentSpeed) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        autoScrollSpeedComboBox.setSelectedIndex(selectedIndex);
+    }
+
+    /**
+     * 获取当前选中的自动滚屏速率值
+     */
+    private int getSelectedAutoScrollSpeed() {
+        int selectedIndex = autoScrollSpeedComboBox.getSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < SettingConstants.AUTO_SCROLL_SPEED_OPTIONS.length) {
+            return SettingConstants.AUTO_SCROLL_SPEED_OPTIONS[selectedIndex];
+        }
+        return SettingConstants.AUTO_SCROLL_SPEED_DEFAULT;
     }
 
     /**

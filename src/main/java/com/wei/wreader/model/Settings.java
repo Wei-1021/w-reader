@@ -119,6 +119,12 @@ public class Settings {
      */
     private float autoReadTime;
     /**
+     * 自动滚屏速率（可见区域百分比/秒），下拉框选择
+     * 值为0时表示关闭自动滚屏功能
+     * 例如：50 表示每秒滚动可见区域高度的50%
+     */
+    private int autoScrollSpeed;
+    /**
      * 本地加载时是否显示图片
      */
     private boolean showLocalImg;
@@ -232,6 +238,14 @@ public class Settings {
 
     public void setAutoReadTime(float autoReadTime) {
         this.autoReadTime = autoReadTime;
+    }
+
+    public int getAutoScrollSpeed() {
+        return autoScrollSpeed;
+    }
+
+    public void setAutoScrollSpeed(int autoScrollSpeed) {
+        this.autoScrollSpeed = autoScrollSpeed;
     }
 
     public boolean isShowLocalImg() {
@@ -363,6 +377,7 @@ public class Settings {
                 ", dataLoadType=" + dataLoadType +
                 ", charset='" + charset + '\'' +
                 ", autoReadTime=" + autoReadTime +
+                ", autoScrollSpeed=" + autoScrollSpeed +
                 ", showLocalImg=" + showLocalImg +
                 ", mainIconStyle=" + mainIconStyle +
                 ", editorHintWidth=" + editorHintWidth +

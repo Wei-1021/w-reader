@@ -73,6 +73,24 @@ public class ToolWindowUtil {
     }
 
     /**
+     * 通过Project获取侧边栏内容滚动面板
+     *
+     * @param project
+     * @return
+     */
+    public static JScrollPane getContentScrollPane(Project project) {
+        if (project == null || project.isDisposed()) return null;
+        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+        if (toolWindow == null) return null;
+        ContentManager contentManager = toolWindow.getContentManager();
+        if (contentManager == null) return null;
+        Content rootContent = contentManager.getContent(0);
+        if (rootContent == null) return null;
+        return getContentScrollPane(rootContent);
+    }
+
+    /**
      * 获取ToolWindow的内容文本面板
      *
      * @param rootContent
