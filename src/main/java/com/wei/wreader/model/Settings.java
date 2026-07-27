@@ -123,12 +123,12 @@ public class Settings {
      * 值为0时表示关闭自动滚屏功能
      * 例如：50 表示每秒滚动可见区域高度的50%
      */
-    private int autoScrollSpeed;
+    private Integer autoScrollSpeed;
     /**
      * 自动滚屏帧率（fps），下拉框选择
-     * 可选值：15、24、30、60
+     * 可选值：15、24、30、60、75、90、120
      */
-    private int autoScrollFps;
+    private Integer autoScrollFps;
     /**
      * 本地加载时是否显示图片
      */
@@ -245,19 +245,19 @@ public class Settings {
         this.autoReadTime = autoReadTime;
     }
 
-    public int getAutoScrollSpeed() {
+    public Integer getAutoScrollSpeed() {
         return autoScrollSpeed;
     }
 
-    public void setAutoScrollSpeed(int autoScrollSpeed) {
+    public void setAutoScrollSpeed(Integer autoScrollSpeed) {
         this.autoScrollSpeed = autoScrollSpeed;
     }
 
-    public int getAutoScrollFps() {
+    public Integer getAutoScrollFps() {
         return autoScrollFps;
     }
 
-    public void setAutoScrollFps(int autoScrollFps) {
+    public void setAutoScrollFps(Integer autoScrollFps) {
         this.autoScrollFps = autoScrollFps;
     }
 

@@ -57,7 +57,7 @@ public class AutoScrollController {
             LOG.warn("Auto-scroll: settings is null, cannot start");
             return;
         }
-        if (settings.getAutoScrollSpeed() == SettingConstants.AUTO_SCROLL_SPEED_OFF) {
+        if (settings.getAutoScrollSpeed() != null && settings.getAutoScrollSpeed().compareTo(SettingConstants.AUTO_SCROLL_SPEED_OFF) == 0) {
             LOG.info("Auto-scroll: speed is 0 (off), cannot start");
             return;
         }
@@ -74,8 +74,8 @@ public class AutoScrollController {
 
         registerMouseListener();
 
-        int fps = settings.getAutoScrollFps();
-        if (fps <= 0) {
+        Integer fps = settings.getAutoScrollFps();
+        if (fps == null || fps <= 0) {
             fps = SettingConstants.AUTO_SCROLL_FPS_DEFAULT;
         }
         int intervalMs = 1000 / fps;
@@ -109,7 +109,13 @@ public class AutoScrollController {
                 if (!isRunning) return;
 
                 Settings settings = cacheService.getSettings();
-                if (settings == null || settings.getAutoScrollSpeed() == SettingConstants.AUTO_SCROLL_SPEED_OFF) {
+                if (
+                        settings == null ||
+                        (
+                                settings.getAutoScrollSpeed() != null &&
+                                settings.getAutoScrollSpeed().compareTo(SettingConstants.AUTO_SCROLL_SPEED_OFF) == 0
+                        )
+                ) {
                     ApplicationManager.getApplication().invokeLater(this::stopAutoScroll);
                     return;
                 }
@@ -138,7 +144,10 @@ public class AutoScrollController {
                         }
 
                         int visibleAmount = verticalBar.getVisibleAmount();
-                        int speedPercent = settings.getAutoScrollSpeed();
+                        Integer speedPercent = settings.getAutoScrollSpeed();
+                        if (speedPercent == null || speedPercent <= 0) {
+                            speedPercent = SettingConstants.AUTO_SCROLL_SPEED_DEFAULT;
+                        }
                         // 步长 = 速度百分比 * 可见区域 / 帧率，保证不同帧率下总速度一致
                         int scrollStep = Math.max(1, (int) ((speedPercent / 100.0) * visibleAmount / fps));
 

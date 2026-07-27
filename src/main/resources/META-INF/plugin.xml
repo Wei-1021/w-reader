@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.3.1</version>
+    <version>0.4.0</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -68,6 +68,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.4.0:
+        <ul>
+            <li>1.【新增】侧边栏新增自动滚屏功能，同时新增相关设置；</li>
+            <li>2.【优化】优化其它功能；</li>
+        </ul>
+    </div>
     <div>
         0.3.1:
         <ul>
@@ -355,7 +362,7 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
@@ -367,7 +374,7 @@
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <separator/>
             <reference ref="wreader.LoadLocalFileAction"/>
@@ -399,7 +406,7 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
@@ -408,7 +415,7 @@
         <group id="wreader.group.statusBar">
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
-            <reference ref="wreader.AiGenerateSiteRuleAction"/>
+<!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
             <separator/>

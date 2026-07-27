@@ -1,7 +1,7 @@
 wreader:
   name: 'w-reader'
   nameHump: 'WReader'
-  version: '0.3.1'
+  version: '0.4.0'
   description: 'A simple reader'
   author: 'weizhanjie'
   allowFileExtension: # 允许的文件后缀
@@ -14,7 +14,7 @@ wreader:
     dataLoadType: 1 #数据加载模式。1-网络加载，2-本地加载
     charset: 'GBK' #字符集
     autoReadTime: 5 #自动阅读时间
-    autoScrollSpeed: 0 #自动滚屏速率（可见区域百分比/秒），0表示关闭
+    autoScrollSpeed: 20 #自动滚屏速率（可见区域百分比/秒），0表示关闭
     autoScrollFps: 60 #自动滚屏帧率（fps），可选值：15、24、30、60
     mainIconStyle: 1 #主图标风格：1-默认，2-浅色
     editorHintWidth: 350 #编辑器提示消息框宽度

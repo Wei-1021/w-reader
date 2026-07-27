@@ -15,21 +15,25 @@ public final class SettingConstants {
     public static final float AUTO_READ_TIME_DEFAULT = 5f;
 
     // ==================== 自动滚屏 ====================
-    public static final Integer[] AUTO_SCROLL_SPEED_OPTIONS = {0, 10, 20, 30, 50, 70, 100, 150, 200};
+    public static final Integer[] AUTO_SCROLL_SPEED_OPTIONS = {0, 5, 10, 20, 30, 50, 70, 100, 150, 200};
     public static final String[] AUTO_SCROLL_SPEED_LABELS = {
-        "0 (关闭)", "10%/s (极慢)", "20%/s (慢速)", "30%/s (较慢)",
+        "0 (关闭)", "5%/s (极慢)", "10%/s (极慢)", "20%/s (慢速)", "30%/s (较慢)",
         "50%/s (适中)", "70%/s (较快)", "100%/s (快速)",
         "150%/s (很快)", "200%/s (极快)"
     };
-    public static final int AUTO_SCROLL_SPEED_DEFAULT = 50;
+    public static final int AUTO_SCROLL_SPEED_DEFAULT = 20;
+    /** 滚屏速率选项默认索引 */
+    public static final int AUTO_SCROLL_SPEED_DEFAULT_INDEX = 2;
     public static final int AUTO_SCROLL_SPEED_OFF = 0;
 
     // ==================== 自动滚屏帧率 ====================
     public static final Integer[] AUTO_SCROLL_FPS_OPTIONS = {15, 24, 30, 60};
     public static final String[] AUTO_SCROLL_FPS_LABELS = {
-        "15 fps (省电)", "24 fps (电影)", "30 fps (流畅)", "60 fps (丝滑)"
+        "15 fps", "24 fps", "30 fps", "60 fps"
     };
     public static final int AUTO_SCROLL_FPS_DEFAULT = 60;
+    /** 滚屏帧率选项默认索引 */
+    public static final int AUTO_SCROLL_FPS_DEFAULT_INDEX = 3;
 
     // ==================== 主图标风格 ====================
     public static final int ICON_STYLE_DEFAULT = 1;

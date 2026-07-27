@@ -229,7 +229,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      * @return
      */
     @Override
-    public Configurable [] getConfigurables() {
+    public Configurable[] getConfigurables() {
         return new Configurable[0];
     }
 
@@ -334,12 +334,18 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         // 自动滚屏速率
         int selectedAutoScrollSpeed = getSelectedAutoScrollSpeed();
-        if (settings.getAutoScrollSpeed() != selectedAutoScrollSpeed) {
+        if (
+                (settings.getAutoScrollSpeed() == null && selectedAutoScrollSpeed != SettingConstants.AUTO_SCROLL_SPEED_DEFAULT) ||
+                (settings.getAutoScrollSpeed() != null && settings.getAutoScrollSpeed().compareTo(selectedAutoScrollSpeed) != 0)
+        ) {
             return true;
         }
         // 自动滚屏帧率
         int selectedAutoScrollFps = getSelectedAutoScrollFps();
-        if (settings.getAutoScrollFps() != selectedAutoScrollFps) {
+        if (
+                (settings.getAutoScrollFps() == null && selectedAutoScrollFps != SettingConstants.AUTO_SCROLL_FPS_DEFAULT) ||
+                (settings.getAutoScrollFps() != null && settings.getAutoScrollFps().compareTo(selectedAutoScrollFps) != 0)
+        ) {
             return true;
         }
         // 主图标风格
@@ -524,7 +530,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // TTS引擎
         String selectedEngine = (String) ttsEngineComboBox.getSelectedItem();
         settings.setTtsEngine(selectedEngine);
-        
+
         // MiMo API Key - 保存到 CredentialService
         CredentialService.getInstance().saveMimoApiKey(new String(mimoApiKeyTextField.getPassword()));
 
@@ -559,7 +565,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 settings.setVoiceRole(voiceRoleSelectedItem.getText());
             }
         }
-        
+
         settings.setAudioStyle((String) audioStyleComboBox.getSelectedItem());
         settings.setAudioTimeout(NumberUtil.parseInt(timeoutTextField.getText()));
         // 语速
@@ -647,12 +653,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         autoScrollSpeedComboBox.setModel(model);
 
-        int currentSpeed = settings.getAutoScrollSpeed();
-        int selectedIndex = 0;
-        for (int i = 0; i < SettingConstants.AUTO_SCROLL_SPEED_OPTIONS.length; i++) {
-            if (SettingConstants.AUTO_SCROLL_SPEED_OPTIONS[i] == currentSpeed) {
-                selectedIndex = i;
-                break;
+        Integer currentSpeed = settings.getAutoScrollSpeed();
+        int selectedIndex = SettingConstants.AUTO_SCROLL_SPEED_DEFAULT_INDEX;
+        if (currentSpeed != null) {
+            for (int i = 0; i < SettingConstants.AUTO_SCROLL_SPEED_OPTIONS.length; i++) {
+                if (SettingConstants.AUTO_SCROLL_SPEED_OPTIONS[i].compareTo(currentSpeed) == 0) {
+                    selectedIndex = i;
+                    break;
+                }
             }
         }
         autoScrollSpeedComboBox.setSelectedIndex(selectedIndex);
@@ -679,12 +687,14 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         }
         autoScrollFpsComboBox.setModel(model);
 
-        int currentFps = settings.getAutoScrollFps();
-        int selectedIndex = 0;
-        for (int i = 0; i < SettingConstants.AUTO_SCROLL_FPS_OPTIONS.length; i++) {
-            if (SettingConstants.AUTO_SCROLL_FPS_OPTIONS[i] == currentFps) {
-                selectedIndex = i;
-                break;
+        Integer currentFps = settings.getAutoScrollFps();
+        int selectedIndex = SettingConstants.AUTO_SCROLL_FPS_DEFAULT_INDEX;
+        if (currentFps != null) {
+            for (int i = 0; i < SettingConstants.AUTO_SCROLL_FPS_OPTIONS.length; i++) {
+                if (SettingConstants.AUTO_SCROLL_FPS_OPTIONS[i].compareTo(currentFps) == 0) {
+                    selectedIndex = i;
+                    break;
+                }
             }
         }
         autoScrollFpsComboBox.setSelectedIndex(selectedIndex);
@@ -917,7 +927,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
         // 初始化时根据当前引擎更新音色和风格选项
         updateVoiceRoleAndStyleForEngine(settings.getTtsEngine() != null ? settings.getTtsEngine() : TtsEngineEnum.EDGE.getEngineId());
-        
+
         // 初始化UI可见性
         updateUIVisibilityForEngine(settings.getTtsEngine() != null ? settings.getTtsEngine() : TtsEngineEnum.EDGE.getEngineId());
     }
@@ -955,11 +965,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 创建提示标签
         JLabel audioTagHint = new JLabel(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG_HINT);
         audioTagHint.setForeground(UIManager.getColor("Component.infoForeground"));
-        audioTagHint.setFont(audioTagHint.getFont().deriveFont(Font.PLAIN, 10));
+        audioTagHint.setFont(audioTagHint.getFont().deriveFont(Font.PLAIN, 12));
 
         JLabel naturalLanguageHint = new JLabel(Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE_HINT);
         naturalLanguageHint.setForeground(UIManager.getColor("Component.infoForeground"));
-        naturalLanguageHint.setFont(naturalLanguageHint.getFont().deriveFont(Font.PLAIN, 10));
+        naturalLanguageHint.setFont(naturalLanguageHint.getFont().deriveFont(Font.PLAIN, 12));
 
         // 布局 - 使用 FlowLayout
         mimoStyleControlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 2));
@@ -989,6 +999,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
     /**
      * 根据风格控制类型更新UI组件可见性
+     *
      * @param isAudioTagControl true=音频标签控制，false=自然语言控制
      */
     private void updateStyleControlVisibility(boolean isAudioTagControl) {
@@ -1178,7 +1189,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
 
             GroupedComboBox mimoGroupedComboBox = new GroupedComboBox();
             voiceRoleGroupComboBox = mimoGroupedComboBox.buildGroupedComboBox(mimoNicknameByLocale);
-            
+
             // 设置当前选中的音色
             String currentVoice = settings.getVoiceRole();
             if (currentVoice != null) {
@@ -1195,7 +1206,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
             }
             audioStyleComboBox.setModel(new DefaultComboBoxModel<>(mimoStyleNames));
             audioStyleComboBox.setEditable(true); // MiMo 风格可编辑
-            
+
             // 设置当前选中的风格
             String currentStyle = settings.getAudioStyle();
             if (currentStyle != null && !currentStyle.isEmpty()) {
@@ -1243,7 +1254,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 audioStyleComboBox.setModel(new DefaultComboBoxModel<>(voiceStyleStrs));
             }
             audioStyleComboBox.setEditable(false); // Edge 风格不可编辑
-            
+
             // 设置当前选中的风格
             String currentStyle = settings.getAudioStyle();
             if (currentStyle != null && !currentStyle.isEmpty()) {
@@ -1282,7 +1293,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         // 音色组件已在 createUITtsEngine() 的 updateVoiceRoleAndStyleForEngine() 中初始化
         // 这里只需要为 Edge TTS 添加音色切换监听器
         String currentEngine = settings.getTtsEngine() != null ? settings.getTtsEngine() : TtsEngineEnum.EDGE.getEngineId();
-        
+
         if (!TtsEngineEnum.MIMO.getEngineId().equals(currentEngine)) {
             // Edge TTS 音色切换监听器
             voiceRoleGroupComboBox.addActionListener(e1 -> {
@@ -1323,6 +1334,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         ComboBoxEditor rateEditor = rateComboBox.getEditor();
         rateEditor.setItem(settings.getRate());
     }
+
     /**
      * 创建音频音量设置UI
      */
@@ -1332,6 +1344,7 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         ComboBoxEditor volumeEditor = volumeComboBox.getEditor();
         volumeEditor.setItem(settings.getVolume());
     }
+
     /**
      * 创建音频风格设置UI
      * 注意：风格选项已在 updateVoiceRoleAndStyleForEngine() 中初始化
@@ -1339,13 +1352,13 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
      */
     private void createUIAudioStyle() {
         String currentEngine = settings.getTtsEngine() != null ? settings.getTtsEngine() : TtsEngineEnum.EDGE.getEngineId();
-        
+
         if (TtsEngineEnum.MIMO.getEngineId().equals(currentEngine)) {
             audioStyleComboBox.setEditable(true);
         } else {
             audioStyleComboBox.setEditable(false);
         }
-        
+
         // 选中当前保存的风格
         String currentStyle = settings.getAudioStyle();
         if (currentStyle != null && !currentStyle.isEmpty()) {
