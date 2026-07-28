@@ -10,6 +10,7 @@ import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.*;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.service.AppStateService;
+import com.wei.wreader.service.BookshelfService;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.SiteRuleService;
 import com.wei.wreader.tts.TtsService;
@@ -46,6 +47,7 @@ public final class ReaderOrchestrator {
     private final AutoReadController autoReadController;
     private final AutoScrollController autoScrollController;
     private final FontManager fontManager;
+    private final BookshelfService bookshelfService;
 
     public static ReaderOrchestrator getInstance(Project project) {
         return project.getService(ReaderOrchestrator.class);
@@ -65,6 +67,7 @@ public final class ReaderOrchestrator {
         this.autoScrollController = AutoScrollController.getInstance();
         this.autoScrollController.init(project, cacheService);
         this.fontManager = new FontManager(cacheService, appConfig);
+        this.bookshelfService = BookshelfService.getInstance();
 
         initialize();
     }
@@ -271,6 +274,8 @@ public final class ReaderOrchestrator {
                     ReaderStatusBarWidget.update(project);
                     break;
             }
+
+            saveReadingProgress();
         } catch (Exception e) {
             LOG.error("Failed to update content text", e);
         }
@@ -384,5 +389,48 @@ public final class ReaderOrchestrator {
             }
         }
         return sb.toString();
+    }
+
+    public void saveReadingProgress() {
+        try {
+            BookInfo bookInfo = cacheService.getSelectedBookInfo();
+            if (bookInfo == null || StringUtils.isBlank(bookInfo.getBookName())) return;
+
+            SiteBean siteBean = cacheService.getSelectedSiteBean();
+            String siteId = siteBean != null ? siteBean.getId() : "local";
+            String bookId = bookInfo.getBookId() != null ? bookInfo.getBookId() : bookInfo.getBookName();
+            String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
+
+            ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
+            int chapterIndex = chapterInfo != null ? chapterInfo.getSelectedChapterIndex() : 0;
+            String chapterTitle = chapterInfo != null ? chapterInfo.getChapterTitle() : "";
+            int lastReadLineNum = chapterInfo != null ? chapterInfo.getLastReadLineNum() : 0;
+
+            List<String> chapterList = cacheService.getChapterList();
+            int totalChapters = chapterList != null ? chapterList.size() : 0;
+
+            int scrollBarValue = cacheService.getEditorMessageVerticalScrollValue();
+
+            BookshelfItem existing = bookshelfService.getByUniqueKey(uniqueKey);
+            if (existing != null) {
+                bookshelfService.updateReadingProgress(uniqueKey, chapterIndex, chapterTitle,
+                        scrollBarValue, lastReadLineNum, totalChapters);
+            } else {
+                BookshelfItem item = new BookshelfItem();
+                item.setUniqueKey(uniqueKey);
+                item.setSiteId(siteId);
+                item.setBookId(bookId);
+                item.copyFromBookInfo(bookInfo);
+                item.setChapterIndex(chapterIndex);
+                item.setChapterTitle(chapterTitle);
+                item.setScrollBarValue(scrollBarValue);
+                item.setLastReadLineNum(lastReadLineNum);
+                item.setTotalChapters(totalChapters);
+                item.setDataLoadType(cacheService.getSettings() != null ? cacheService.getSettings().getDataLoadType() : 1);
+                bookshelfService.recordReadingHistory(item);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to save reading progress", e);
+        }
     }
 }

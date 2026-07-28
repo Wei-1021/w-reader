@@ -235,6 +235,7 @@
         <applicationService serviceImplementation="com.wei.wreader.service.SiteRuleService"/>
         <applicationService serviceImplementation="com.wei.wreader.service.AppConfigService"/>
         <applicationService serviceImplementation="com.wei.wreader.service.AppStateService"/>
+        <applicationService serviceImplementation="com.wei.wreader.service.BookshelfService"/>
         <applicationConfigurable parentId="tools"
                                  instance="com.wei.wreader.ui.WReaderSettingForm"
                                  id="wreader.WReaderSettingForm"
@@ -324,6 +325,16 @@
                 text="书籍信息"
                 icon="com.wei.wreader.util.WReaderIcons.BOOK_INFO">
         </action>
+        <action id="wreader.BookshelfAction"
+                class="com.wei.wreader.action.BookshelfAction"
+                text="书架"
+                icon="AllIcons.Actions.MenuOpen">
+        </action>
+        <action id="wreader.AddToShelfAction"
+                class="com.wei.wreader.action.AddToShelfAction"
+                text="加入书架"
+                icon="AllIcons.Actions.Add">
+        </action>
         <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction"
                 text="自定义书源规则(Beta)"
                 icon="com.wei.wreader.util.WReaderIcons.CUSTOM_SITE">
@@ -366,6 +377,8 @@
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->
@@ -373,6 +386,8 @@
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
@@ -410,6 +425,8 @@
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
@@ -418,6 +435,8 @@
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
             <separator/>
             <reference ref="wreader.SearchBookName"/>
             <reference ref="wreader.LoadLocalFileAction"/>
