@@ -3,6 +3,7 @@ package com.wei.wreader.reader;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.WindowManager;
 import com.wei.wreader.content.ContentFormatter;
 import com.wei.wreader.content.ContentParser;
 import com.wei.wreader.content.HtmlContentRenderer;
@@ -23,6 +24,8 @@ import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -70,6 +73,7 @@ public final class ReaderOrchestrator {
         this.bookshelfService = BookshelfService.getInstance();
 
         initialize();
+        registerFocusListener();
     }
 
     /**
@@ -180,6 +184,28 @@ public final class ReaderOrchestrator {
             state.setChapterNames(chapterList);
             state.setChapterUrls(chapterUrlList);
         });
+    }
+
+    private void registerFocusListener() {
+        javax.swing.JFrame frame = WindowManager.getInstance().getFrame(project);
+        if (frame == null) return;
+
+        frame.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                hideReaderWindow();
+            }
+        });
+    }
+
+    private void hideReaderWindow() {
+        com.intellij.openapi.wm.ToolWindowManager toolWindowManager =
+                com.intellij.openapi.wm.ToolWindowManager.getInstance(project);
+        com.intellij.openapi.wm.ToolWindow toolWindow =
+                toolWindowManager.getToolWindow(com.wei.wreader.util.data.ConstUtil.WREADER_TOOL_WINDOW_ID);
+        if (toolWindow != null && toolWindow.isVisible()) {
+            toolWindow.hide(null);
+        }
     }
 
     // --- 章节导航 ---
