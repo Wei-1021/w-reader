@@ -5,27 +5,27 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
-import com.wei.wreader.model.BookshelfItem;
-import com.wei.wreader.model.BookInfo;
-import com.wei.wreader.model.ChapterInfo;
-import com.wei.wreader.model.SiteBean;
-import com.wei.wreader.model.Settings;
+import com.wei.wreader.content.HtmlContentRenderer;
+import com.wei.wreader.model.*;
 import com.wei.wreader.reader.ReaderOrchestrator;
+import com.wei.wreader.search.SearchService;
 import com.wei.wreader.service.BookshelfService;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.util.CustomSiteUtil;
+import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.file.FileUtil;
+import com.wei.wreader.util.ui.ToolWindowUtil;
+import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.nodes.Element;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BookshelfPanel extends JPanel {
 
@@ -40,10 +40,6 @@ public class BookshelfPanel extends JPanel {
     private JLabel statusLabel;
 
     private List<BookshelfItem> currentShelfItems;
-
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter
-            .ofPattern("MM-dd HH:mm")
-            .withZone(ZoneId.systemDefault());
 
     public BookshelfPanel(Project project) {
         this.project = project;
@@ -159,13 +155,13 @@ public class BookshelfPanel extends JPanel {
     }
 
     private void openBookFromShelf(BookshelfItem item) {
-        cacheService.setSelectedBookInfo(item.toBookInfo());
-
+        SiteBean siteBean = null;
         if (StringUtils.isNotBlank(item.getSiteId()) && !item.getSiteId().equals("local")) {
             List<SiteBean> siteBeanList = FileUtil.readResourcesJsonList(
                     CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
-            for (SiteBean siteBean : siteBeanList) {
-                if (item.getSiteId().equals(siteBean.getId())) {
+            for (SiteBean sb : siteBeanList) {
+                if (item.getSiteId().equals(sb.getId())) {
+                    siteBean = sb;
                     cacheService.setSelectedSiteBean(siteBean);
                     cacheService.setSelectedBookSiteIndex(siteBeanList.indexOf(siteBean));
                     cacheService.setSelectedBookInfoRules(siteBean.getBookInfoRules());
@@ -175,31 +171,133 @@ public class BookshelfPanel extends JPanel {
             }
         }
 
-        ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
-        if (chapterInfo == null) {
-            chapterInfo = new ChapterInfo();
+        if (siteBean == null) {
+            siteBean = cacheService.getSelectedSiteBean();
         }
-        chapterInfo.setSelectedChapterIndex(item.getChapterIndex());
-        chapterInfo.setChapterTitle(item.getChapterTitle());
-        chapterInfo.setLastReadLineNum(item.getLastReadLineNum());
-        cacheService.setSelectedChapterInfo(chapterInfo);
+
+        BookInfo bookInfo = item.toBookInfo();
+        cacheService.setSelectedBookInfo(bookInfo);
+        cacheService.setTempSelectedBookInfo(bookInfo);
+        cacheService.setTempSelectedSiteBean(siteBean);
+        if (siteBean != null) {
+            cacheService.setTempSelectedBookSiteIndex(cacheService.getSelectedBookSiteIndex());
+        }
 
         Settings settings = cacheService.getSettings();
         if (settings != null) {
             settings.setDataLoadType(item.getDataLoadType());
         }
 
-        ReaderOrchestrator orchestrator = ReaderOrchestrator.getInstance(project);
-        orchestrator.updateContentText();
+        final int targetChapterIndex = item.getChapterIndex();
+        final String targetChapterTitle = item.getChapterTitle();
+        final SiteBean finalSiteBean = siteBean;
 
-        bookshelfService.updateReadingProgress(
-                item.getUniqueKey(),
-                item.getChapterIndex(),
-                item.getChapterTitle(),
-                item.getScrollBarValue(),
-                item.getLastReadLineNum(),
-                item.getTotalChapters()
+        SearchService searchService = new SearchService(project);
+        searchService.loadBookDirectory(bookInfo,
+                chapterNames -> {
+                    if (chapterNames == null || chapterNames.isEmpty()) {
+                        return;
+                    }
+                    cacheService.setChapterList(new ArrayList<>(chapterNames));
+                },
+                chapterUrls -> {
+                    if (chapterUrls == null || chapterUrls.isEmpty()) {
+                        return;
+                    }
+                    cacheService.setChapterUrlList(new ArrayList<>(chapterUrls));
+
+                    int rawIdx = Math.min(targetChapterIndex, chapterUrls.size() - 1);
+                    final int idx = Math.max(rawIdx, 0);
+
+                    String chapterSuffixUrl = (idx < chapterUrls.size()) ? chapterUrls.get(idx) : "";
+                    String chapterUrl = buildFullChapterUrl(chapterSuffixUrl, finalSiteBean);
+
+                    ChapterInfo chapterInfo = new ChapterInfo();
+                    chapterInfo.setChapterTitle(
+                            idx < cacheService.getChapterList().size()
+                                    ? cacheService.getChapterList().get(idx)
+                                    : targetChapterTitle);
+                    chapterInfo.setChapterUrl(chapterUrl);
+                    chapterInfo.setSelectedChapterIndex(idx);
+                    chapterInfo.setLastReadLineNum(item.getLastReadLineNum());
+
+                    searchService.searchBookContentRemote(chapterUrl, chapterInfo, param -> {
+                        processChapterContent(param, chapterInfo, idx);
+                    });
+                },
+                appendResult -> {
+                    List<String> extraNames = appendResult.get("chapterNames");
+                    List<String> extraUrls = appendResult.get("chapterUrls");
+                    if (extraNames != null) {
+                        List<String> current = cacheService.getChapterList();
+                        if (current != null) {
+                            current.addAll(extraNames);
+                            cacheService.setChapterList(current);
+                        }
+                    }
+                    if (extraUrls != null) {
+                        List<String> currentUrls = cacheService.getChapterUrlList();
+                        if (currentUrls != null) {
+                            currentUrls.addAll(extraUrls);
+                            cacheService.setChapterUrlList(currentUrls);
+                        }
+                    }
+                }
         );
+    }
+
+    private String buildFullChapterUrl(String suffixUrl, SiteBean siteBean) {
+        if (StringUtils.isBlank(suffixUrl)) {
+            return suffixUrl;
+        }
+        if (suffixUrl.startsWith(ConstUtil.HTTP_SCHEME) ||
+                suffixUrl.startsWith(ConstUtil.HTTPS_SCHEME)) {
+            return suffixUrl;
+        }
+        String baseUrl = (siteBean != null) ? siteBean.getBaseUrl() : "";
+        return baseUrl + suffixUrl;
+    }
+
+    private void processChapterContent(SearchBookCallParam param, ChapterInfo chapterInfo, int selectedIndex) {
+        cacheService.setSelectedSiteBean(cacheService.getTempSelectedSiteBean());
+        cacheService.setSelectedBookSiteIndex(cacheService.getTempSelectedBookSiteIndex());
+        cacheService.setSelectedBookInfo(cacheService.getTempSelectedBookInfo());
+
+        String fontColorHex = ReaderOrchestrator.getInstance(project).getFontManager().getFontColorHex();
+        String fontFamily = ReaderOrchestrator.getInstance(project).getFontManager().getFontFamily();
+        int fontSize = ReaderOrchestrator.getInstance(project).getFontManager().getFontSize();
+
+        String rawContent = HtmlContentRenderer.buildCustomStyleContent(param.getChapterContentHtml(),
+                fontColorHex, fontFamily, fontSize);
+        final String content = (rawContent != null) ? rawContent.replaceAll("(?s)<style[^>]*>.*?</style>", "") : null;
+        chapterInfo.setChapterContent(content);
+        chapterInfo.setChapterContentStr(param.getChapterContentText());
+        chapterInfo.setSelectedChapterIndex(selectedIndex);
+
+        Settings settings = cacheService.getSettings();
+        if (settings == null) {
+            settings = new Settings();
+        }
+        int singleLineChars = settings.getSingleLineChars();
+        chapterInfo.initLineNum(1, 2, 1, singleLineChars);
+        cacheService.setSelectedChapterInfo(chapterInfo);
+
+        int displayType = settings.getDisplayType();
+        if (displayType == Settings.DISPLAY_TYPE_SIDEBAR) {
+            ToolWindowUtil.updateContentText(project, textPane -> {
+                if (content != null) {
+                    textPane.setText(content);
+                    textPane.setCaretPosition(0);
+                }
+            });
+        } else if (displayType == Settings.DISPLAY_TYPE_STATUSBAR) {
+            ReaderStatusBarWidget.update(project);
+        }
+
+        Element bodyElement = param.getBodyElement();
+        if (bodyElement != null) {
+            ReaderOrchestrator.getInstance(project).loadThisChapterNextContent(chapterInfo.getChapterUrl(), bodyElement);
+        }
     }
 
     private static class BookshelfCellRenderer extends JLabel implements ListCellRenderer<String> {
