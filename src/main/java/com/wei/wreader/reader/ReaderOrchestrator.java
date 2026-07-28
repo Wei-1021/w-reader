@@ -398,7 +398,7 @@ public final class ReaderOrchestrator {
 
             SiteBean siteBean = cacheService.getSelectedSiteBean();
             String siteId = siteBean != null ? siteBean.getId() : "local";
-            String bookId = bookInfo.getBookId() != null ? bookInfo.getBookId() : bookInfo.getBookName();
+            String bookId = resolveBookId(bookInfo);
             String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
 
             ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
@@ -432,5 +432,16 @@ public final class ReaderOrchestrator {
         } catch (Exception e) {
             LOG.error("Failed to save reading progress", e);
         }
+    }
+
+    private String resolveBookId(BookInfo bookInfo) {
+        if (bookInfo == null) return "";
+        if (StringUtils.isNotBlank(bookInfo.getBookId())) {
+            return bookInfo.getBookId();
+        }
+        if (StringUtils.isNotBlank(bookInfo.getBookUrl())) {
+            return bookInfo.getBookUrl();
+        }
+        return bookInfo.getBookName();
     }
 }

@@ -328,12 +328,12 @@
         <action id="wreader.BookshelfAction"
                 class="com.wei.wreader.action.BookshelfAction"
                 text="书架"
-                icon="AllIcons.Actions.MenuOpen">
+                icon="com.wei.wreader.util.WReaderIcons.BOOKSHELF">
         </action>
         <action id="wreader.AddToShelfAction"
                 class="com.wei.wreader.action.AddToShelfAction"
                 text="加入书架"
-                icon="AllIcons.Actions.Add">
+                icon="com.wei.wreader.util.WReaderIcons.ADD_TO_SHELF">
         </action>
         <action id="wreader.CustomSiteRuleAction" class="com.wei.wreader.action.CustomSiteRuleAction"
                 text="自定义书源规则(Beta)"

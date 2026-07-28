@@ -17,7 +17,7 @@ public class AddToShelfAction extends BaseAction {
     public AddToShelfAction() {
         super();
         getTemplatePresentation().setText("加入书架");
-        getTemplatePresentation().setIcon(WReaderIcons.BOOK_INFO);
+        getTemplatePresentation().setIcon(WReaderIcons.ADD_TO_SHELF);
     }
 
     @Override
@@ -30,18 +30,16 @@ public class AddToShelfAction extends BaseAction {
             return;
         }
 
-        SiteBean siteBean = cacheService.getSelectedSiteBean();
-        String siteId = siteBean != null ? siteBean.getId() : "local";
-        String bookId = bookInfo.getBookId() != null ? bookInfo.getBookId() : bookInfo.getBookName();
-        String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
+        String uniqueKey = buildCurrentBookUniqueKey();
 
         if (bookshelfService.isInShelf(uniqueKey)) {
             bookshelfService.removeFromShelf(uniqueKey);
         } else {
             BookshelfItem item = new BookshelfItem();
             item.setUniqueKey(uniqueKey);
-            item.setSiteId(siteId);
-            item.setBookId(bookId);
+            SiteBean siteBean = cacheService.getSelectedSiteBean();
+            item.setSiteId(siteBean != null ? siteBean.getId() : "local");
+            item.setBookId(resolveBookId(bookInfo));
             item.copyFromBookInfo(bookInfo);
             item.setDataLoadType(settings.getDataLoadType());
 
@@ -70,10 +68,7 @@ public class AddToShelfAction extends BaseAction {
         e.getPresentation().setEnabled(hasBook);
 
         if (hasBook) {
-            SiteBean siteBean = cs.getSelectedSiteBean();
-            String siteId = siteBean != null ? siteBean.getId() : "local";
-            String bookId = bookInfo.getBookId() != null ? bookInfo.getBookId() : bookInfo.getBookName();
-            String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
+            String uniqueKey = buildCurrentBookUniqueKey(cs);
 
             if (bookshelfService.isInShelf(uniqueKey)) {
                 e.getPresentation().setText("移出书架");
@@ -81,5 +76,28 @@ public class AddToShelfAction extends BaseAction {
                 e.getPresentation().setText("加入书架");
             }
         }
+    }
+
+    private String buildCurrentBookUniqueKey() {
+        return buildCurrentBookUniqueKey(CacheService.getInstance());
+    }
+
+    private String buildCurrentBookUniqueKey(CacheService cs) {
+        BookInfo bookInfo = cs.getSelectedBookInfo();
+        SiteBean siteBean = cs.getSelectedSiteBean();
+        String siteId = siteBean != null ? siteBean.getId() : "local";
+        String bookId = resolveBookId(bookInfo);
+        return BookshelfItem.buildUniqueKey(siteId, bookId);
+    }
+
+    private String resolveBookId(BookInfo bookInfo) {
+        if (bookInfo == null) return "";
+        if (StringUtils.isNotBlank(bookInfo.getBookId())) {
+            return bookInfo.getBookId();
+        }
+        if (StringUtils.isNotBlank(bookInfo.getBookUrl())) {
+            return bookInfo.getBookUrl();
+        }
+        return bookInfo.getBookName();
     }
 }
