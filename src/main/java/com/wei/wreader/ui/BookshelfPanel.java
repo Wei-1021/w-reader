@@ -23,6 +23,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +70,25 @@ public class BookshelfPanel extends JPanel {
         shelfList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateButtonState();
+            }
+        });
+
+        shelfList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    openSelectedBook();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showPopupMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showPopupMenu(e);
             }
         });
 
@@ -135,6 +157,26 @@ public class BookshelfPanel extends JPanel {
         boolean selected = idx >= 0 && idx < currentShelfItems.size();
         openButton.setEnabled(selected);
         removeButton.setEnabled(selected);
+    }
+
+    private void showPopupMenu(MouseEvent e) {
+        if (!e.isPopupTrigger()) return;
+
+        int row = shelfList.locationToIndex(e.getPoint());
+        if (row < 0 || row >= currentShelfItems.size()) return;
+
+        shelfList.setSelectedIndex(row);
+
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem openItem = new JMenuItem("打开阅读");
+        openItem.addActionListener(ev -> openSelectedBook());
+        JMenuItem removeItem = new JMenuItem("移出书架");
+        removeItem.addActionListener(ev -> removeSelectedBook());
+
+        popupMenu.add(openItem);
+        popupMenu.addSeparator();
+        popupMenu.add(removeItem);
+        popupMenu.show(shelfList, e.getX(), e.getY());
     }
 
     private void openSelectedBook() {
