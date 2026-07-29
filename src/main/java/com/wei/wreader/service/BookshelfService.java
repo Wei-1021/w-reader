@@ -68,12 +68,12 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
             BookshelfItem existing = findByUniqueKey(item.getUniqueKey());
             if (existing != null) {
                 existing.setInShelf(true);
-                existing.setAddedAt(Instant.now());
+                existing.setAddedAt(System.currentTimeMillis());
             } else {
                 item.setInShelf(true);
-                item.setAddedAt(Instant.now());
+                item.setAddedAt(System.currentTimeMillis());
                 if (item.getLastReadAt() == null) {
-                    item.setLastReadAt(Instant.now());
+                    item.setLastReadAt(System.currentTimeMillis());
                 }
                 bookshelfItems.add(item);
             }
@@ -130,7 +130,7 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
                 existing.setScrollBarValue(scrollBarValue);
                 existing.setLastReadLineNum(lastReadLineNum);
                 existing.setTotalChapters(totalChapters);
-                existing.setLastReadAt(Instant.now());
+                existing.setLastReadAt(System.currentTimeMillis());
             }
         } finally {
             lock.writeLock().unlock();
@@ -153,9 +153,9 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
                 existing.setScrollBarValue(item.getScrollBarValue());
                 existing.setLastReadLineNum(item.getLastReadLineNum());
                 existing.setDataLoadType(item.getDataLoadType());
-                existing.setLastReadAt(Instant.now());
+                existing.setLastReadAt(System.currentTimeMillis());
             } else {
-                item.setLastReadAt(Instant.now());
+                item.setLastReadAt(System.currentTimeMillis());
                 bookshelfItems.add(item);
                 trimHistory();
             }

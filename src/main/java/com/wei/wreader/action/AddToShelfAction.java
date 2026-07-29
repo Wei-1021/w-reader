@@ -53,7 +53,7 @@ public class AddToShelfAction extends BaseAction {
             java.util.List<String> chapterList = cacheService.getChapterList();
             item.setTotalChapters(chapterList != null ? chapterList.size() : 0);
 
-            item.setLastReadAt(Instant.now());
+            item.setLastReadAt(System.currentTimeMillis());
             bookshelfService.addToShelf(item);
         }
     }

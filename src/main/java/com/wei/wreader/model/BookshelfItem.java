@@ -22,8 +22,10 @@ public class BookshelfItem implements Serializable {
     private int lastReadLineNum;
     private int totalChapters;
 
-    private Instant addedAt;
-    private Instant lastReadAt;
+//    private Instant addedAt;
+//    private Instant lastReadAt;
+    private Long addedAt;
+    private Long lastReadAt;
 
     private boolean inShelf;
     private int dataLoadType;
@@ -139,19 +141,19 @@ public class BookshelfItem implements Serializable {
         this.totalChapters = totalChapters;
     }
 
-    public Instant getAddedAt() {
+    public Long getAddedAt() {
         return addedAt;
     }
 
-    public void setAddedAt(Instant addedAt) {
+    public void setAddedAt(Long addedAt) {
         this.addedAt = addedAt;
     }
 
-    public Instant getLastReadAt() {
+    public Long getLastReadAt() {
         return lastReadAt;
     }
 
-    public void setLastReadAt(Instant lastReadAt) {
+    public void setLastReadAt(Long lastReadAt) {
         this.lastReadAt = lastReadAt;
     }
 
