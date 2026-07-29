@@ -3,6 +3,7 @@ package com.wei.wreader.reader;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.WindowManager;
 import com.wei.wreader.content.ContentFormatter;
 import com.wei.wreader.content.ContentParser;
 import com.wei.wreader.content.HtmlContentRenderer;
@@ -10,6 +11,7 @@ import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.*;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.service.AppStateService;
+import com.wei.wreader.service.BookshelfService;
 import com.wei.wreader.service.CacheService;
 import com.wei.wreader.service.SiteRuleService;
 import com.wei.wreader.tts.TtsService;
@@ -22,6 +24,8 @@ import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -46,6 +50,7 @@ public final class ReaderOrchestrator {
     private final AutoReadController autoReadController;
     private final AutoScrollController autoScrollController;
     private final FontManager fontManager;
+    private final BookshelfService bookshelfService;
 
     public static ReaderOrchestrator getInstance(Project project) {
         return project.getService(ReaderOrchestrator.class);
@@ -65,8 +70,10 @@ public final class ReaderOrchestrator {
         this.autoScrollController = AutoScrollController.getInstance();
         this.autoScrollController.init(project, cacheService);
         this.fontManager = new FontManager(cacheService, appConfig);
+        this.bookshelfService = BookshelfService.getInstance();
 
         initialize();
+        registerFocusListener();
     }
 
     /**
@@ -179,6 +186,28 @@ public final class ReaderOrchestrator {
         });
     }
 
+    private void registerFocusListener() {
+        javax.swing.JFrame frame = WindowManager.getInstance().getFrame(project);
+        if (frame == null) return;
+
+        frame.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                hideReaderWindow();
+            }
+        });
+    }
+
+    private void hideReaderWindow() {
+        com.intellij.openapi.wm.ToolWindowManager toolWindowManager =
+                com.intellij.openapi.wm.ToolWindowManager.getInstance(project);
+        com.intellij.openapi.wm.ToolWindow toolWindow =
+                toolWindowManager.getToolWindow(com.wei.wreader.util.data.ConstUtil.WREADER_TOOL_WINDOW_ID);
+        if (toolWindow != null && toolWindow.isVisible()) {
+            toolWindow.hide(null);
+        }
+    }
+
     // --- 章节导航 ---
 
     public void prevPageChapter(BiConsumer<ChapterInfo, Element> runnable) {
@@ -271,6 +300,8 @@ public final class ReaderOrchestrator {
                     ReaderStatusBarWidget.update(project);
                     break;
             }
+
+            saveReadingProgress();
         } catch (Exception e) {
             LOG.error("Failed to update content text", e);
         }
@@ -384,5 +415,59 @@ public final class ReaderOrchestrator {
             }
         }
         return sb.toString();
+    }
+
+    public void saveReadingProgress() {
+        try {
+            BookInfo bookInfo = cacheService.getSelectedBookInfo();
+            if (bookInfo == null || StringUtils.isBlank(bookInfo.getBookName())) return;
+
+            SiteBean siteBean = cacheService.getSelectedSiteBean();
+            String siteId = siteBean != null ? siteBean.getId() : "local";
+            String bookId = resolveBookId(bookInfo);
+            String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
+
+            ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
+            int chapterIndex = chapterInfo != null ? chapterInfo.getSelectedChapterIndex() : 0;
+            String chapterTitle = chapterInfo != null ? chapterInfo.getChapterTitle() : "";
+            int lastReadLineNum = chapterInfo != null ? chapterInfo.getLastReadLineNum() : 0;
+
+            List<String> chapterList = cacheService.getChapterList();
+            int totalChapters = chapterList != null ? chapterList.size() : 0;
+
+            int scrollBarValue = cacheService.getEditorMessageVerticalScrollValue();
+
+            BookshelfItem existing = bookshelfService.getByUniqueKey(uniqueKey);
+            if (existing != null) {
+                bookshelfService.updateReadingProgress(uniqueKey, chapterIndex, chapterTitle,
+                        scrollBarValue, lastReadLineNum, totalChapters);
+            } else {
+                BookshelfItem item = new BookshelfItem();
+                item.setUniqueKey(uniqueKey);
+                item.setSiteId(siteId);
+                item.setBookId(bookId);
+                item.copyFromBookInfo(bookInfo);
+                item.setChapterIndex(chapterIndex);
+                item.setChapterTitle(chapterTitle);
+                item.setScrollBarValue(scrollBarValue);
+                item.setLastReadLineNum(lastReadLineNum);
+                item.setTotalChapters(totalChapters);
+                item.setDataLoadType(cacheService.getSettings() != null ? cacheService.getSettings().getDataLoadType() : 1);
+                bookshelfService.recordReadingHistory(item);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to save reading progress", e);
+        }
+    }
+
+    private String resolveBookId(BookInfo bookInfo) {
+        if (bookInfo == null) return "";
+        if (StringUtils.isNotBlank(bookInfo.getBookId())) {
+            return bookInfo.getBookId();
+        }
+        if (StringUtils.isNotBlank(bookInfo.getBookUrl())) {
+            return bookInfo.getBookUrl();
+        }
+        return bookInfo.getBookName();
     }
 }

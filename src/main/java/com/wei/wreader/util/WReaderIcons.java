@@ -22,6 +22,8 @@ public class WReaderIcons {
     public static final Icon CUSTOM_SITE = IconLoader.getIcon("/icon/custom_site.svg", WReaderIcons.class);
     public static final Icon LINK_WAY = IconLoader.getIcon("/icon/link_way.svg", WReaderIcons.class);
     public static final Icon AI_GENERATE = IconLoader.getIcon("/icon/ai_generate.svg", WReaderIcons.class);
+    public static final Icon BOOKSHELF = IconLoader.getIcon("/icon/bookshelf.svg", WReaderIcons.class);
+    public static final Icon ADD_TO_SHELF = IconLoader.getIcon("/icon/add_to_shelf.svg", WReaderIcons.class);
 
     /**
      * 获取主图标

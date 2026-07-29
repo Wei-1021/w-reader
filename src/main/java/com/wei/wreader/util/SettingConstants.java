@@ -15,15 +15,15 @@ public final class SettingConstants {
     public static final float AUTO_READ_TIME_DEFAULT = 5f;
 
     // ==================== 自动滚屏 ====================
-    public static final Integer[] AUTO_SCROLL_SPEED_OPTIONS = {0, 5, 10, 20, 30, 50, 70, 100, 150, 200};
+    public static final Integer[] AUTO_SCROLL_SPEED_OPTIONS = {0, 5, 10, 15, 20, 30, 50, 80, 100};
     public static final String[] AUTO_SCROLL_SPEED_LABELS = {
-        "0 (关闭)", "5%/s (极慢)", "10%/s (极慢)", "20%/s (慢速)", "30%/s (较慢)",
-        "50%/s (适中)", "70%/s (较快)", "100%/s (快速)",
-        "150%/s (很快)", "200%/s (极快)"
+        "0 (关闭)", "5%/s (极慢)", "10%/s (慢速)", "15%/s (较慢)",
+        "20%/s (适中)", "30%/s (较快)", "50%/s (快速)",
+        "80%/s (很快)", "100%/s (极快)"
     };
     public static final int AUTO_SCROLL_SPEED_DEFAULT = 20;
     /** 滚屏速率选项默认索引 */
-    public static final int AUTO_SCROLL_SPEED_DEFAULT_INDEX = 2;
+    public static final int AUTO_SCROLL_SPEED_DEFAULT_INDEX = 4;
     public static final int AUTO_SCROLL_SPEED_OFF = 0;
 
     // ==================== 自动滚屏帧率 ====================
