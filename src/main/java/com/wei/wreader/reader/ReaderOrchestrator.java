@@ -3,6 +3,8 @@ package com.wei.wreader.reader;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.WindowManager;
 import com.wei.wreader.content.ContentFormatter;
 import com.wei.wreader.content.ContentParser;
@@ -73,7 +75,6 @@ public final class ReaderOrchestrator {
         this.bookshelfService = BookshelfService.getInstance();
 
         initialize();
-        registerFocusListener();
     }
 
     /**
@@ -199,10 +200,8 @@ public final class ReaderOrchestrator {
     }
 
     private void hideReaderWindow() {
-        com.intellij.openapi.wm.ToolWindowManager toolWindowManager =
-                com.intellij.openapi.wm.ToolWindowManager.getInstance(project);
-        com.intellij.openapi.wm.ToolWindow toolWindow =
-                toolWindowManager.getToolWindow(com.wei.wreader.util.data.ConstUtil.WREADER_TOOL_WINDOW_ID);
+        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        ToolWindow toolWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
         if (toolWindow != null && toolWindow.isVisible()) {
             toolWindow.hide(null);
         }

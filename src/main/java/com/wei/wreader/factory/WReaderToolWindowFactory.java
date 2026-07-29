@@ -66,6 +66,11 @@ public class WReaderToolWindowFactory implements ToolWindowFactory, DumbAware {
             registerToolWindowTaskBuilder.contentFactory = WReaderToolWindowFactory.this;
             return Unit.INSTANCE;
         });
+        // 设置默认为 Undock（停靠不固定，失焦自动隐藏）
+        ToolWindow newWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+        if (newWindow != null) {
+            newWindow.setType(ToolWindowType.SLIDING, null);
+        }
     }
 
     /**

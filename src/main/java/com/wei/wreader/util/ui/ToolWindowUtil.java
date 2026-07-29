@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ToolWindowType;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -195,6 +196,11 @@ public class ToolWindowUtil {
                 registerToolWindowTaskBuilder.contentFactory = new WReaderToolWindowFactory();
                 return Unit.INSTANCE;
             });
+            // 设置默认为 Undock（停靠不固定，失焦自动隐藏）
+            ToolWindow newWindow = toolWindowManager.getToolWindow(ConstUtil.WREADER_TOOL_WINDOW_ID);
+            if (newWindow != null) {
+                newWindow.setType(ToolWindowType.SLIDING, null);
+            }
         }
     }
 }

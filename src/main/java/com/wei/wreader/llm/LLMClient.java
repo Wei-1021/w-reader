@@ -352,7 +352,7 @@ public class LLMClient {
 
                 JsonNode choice = choices.get(0);
                 JsonNode message = choice.path("message");
-                String finishReason = choice.path("finish_reason").asText("");
+                String finishReason = choice.path("finish_reason").asText();
 
                 String content = message.path("content").isTextual()
                         ? message.path("content").asText() : null;
