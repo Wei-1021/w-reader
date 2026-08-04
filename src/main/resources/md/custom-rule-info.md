@@ -88,7 +88,7 @@ ____________________________
 >> 1. 若url为`GET`请求，则直接填写url地址，请求参数用`${关键字/运算表达式}`占位符替代，这里有两个参数：`key`和`page`，分别表示搜索的关键字和页码， 但是因为目前没有翻页功能，所以页码参数实际上会固定设置为1，例如：`https://www.testsite.com/search?q=${key}&page=${page}`。
 >>
 >> 2. 若url为`POST`请求，则使用以下JSON格式填写（当然，`GET`请求也可以使用这个规则，但此规则只适合`GET`和`POST`请求，其它类型暂不支持）：
-      >>   ```json
+>>   ```json
 >>   {
 >>       "url": "URL地址",
 >>       "method": "请求类型",
@@ -105,15 +105,15 @@ ____________________________
 >>       }
 >>   }
 >>   ```
-      >>   其中:
-      >>   - `url`：URL地址，
+>>   其中:
+>>   - `url`：URL地址，
 >>   - `method`：请求类型： `GET/POST`，默认为`GET`，
 >>   - `queryParams`：查询参数（即拼接在url后面的参数），
 >>   - `bodyParams`：请求体参数，
 >>   - `header`：请求头
-      >>
-      >>   请求参数用`${关键字/运算表达式}`占位符替代，这里有两个参数：`key`和`page`，分别表示搜索的关键字和页码，例如：
-      >>   ```json
+>>
+>>   请求参数用`${关键字/运算表达式}`占位符替代，这里有两个参数：`key`和`page`，分别表示搜索的关键字和页码，例如：
+>>   ```json
 >>   {
 >>       "url":"http://www.testsite.com/search",
 >>       "method": "POST",
@@ -131,14 +131,14 @@ ____________________________
 >>   ```
 >>
 >> 3. 若为`java`代码，则需要使用以下格式填写：
-      >>   ```xml
+>>   ```xml
 >>   <java>
 >>       <package_import>导入的包</package_import>
 >>       <code>要执行的代码</code>
 >>   </java>
 >>   ```
-      >>   例如:
-      >>   ```xml
+>>   例如:
+>>   ```xml
 >>   <java>
 >>       <package_import>import java.util.*;</package_import>
 >>       <code>
@@ -149,23 +149,23 @@ ____________________________
 >>       </code>
 >>   </java>
 >>   ```
-      >>   其中：入口方法为`execute`，参数为：`String key`和`String page`，
-      >>   两个参数分别代表：
-      >>   - `key`：搜索的关键字；
+>>   其中：入口方法为`execute`，参数为：`String key`和`String page`，
+>>   两个参数分别代表：
+>>   - `key`：搜索的关键字；
 >>   - `page`：页码，当前版本固定为1；
-      >>
-      >>   `execute`方法的**返回值**为请求小说搜索结果列表的`url`链接。
+>>
+>>   `execute`方法的**返回值**为请求小说搜索结果列表的`url`链接。
 >>
 >> 4. 若为`JavaScript`代码，则有以下两种方式：
-      >>   - 在代码字符串开头添加`@js:`标记（**注意字母大小写**）；
+>>   - 在代码字符串开头添加`@js:`标记（**注意字母大小写**）；
 >>   - 使用`<js></js>`标签包住代码字符串；
-      >>
-      >>   其中可用的全局参数为：
-      >>   - `key`：搜索的关键字；
+>>
+>>   其中可用的全局参数为：
+>>   - `key`：搜索的关键字；
 >>   - `page`：页码，当前版本固定为1；
-      >>
-      >>   示例：(示例代码将代码换行是为了方便阅读，实际过程中请将代码压缩成一行)
-      >>   ```js
+>>
+>>   示例：(示例代码将代码换行是为了方便阅读，实际过程中请将代码压缩成一行)
+>>   ```js
 >>   @js: let tt = new Date().getTime(); 
 >>   let encodeKey = encodeURIComponent(key); 
 >>   let url = `https://www.ttest.info/e/search/index.php?keyboard=${encodeKey}&show=title%2Cwriter%2Cbyr&searchget=1&tt=${tt}`; 
@@ -258,8 +258,8 @@ ____________________________
 >> 为基准，所以想要获取url信息，那么要填写：`.li-dd a`， 等同于js的`document.querySelectorAll('.book-list ul li')[0].querySelector('.li-dd a').href`。需要特别强调的是，获取的url信息是标签的`href`属性的值，所以最终需要定位的元素必须是a标签。   
 >> 
 >> 提示：此处可以通过使用`@back:`和`@front:`标记，对已经获取到的内容添加额外的信息。
->> - `@back:`：表示在获取到的内容的后面加上@back:之后的内容。
->> - `@front:`：表示在获取到的内容的前面加上@front:之后的内容。
+>> - `@back:xxx`：表示在获取到的内容的后面加上xxx，xxx可以是任意字符串，例如`@back:index.html`。
+>> - `@front:xxx`：表示在获取到的内容的前面加上xxx，xxx可以是任意字符串，例如`@front:/read`。
 >> - 注意`@back:`和`@front:`必须在`CssSelector`选择器语法之后填写，不能放在选择器语法之前，例如` @front:/read .li-dd a`这种写法是错误的。
 >> 
 >> 继续用上面的例子：如填写为`.li-dd a @front:/read@back:index.html`，此规则最终获取的url信息为：`/read/book/1/index.html`。
@@ -287,26 +287,26 @@ ____________________________
 >> 2. `GET`和`POST`请求规则同上（`searchRules.url`已介绍），但这里的参数只有一个：`bookId`，表示小说id
 >>
 >> 3. `java`代码规则同上（`searchRules.url`已介绍），入口方法为`execute`，参数可以是`String bookId`或者`BookInfo`实体对象两者中的一个，不可以同时传入这两个参数，
-      >>   其中：
-      >>   - `bookId`：小说id，仅搜索小说返回结果是JSON数据时才有效；
+>>   其中：
+>>   - `bookId`：小说id，仅搜索小说返回结果是JSON数据时才有效；
 >>   - `BookInfo`：小说信息实体对象，包含字段：
-       >>     - `bookId`：小说id；
+ >>     - `bookId`：小说id；
 >>     - `bookName`：小说名称；
 >>     - `bookUrl`：小说链接；
 >>     - `bookAuthor`：小说作者；
 >>     - `bookDesc`：小说描述；
 >>     - `bookImgUrl`：小说图片链接；
-      >>
-      >>   如果选择入参的参数类型是`BookInfo`对象，那么在`<package_import></package_import>`部分请填写：`import com.wei.wreader.pojo.BookInfo;`。  
-      >>   提示：
-      >>   - 当搜索小说返回的结果是HTML页面时，BookInfo为仅`bookName`和`bookUrl`有值；
+>>
+>>   如果选择入参的参数类型是`BookInfo`对象，那么在`<package_import></package_import>`部分请填写：`import com.wei.wreader.pojo.BookInfo;`。  
+>>   提示：
+>>   - 当搜索小说返回的结果是HTML页面时，BookInfo为仅`bookName`和`bookUrl`有值；
 >>   - 当搜索小说返回的结果是JSON数据时，在字段名称填写正确的情况下，只要返回结果中包含有的信息，那BookInfo中对应字段都有值；（对应字段名称的填写规则请跳转至`bookInfoRules`小说基本信息处理规则部分）；
 >>   - **返回值**为请求获取小说目录的`url`链接。
 >>
 >> 4. `JavaScript`代码规则同上，这里不展开细说。  
-      >>   其中可用的全局参数为：
+>>   其中可用的全局参数为：
 >>  - `bookInfo`：小说信息实体对象，其拥有字段为：
-      >>    - `bookId`：小说id；
+>>    - `bookId`：小说id；
 >>    - `bookName`：小说名称；
 >>    - `bookUrl`：小说链接；
 >>    - `bookAuthor`：小说作者；
@@ -439,21 +439,21 @@ ____________________________
 >   - `preUrl`：<font color="MediumOrchid">String</font>  上一页链接；
 >   - `bodyElementStr`：<font color="MediumOrchid">String</font>  当前页面`<body>`标签内的HTML字符串，若是`Api`请求，则为接口请求的结果；
 >   - `bodyElement`：<font color="MediumOrchid">Element</font>  `<body>`标签的DOM对象，此类属于`org.jsoup.nodes.Element`，例如获取倒数第二个`<li>`标签的DOM元素：
-      >      ```javascript
+>      ```javascript
 >     bodyElement.selectFirst(".pagination li:nth-last-of-type(2)");
 >      ```
-      >     更多用法请参考`org.jsoup.nodes.Element`类。
+>     更多用法请参考`org.jsoup.nodes.Element`类。
 > - `Js`代码规则同上，有5个参数：
     >   - `baseUrl`：当前网站的根链接，例如：`https://www.example.com`；
 >   - `pageIndex`：页码，从2开始；
 >   - `preUrl`：上一页链接；
 >   - `bodyElementStr`：当前页面`<body>`标签内的HTML字符串，若是`Api`请求，则为接口请求的结果；
 >   - `bodyElement`：`<body>`标签的DOM对象，这是一个`Java`对象，此类属于`org.jsoup.nodes.Element`，可在`js`代码直接调用`java`方法，例如获取倒数第二个`<li>`标签的DOM元素：
-      >     ```javascript
+>     ```javascript
 >      let element = bodyElement.selectFirst(".pagination li:nth-last-of-type(2)");
 >      let nextUrl = element.selectFirst("a").attr("href");
 >      ```
-      >     更多用法请参考`org.jsoup.nodes.Element`类。
+>     更多用法请参考`org.jsoup.nodes.Element`类。
 > ----------------------------
 > ##### <font color="grey">listMainRules</font>.<font color="249aff">useNextListMainApi</font>：
 > 目录列表的下一页目录是否为使用API请求的方式获取。
@@ -492,7 +492,7 @@ ____________________________
 > 章节内容处理规则，对获取到的章节内容进行处理，例如文字解码、规则替换等等。
 >> 此处填写的规则为`java`/`Js`代码，若觉得使用代码比较繁琐，只想使用正则表达式对内容进行一个简单的替换，可以使用下面的`chapterRules.contentRegexList`；
 >> - `Java`代码入口方法为`execute`，参数为`String content`， **返回值**为处理后的章节内容，例如：  
-     >> 如果要对内容进行base64解码，那么`contentHandleRule`填写：
+>> 如果要对内容进行base64解码，那么`contentHandleRule`填写：
 >> ```xml
 >> <java>
 >>   <package_import>import com.wei.wreader.utils.data.*;</package_import>
@@ -504,7 +504,7 @@ ____________________________
 >> </java>
 >> ```
 >> - `Js`代码规则同上，参数为`content`， **返回值**为处理后的章节内容，例如：
-     >>  ```javascript
+>>  ```javascript
 >>  let newContent = window.atob(content);
 >>  newContent = newContent.replace(/\\n/g, '<br>');
 >>  (newContent)
@@ -534,7 +534,7 @@ ____________________________
 > 本章节下一页内容的链接（针对某些网站会把一章内容分成多页的情况）。
 >> 此处填写的规则为`Java`/`Js`代码：
 >> 1. `Java`规则同上，有四个参数:
-      >>     - `chapterUrl`<font color="MediumOrchid">String</font>：当前章节链接；
+>>     - `chapterUrl`<font color="MediumOrchid">String</font>：当前章节链接；
 >>     - `loadingPage`<font color="MediumOrchid">int</font>：正在加载的页码，从1开始；
 >>     - `preContentUrl`<font color="MediumOrchid">String</font>：上一页链接（即当前视图正在显示的页面链接），若为空时，代表是第一页；
 >>     - `prePageContent`<font color="MediumOrchid">String</font>：上一页内容（即当前视图正在显示的页面），第一页则为第一页本身内容。 若是HTML页面，则为`<body></body>`标签内的HTML元素；若是JSON数据，则为返回的JSON数据字符串。
@@ -566,7 +566,7 @@ ____________________________
 >> </java>
 >> ```
 >> 2. `Js`规则同上，参数有五个：
-      >>    - `chapterUrl`：当前章节链接；
+>>    - `chapterUrl`：当前章节链接；
 >>    - `loadingPage`：正在加载的页码，从1开始；
 >>    - `preContentUrl`：上一页链接（即当前视图正在显示的页面链接），若为空时，代表是第一页；
 >>    - `prePageContent`：上一页内容（即当前视图正在显示的页面），第一页则为第一页本身内容。 若是HTML页面，则为`<body></body>`标签内的HTML元素；若是JSON数据，则为返回的JSON数据字符串。

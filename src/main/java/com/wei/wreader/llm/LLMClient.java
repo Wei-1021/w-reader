@@ -314,16 +314,30 @@ public class LLMClient {
          * @param result     工具执行结果
          */
         public AgentResponse submitToolResult(String toolCallId, String result) throws LLMException {
+            addToolResult(toolCallId, result);
+            return callLLM();
+        }
+
+        /**
+         * 将工具执行结果加入消息历史（不立刻调用 LLM）
+         * 用于批量提交多个工具结果后再统一调用 LLM
+         *
+         * @param toolCallId 工具调用 ID
+         * @param result     工具执行结果
+         */
+        public void addToolResult(String toolCallId, String result) {
             Map<String, Object> toolMessage = new HashMap<>();
             toolMessage.put("role", "tool");
             toolMessage.put("tool_call_id", toolCallId);
             toolMessage.put("content", result);
             messages.add(toolMessage);
             currentIteration++;
-            return callLLM();
         }
 
-        private AgentResponse callLLM() throws LLMException {
+        /**
+         * 调用 LLM 获取响应（公开方法，供批量提交工具结果后调用）
+         */
+        public AgentResponse callLLM() throws LLMException {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", model);
             requestBody.put("messages", messages);

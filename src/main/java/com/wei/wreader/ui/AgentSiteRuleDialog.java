@@ -19,6 +19,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.ErrorStripeEditorCustomization;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
@@ -191,7 +192,7 @@ public class AgentSiteRuleDialog {
     private JScrollPane createChatArea() {
         chatPanel = new JPanel();
         chatPanel.setLayout(new BoxLayout(chatPanel, BoxLayout.Y_AXIS));
-        chatPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        chatPanel.setBorder(JBUI.Borders.empty(5));
 
         chatScrollPane = new JBScrollPane(chatPanel);
         chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -308,14 +309,14 @@ public class AgentSiteRuleDialog {
     private JLabel createLoadingLabel() {
         JLabel label = new JLabel("正在初始化编辑器...", SwingConstants.CENTER);
         label.setFont(label.getFont().deriveFont(Font.ITALIC, 12f));
-        label.setForeground(Color.GRAY);
+        label.setForeground(JBColor.GRAY);
         return label;
     }
 
     private JLabel createErrorLabel(String message) {
         JLabel label = new JLabel("编辑器初始化失败: " + message, SwingConstants.CENTER);
         label.setFont(label.getFont().deriveFont(Font.PLAIN, 12f));
-        label.setForeground(Color.RED);
+        label.setForeground(JBColor.RED);
         return label;
     }
 
@@ -352,7 +353,7 @@ public class AgentSiteRuleDialog {
         JPanel wrapper = createMessageWrapper(Alignment.RIGHT);
         JLabel label = new JLabel("<html><b>「你」</b> " + escapeHtml(text) + "</html>");
         label.setFont(label.getFont().deriveFont(Font.PLAIN, 12f));
-        label.setBorder(new EmptyBorder(4, 10, 4, 10));
+        label.setBorder(JBUI.Borders.empty(4, 10));
         label.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
         wrapper.add(label);
         addMessageToChat(wrapper);
@@ -362,7 +363,7 @@ public class AgentSiteRuleDialog {
         JPanel wrapper = createMessageWrapper(Alignment.LEFT);
         JLabel label = new JLabel("<html><b>「Agent」</b> " + escapeHtml(text) + "</html>");
         label.setFont(label.getFont().deriveFont(Font.PLAIN, 12f));
-        label.setBorder(new EmptyBorder(4, 10, 4, 10));
+        label.setBorder(JBUI.Borders.empty(4, 10));
         label.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
         wrapper.add(label);
         addMessageToChat(wrapper);
@@ -374,7 +375,7 @@ public class AgentSiteRuleDialog {
         String argsSummary = summarizeArgs(toolName, arguments);
         JLabel label = new JLabel("<html>🔧 <b>" + escapeHtml(toolLabel) + "</b>: " + escapeHtml(argsSummary) + "</html>");
         label.setFont(label.getFont().deriveFont(Font.PLAIN, 11f));
-        label.setBorder(new EmptyBorder(3, 10, 3, 10));
+        label.setBorder(JBUI.Borders.empty(3, 10));
         label.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         wrapper.add(label);
         addMessageToChat(wrapper);
@@ -385,7 +386,7 @@ public class AgentSiteRuleDialog {
         String resultSummary = summarizeResult(toolName, result);
         JLabel label = new JLabel("<html>✅ <b>" + escapeHtml(getToolDisplayName(toolName)) + "</b>: " + escapeHtml(resultSummary) + "</html>");
         label.setFont(label.getFont().deriveFont(Font.PLAIN, 11f));
-        label.setBorder(new EmptyBorder(3, 10, 3, 10));
+        label.setBorder(JBUI.Borders.empty(3, 10));
         label.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         wrapper.add(label);
         addMessageToChat(wrapper);
@@ -395,8 +396,8 @@ public class AgentSiteRuleDialog {
         JPanel wrapper = createMessageWrapper(Alignment.CENTER);
         JLabel label = new JLabel("<html><center>" + text + "</center></html>");
         label.setFont(label.getFont().deriveFont(Font.ITALIC, 11f));
-        label.setForeground(Color.GRAY);
-        label.setBorder(new EmptyBorder(8, 10, 8, 10));
+        label.setForeground(JBColor.GRAY);
+        label.setBorder(JBUI.Borders.empty(8, 10));
         wrapper.add(label);
         addMessageToChat(wrapper);
     }
@@ -517,6 +518,9 @@ public class AgentSiteRuleDialog {
         Messages.showInfoMessage("API 配置已保存", "提示");
     }
 
+    /**
+     * 生成按钮点击事件处理
+     */
     private void onGenerate() {
         String baseUrl = baseUrlField.getText().trim();
         String apiKey = new String(apiKeyField.getPassword()).trim();
@@ -534,9 +538,6 @@ public class AgentSiteRuleDialog {
         }
 
         final String finalWebsiteUrl = websiteUrl;
-        final String finalBaseUrl = baseUrl;
-        final String finalApiKey = apiKey;
-        final String finalModel = model;
 
         generating = true;
         finalRuleJson = null;
@@ -554,7 +555,7 @@ public class AgentSiteRuleDialog {
         addUserMessage("请为 " + finalWebsiteUrl + " 生成书源规则");
         statusLabel.setText("Agent 正在工作...");
 
-        SiteRuleAgent agent = new SiteRuleAgent(project, finalBaseUrl, finalApiKey, finalModel);
+        SiteRuleAgent agent = new SiteRuleAgent(project, baseUrl, apiKey, model);
         currentAgent.set(agent);
 
         new Task.Backgroundable(project, "AI Agent 生成书源规则", true) {

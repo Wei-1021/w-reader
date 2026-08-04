@@ -28,6 +28,7 @@ import com.wei.wreader.util.CustomSiteUtil;
 import com.wei.wreader.util.comm.ScriptCodeUtil;
 import com.wei.wreader.util.comm.UrlUtil;
 import com.wei.wreader.util.data.ConstUtil;
+import com.wei.wreader.util.data.ContentRuleApplier;
 import com.wei.wreader.util.data.ListUtil;
 import com.wei.wreader.util.data.StringUtil;
 import com.wei.wreader.util.file.EpubReaderComplete;
@@ -379,9 +380,10 @@ public class ChapterNavigator {
     /**
      * 加载本地文件
      *
-     * @param regex TXT文件章节分割正则表达式
+     * @param regex        TXT文件章节分割正则表达式
+     * @param contentRules 文本内容替换规则（多条用 ||| 分隔，格式：s/regex/replacement/flags）
      */
-    public void loadLocalFile(String regex) {
+    public void loadLocalFile(String regex, String contentRules) {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false,
                 false, false, false, false);
         fileChooserDescriptor.setTitle("选择文本文件");
@@ -389,14 +391,14 @@ public class ChapterNavigator {
 
         VirtualFile virtualFile = FileChooser.chooseFile(fileChooserDescriptor, project, null);
         if (virtualFile != null) {
-            processSelectedFile(virtualFile, regex);
+            processSelectedFile(virtualFile, regex, contentRules);
         }
     }
 
     /**
      * 处理选中的本地文件
      */
-    private void processSelectedFile(VirtualFile virtualFile, String regex) {
+    private void processSelectedFile(VirtualFile virtualFile, String regex, String contentRules) {
         String filePath = virtualFile.getPath();
         String fileExtension = virtualFile.getExtension();
 
@@ -414,7 +416,7 @@ public class ChapterNavigator {
         cacheService.setEditorMessageVerticalScrollValue(0);
         clearCacheData();
 
-        new LocalFileLoadTask(file, fileExtension, regex).queue();
+        new LocalFileLoadTask(file, fileExtension, regex, contentRules).queue();
     }
 
     /**
@@ -530,7 +532,7 @@ public class ChapterNavigator {
     /**
      * 加载TXT格式文件
      */
-    private void loadFileTypeTxt(File file, String regex) {
+    private void loadFileTypeTxt(File file, String regex, String contentRules) {
         String textRegex = StringUtils.isEmpty(regex) ? ConstUtil.TEXT_FILE_DIR_REGEX : regex;
         Settings settings = cacheService.getSettings();
         String charset = settings.getCharset();
@@ -545,6 +547,10 @@ public class ChapterNavigator {
 
             Pattern pattern = Pattern.compile(textRegex);
             while ((line = reader.readLine()) != null) {
+                // 应用内容替换规则
+                if (StringUtils.isNotEmpty(contentRules)) {
+                    line = ContentRuleApplier.applyRules(line, contentRules);
+                }
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     if (!chapterList.isEmpty()) {
@@ -574,7 +580,7 @@ public class ChapterNavigator {
     /**
      * 加载EPUB格式文件
      */
-    private void loadFileTypeEpub(File file) {
+    private void loadFileTypeEpub(File file, String contentRules) {
         Settings settings = cacheService.getSettings();
         String charset = settings.getCharset();
         boolean isShowLocalImg = settings.isShowLocalImg();
@@ -603,6 +609,11 @@ public class ChapterNavigator {
 
                 if (isShowLocalImg) {
                     content = StringUtil.replaceImageLinks(content, imgTempPathMap, imgTempWidthMap);
+                }
+
+                // 应用内容替换规则
+                if (StringUtils.isNotEmpty(contentRules)) {
+                    content = ContentRuleApplier.applyRules(content, contentRules);
                 }
 
                 chapterList.add(title);
@@ -954,12 +965,14 @@ public class ChapterNavigator {
         private final File file;
         private final String fileExtension;
         private final String regex;
+        private final String contentRules;
 
-        public LocalFileLoadTask(File file, String fileExtension, String regex) {
+        public LocalFileLoadTask(File file, String fileExtension, String regex, String contentRules) {
             super(project, LOAD_FILE_TASK_TITLE);
             this.file = file;
             this.fileExtension = fileExtension;
             this.regex = regex;
+            this.contentRules = contentRules;
         }
 
         @Override
@@ -968,9 +981,9 @@ public class ChapterNavigator {
             indicator.setIndeterminate(true);
 
             if (ConstUtil.FILE_TYPE_TXT.equalsIgnoreCase(fileExtension)) {
-                loadFileTypeTxt(file, regex);
+                loadFileTypeTxt(file, regex, contentRules);
             } else if (ConstUtil.FILE_TYPE_EPUB.equalsIgnoreCase(fileExtension)) {
-                loadFileTypeEpub(file);
+                loadFileTypeEpub(file, contentRules);
             }
         }
 

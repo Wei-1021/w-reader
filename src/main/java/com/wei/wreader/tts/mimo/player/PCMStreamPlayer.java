@@ -17,7 +17,10 @@ public class PCMStreamPlayer implements AudioPlayer {
 
     private final SourceDataLine line;
     private volatile boolean playing = false;
+    private volatile boolean paused = false;
     private volatile long bytesWritten = 0;
+
+    private final Object pauseLock = new Object();
 
     public PCMStreamPlayer() throws LineUnavailableException {
         AudioFormat format = new AudioFormat(
@@ -35,6 +38,20 @@ public class PCMStreamPlayer implements AudioPlayer {
 
     @Override
     public void write(byte[] data, int offset, int length) {
+        if (!playing || !line.isOpen()) return;
+
+        // 暂停时阻塞等待恢复，不丢弃数据
+        synchronized (pauseLock) {
+            while (paused && playing) {
+                try {
+                    pauseLock.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+
         if (playing && line.isOpen()) {
             int written = line.write(data, offset, length);
             bytesWritten += written;
@@ -42,8 +59,36 @@ public class PCMStreamPlayer implements AudioPlayer {
     }
 
     @Override
+    public void pause() {
+        if (playing && !paused && line.isOpen()) {
+            paused = true;
+            line.stop();
+        }
+    }
+
+    @Override
+    public void resume() {
+        if (playing && paused && line.isOpen()) {
+            synchronized (pauseLock) {
+                paused = false;
+                pauseLock.notifyAll();
+            }
+            line.start();
+        }
+    }
+
+    @Override
+    public boolean isPaused() {
+        return paused;
+    }
+
+    @Override
     public void stop() {
         playing = false;
+        synchronized (pauseLock) {
+            paused = false;
+            pauseLock.notifyAll();
+        }
         if (line.isOpen()) {
             line.drain();
             line.stop();

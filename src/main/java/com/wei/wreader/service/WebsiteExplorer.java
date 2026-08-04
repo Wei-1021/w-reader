@@ -113,10 +113,7 @@ public class WebsiteExplorer {
         // 检测反爬保护
         if (page.rawBody != null) {
             String lower = page.rawBody.toLowerCase();
-            if (lower.contains("just a moment") || lower.contains("cloudflare")
-                    || lower.contains("cf-chl") || lower.contains("challenge-platform")) {
-                page.errorMsg = "Cloudflare 反爬保护，需要浏览器验证";
-            } else if (lower.contains("access denied") || lower.contains("403 forbidden")) {
+            if (lower.contains("access denied") || lower.contains("403 forbidden")) {
                 page.errorMsg = "访问被拒绝 (403)";
             } else if (lower.contains("captcha") || lower.contains("verify you are human")) {
                 page.errorMsg = "验证码保护";

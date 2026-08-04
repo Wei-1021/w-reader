@@ -101,8 +101,12 @@ public class SiteRuleAgent {
                     return;
                 }
 
-                // 处理工具调用
-                for (ToolCall toolCall : response.getToolCalls()) {
+                // 处理工具调用：先执行所有工具，收集结果，再统一提交给 LLM
+                List<ToolCall> toolCalls = response.getToolCalls();
+                boolean isComplete = false;
+                String completeRuleResult = null;
+
+                for (ToolCall toolCall : toolCalls) {
                     if (cancelled.get()) break;
 
                     String toolName = toolCall.getFunctionName();
@@ -129,18 +133,28 @@ public class SiteRuleAgent {
                     // 通知 UI 工具执行结果
                     callback.onToolResult(toolName, toolResult);
 
-                    // 如果是 complete_rule 工具，直接完成
+                    // 如果是 complete_rule 工具，记录结果，循环结束后完成
                     if ("complete_rule".equals(toolName)) {
-                        String finalRule = tools.getFinalRule();
-                        if (finalRule != null && !finalRule.isEmpty()) {
-                            callback.onComplete(finalRule);
-                            return;
-                        }
+                        isComplete = true;
+                        completeRuleResult = tools.getFinalRule();
                     }
 
-                    // 提交工具结果给 LLM
+                    // 将工具结果加入消息历史（不立刻调用 LLM）
+                    conversation.addToolResult(toolCall.getId(), toolResult);
+                }
+
+                // complete_rule 已调用，直接完成
+                if (isComplete) {
+                    if (completeRuleResult != null && !completeRuleResult.isEmpty()) {
+                        callback.onComplete(completeRuleResult);
+                    }
+                    return;
+                }
+
+                // 所有工具结果已提交，统一调用 LLM 获取下一轮响应
+                if (!cancelled.get()) {
                     try {
-                        response = conversation.submitToolResult(toolCall.getId(), toolResult);
+                        response = conversation.callLLM();
                     } catch (LLMException e) {
                         callback.onError("LLM 调用失败: " + e.getUserFriendlyMessage());
                         return;

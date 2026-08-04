@@ -228,7 +228,11 @@ public final class ReaderOrchestrator {
     }
 
     public void loadLocalFile(String regex) {
-        chapterNavigator.loadLocalFile(regex);
+        chapterNavigator.loadLocalFile(regex, null);
+    }
+
+    public void loadLocalFile(String regex, String contentRules) {
+        chapterNavigator.loadLocalFile(regex, contentRules);
     }
 
     // --- TTS ---
@@ -242,6 +246,22 @@ public final class ReaderOrchestrator {
 
     public void stopTTS() {
         ttsService.stopTTS();
+    }
+
+    public void pauseTTS() {
+        ttsService.pauseTTS();
+    }
+
+    public void resumeTTS() {
+        ttsService.resumeTTS();
+    }
+
+    public boolean isTtsPaused() {
+        return ttsService.isPaused();
+    }
+
+    public boolean isTtsPlaying() {
+        return ttsService.isPlaying();
     }
 
     // --- 自动阅读 ---

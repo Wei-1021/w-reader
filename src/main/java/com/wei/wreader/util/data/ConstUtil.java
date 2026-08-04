@@ -155,6 +155,26 @@ public class ConstUtil {
      */
     public static final String TEXT_FILE_DIR_REGEX = "(^\\s*第)(.{1,9})[章节卷集部篇回](\\s*)(.*)($\\s*)";
     /**
+     * 文本内容规则--多条规则分隔符
+     */
+    public static final String CONTENT_RULE_SEPARATOR = "|||";
+    /**
+     * 文本内容规则--格式帮助文本
+     */
+    public static final String CONTENT_RULE_HELP = "文本内容规则使用说明\n\n"
+            + "【格式】s/正则表达式/替换内容/标志\n\n"
+            + "【多条规则】每行一条规则，也可用 ||| 分隔，例如：\n"
+            + "s/广告//g\n"
+            + "s/\\s{2,}/ /g\n\n"
+            + "【标志说明】\n"
+            + "  g - 全局替换（替换所有匹配项）\n"
+            + "  i - 忽略大小写\n\n"
+            + "【示例】\n"
+            + "s/www\\.example\\.com//gi    去除网址\n"
+            + "s/第(\\d+)章/【第$1章】/g    替换章节格式\n"
+            + "s/[★☆◆◇]//g              去除特殊符号\n"
+            + "s/\\s{2,}/ /g               合并多余空白";
+    /**
      * 正则表达式--匹配HTML标签和空白符
      */
     public static final String HTML_TAG_REGEX = "<[^>]+>|\\s|\\p{Zs}";

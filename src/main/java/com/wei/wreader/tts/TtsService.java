@@ -326,9 +326,9 @@ public class TtsService {
 
             currentEngine.start();
 
-            // 等待播放完成
+            // 等待播放完成（播放中或已暂停都继续等待）
             if (waitComplete) {
-                while (currentEngine != null && currentEngine.isPlaying()) {
+                while (currentEngine != null && (currentEngine.isPlaying() || currentEngine.isPaused())) {
                     Thread.sleep(100);
                 }
             }
@@ -355,8 +355,9 @@ public class TtsService {
             currentEngine.synthesize(text);
             currentEngine.start();
 
+            // 等待播放完成（播放中或已暂停都继续等待）
             if (waitComplete) {
-                while (currentEngine != null && currentEngine.isPlaying()) {
+                while (currentEngine != null && (currentEngine.isPlaying() || currentEngine.isPaused())) {
                     Thread.sleep(100);
                 }
             }
@@ -548,6 +549,31 @@ public class TtsService {
         }
     }
 
+    /**
+     * 暂停当前TTS播放
+     */
+    public void pauseTTS() {
+        if (currentEngine != null && currentEngine.isPlaying()) {
+            currentEngine.pause();
+        }
+    }
+
+    /**
+     * 恢复当前TTS播放
+     */
+    public void resumeTTS() {
+        if (currentEngine != null && currentEngine.isPaused()) {
+            currentEngine.resume();
+        }
+    }
+
+    /**
+     * 是否已暂停
+     */
+    public boolean isPaused() {
+        return currentEngine != null && currentEngine.isPaused();
+    }
+
     private void stopBatchThread() {
         Thread t = batchThread;
         if (t != null && t.isAlive()) {
@@ -599,6 +625,25 @@ public class TtsService {
         }
 
         @Override
+        public void pause() {
+            if (edgeTTS != null) {
+                edgeTTS.pause();
+            }
+        }
+
+        @Override
+        public void resume() {
+            if (edgeTTS != null) {
+                edgeTTS.resume();
+            }
+        }
+
+        @Override
+        public boolean isPaused() {
+            return edgeTTS != null && edgeTTS.isPaused();
+        }
+
+        @Override
         public void setOnComplete(Runnable callback) {
             // EdgeTTS handles completion internally
         }
@@ -646,6 +691,25 @@ public class TtsService {
         @Override
         public boolean isPlaying() {
             return mimoTTS != null && mimoTTS.isPlaying();
+        }
+
+        @Override
+        public void pause() {
+            if (mimoTTS != null) {
+                mimoTTS.pause();
+            }
+        }
+
+        @Override
+        public void resume() {
+            if (mimoTTS != null) {
+                mimoTTS.resume();
+            }
+        }
+
+        @Override
+        public boolean isPaused() {
+            return mimoTTS != null && mimoTTS.isPaused();
         }
 
         @Override

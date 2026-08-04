@@ -90,6 +90,10 @@ public class EdgeTTS {
      */
     private volatile boolean isPlaying = false;
     /**
+     * 是否已暂停
+     */
+    private volatile boolean isPaused = false;
+    /**
      * 是否为当前对话的最后一条消息
      */
     private volatile boolean isTempLastMsg = false;
@@ -454,6 +458,12 @@ public class EdgeTTS {
     private void copyByteToOut() {
         try {
             while (!allAudioData.isEmpty() || !textQueue.isEmpty()) {
+                // 暂停时等待恢复
+                while (isPaused && !isDispose) {
+                    Thread.sleep(100);
+                }
+                if (isDispose) break;
+
                 byte[] audioData = allAudioData.take();
                 if (isPlaying && (allAudioData == null || allAudioData.isEmpty() || audioData.length == 0)) {
                     continue;
@@ -463,7 +473,9 @@ public class EdgeTTS {
                 pos.flush();
             }
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            if (!isDispose) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -501,7 +513,32 @@ public class EdgeTTS {
     }
 
     public boolean isPlaying() {
-        return isPlaying;
+        return isPlaying && !isPaused;
+    }
+
+    /**
+     * 暂停播放
+     */
+    public void pause() {
+        if (isPlaying && !isPaused) {
+            isPaused = true;
+        }
+    }
+
+    /**
+     * 恢复播放
+     */
+    public void resume() {
+        if (isPaused) {
+            isPaused = false;
+        }
+    }
+
+    /**
+     * 是否已暂停
+     */
+    public boolean isPaused() {
+        return isPaused;
     }
 
     public void dispose() {

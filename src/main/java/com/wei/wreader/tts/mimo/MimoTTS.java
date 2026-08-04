@@ -177,10 +177,35 @@ public class MimoTTS {
     }
 
     /**
+     * 暂停播放
+     */
+    public void pause() {
+        if (currentPlayer != null) {
+            currentPlayer.pause();
+        }
+    }
+
+    /**
+     * 恢复播放
+     */
+    public void resume() {
+        if (currentPlayer != null) {
+            currentPlayer.resume();
+        }
+    }
+
+    /**
+     * 是否已暂停
+     */
+    public boolean isPaused() {
+        return currentPlayer != null && currentPlayer.isPaused();
+    }
+
+    /**
      * 是否正在播放
      */
     public boolean isPlaying() {
-        return currentPlayer != null && currentPlayer.isRunning();
+        return currentPlayer != null && currentPlayer.isRunning() && !currentPlayer.isPaused();
     }
 
     /**

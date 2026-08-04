@@ -185,6 +185,13 @@ public class SearchDialog {
 
         mainPanel.add(splitter, BorderLayout.CENTER);
 
+        // ===== 底部：操作提示 =====
+        JLabel tipLabel = new JLabel("提示：选择小说后需点击任意章节才会更新小说信息");
+        tipLabel.setFont(tipLabel.getFont().deriveFont(Font.PLAIN, 12f));
+        tipLabel.setForeground(UIManager.getColor("Component.infoForeground"));
+        tipLabel.setBorder(JBUI.Borders.empty(4, 6));
+        mainPanel.add(tipLabel, BorderLayout.SOUTH);
+
         // 设置事件监听
         setupBookListListener(listener);
         setupChapterListListener(listener);

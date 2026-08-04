@@ -134,6 +134,11 @@ public class Settings {
      */
     private boolean showLocalImg;
     /**
+     * 本地文件加载时的文本内容替换规则
+     * 多条规则用 ||| 分隔，每条规则格式：s/regex/replacement/flags
+     */
+    private String localFileContentRules;
+    /**
      * 主图标风格：1-默认，2-浅色
      */
     private int mainIconStyle;
@@ -267,6 +272,14 @@ public class Settings {
 
     public void setShowLocalImg(boolean showLocalImg) {
         this.showLocalImg = showLocalImg;
+    }
+
+    public String getLocalFileContentRules() {
+        return localFileContentRules;
+    }
+
+    public void setLocalFileContentRules(String localFileContentRules) {
+        this.localFileContentRules = localFileContentRules;
     }
 
     public int getMainIconStyle() {

@@ -28,9 +28,24 @@ public interface TtsEngine {
     void dispose();
 
     /**
+     * 暂停播放
+     */
+    void pause();
+
+    /**
+     * 恢复播放
+     */
+    void resume();
+
+    /**
      * 是否正在播放
      */
     boolean isPlaying();
+
+    /**
+     * 是否已暂停
+     */
+    boolean isPaused();
 
     /**
      * 设置播放完成回调

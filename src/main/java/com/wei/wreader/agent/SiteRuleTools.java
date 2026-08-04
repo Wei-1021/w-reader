@@ -29,8 +29,8 @@ public class SiteRuleTools {
     private static final Logger LOG = Logger.getInstance(SiteRuleTools.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final int MAX_HTML_LENGTH = 25000;
-    private static final int MAX_ELEMENT_TEXT_LENGTH = 5000;
+    private static final int MAX_HTML_LENGTH = 80000;
+    private static final int MAX_ELEMENT_TEXT_LENGTH = 25000;
 
     private final Project project;
     private final WebsiteExplorer explorer;

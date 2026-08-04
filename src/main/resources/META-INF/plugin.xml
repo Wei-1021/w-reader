@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -320,6 +320,11 @@
                 icon="com.wei.wreader.util.WReaderIcons.LISTEN_BOOK">
             <keyboard-shortcut keymap="$default" first-keystroke="alt NUMPAD3"/>
         </action>
+        <action id="wreader.PauseTTSAction"
+                class="com.wei.wreader.action.PauseTTSAction"
+                text="暂停听书"
+                icon="com.wei.wreader.util.WReaderIcons.AUDIO_PAUSE">
+        </action>
         <action id="wreader.ShowBookInfoAction"
                 class="com.wei.wreader.action.ShowBookInfoAction"
                 text="书籍信息"
@@ -362,6 +367,7 @@
             <reference ref="wreader.EditorMessageAction"/>
             <reference ref="wreader.CommentBlockAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.PauseTTSAction"/>
             <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.FontSizeSubAction"/>
@@ -396,6 +402,7 @@
             <reference ref="wreader.EditorMessageAction"/>
             <reference ref="wreader.CommentBlockAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.PauseTTSAction"/>
             <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.SearchBookName"/>
@@ -410,6 +417,7 @@
             <reference ref="wreader.SearchBookName"/>
             <reference ref="wreader.ChapterListAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.PauseTTSAction"/>
             <reference ref="wreader.AutoScrollAction"/>
             <separator/>
             <reference ref="wreader.FontSizeSubAction"/>
@@ -444,6 +452,7 @@
             <reference ref="wreader.HideTextAction"/>
             <reference ref="wreader.AutoReadAction"/>
             <reference ref="wreader.AudioReadingAction"/>
+            <reference ref="wreader.PauseTTSAction"/>
             <separator/>
             <reference ref="wreader.PrevChapterAction"/>
             <reference ref="wreader.NextChapterAction"/>

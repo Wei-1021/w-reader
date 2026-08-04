@@ -37,7 +37,7 @@ public class StreamTTSPlayer {
     private static final Logger LOG = Logger.getInstance(StreamTTSPlayer.class);
 
     public enum State {
-        IDLE, PLAYING, STOPPED, COMPLETED, ERROR
+        IDLE, PLAYING, PAUSED, STOPPED, COMPLETED, ERROR
     }
 
     private final MimoTTSConfig config;
@@ -218,6 +218,33 @@ public class StreamTTSPlayer {
         setState(State.STOPPED);
     }
 
+    /**
+     * 暂停播放
+     */
+    public void pause() {
+        if (state == State.PLAYING && pcmPlayer != null) {
+            pcmPlayer.pause();
+            setState(State.PAUSED);
+        }
+    }
+
+    /**
+     * 恢复播放
+     */
+    public void resume() {
+        if (state == State.PAUSED && pcmPlayer != null) {
+            pcmPlayer.resume();
+            setState(State.PLAYING);
+        }
+    }
+
+    /**
+     * 是否已暂停
+     */
+    public boolean isPaused() {
+        return state == State.PAUSED;
+    }
+
     public void awaitCompletion() throws InterruptedException {
         if (playerThread != null) {
             playerThread.join();
@@ -262,6 +289,7 @@ public class StreamTTSPlayer {
                     
                     if (!running.get()) break;
 
+                    // pcmPlayer.write() 在暂停时会阻塞等待恢复，不会丢数据
                     if (pcmPlayer != null) {
                         pcmPlayer.write(audioChunk, 0, audioChunk.length);
                     }
