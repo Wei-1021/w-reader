@@ -7,6 +7,7 @@ public class BookshelfItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String uniqueKey;
+    private String siteGroupKey;
     private String siteId;
     private String bookId;
 
@@ -33,8 +34,8 @@ public class BookshelfItem implements Serializable {
     public BookshelfItem() {
     }
 
-    public static String buildUniqueKey(String siteId, String bookId) {
-        return siteId + ":" + bookId;
+    public static String buildUniqueKey(String siteGroupKey, String siteId, String bookId) {
+        return siteGroupKey + ":" + siteId + ":" + bookId;
     }
 
     public String getUniqueKey() {
@@ -43,6 +44,14 @@ public class BookshelfItem implements Serializable {
 
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    public String getSiteGroupKey() {
+        return siteGroupKey;
+    }
+
+    public void setSiteGroupKey(String siteGroupKey) {
+        this.siteGroupKey = siteGroupKey;
     }
 
     public String getSiteId() {
@@ -198,6 +207,7 @@ public class BookshelfItem implements Serializable {
     public String toString() {
         return "BookshelfItem{" +
                 "uniqueKey='" + uniqueKey + '\'' +
+                ", siteGroupKey='" + siteGroupKey + '\'' +
                 ", bookName='" + bookName + '\'' +
                 ", bookAuthor='" + bookAuthor + '\'' +
                 ", chapterIndex=" + chapterIndex +

@@ -3,9 +3,11 @@ package com.wei.wreader.action;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.wei.wreader.model.BookInfo;
 import com.wei.wreader.model.BookshelfItem;
+import com.wei.wreader.model.ChapterInfo;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.service.BookshelfService;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.service.SiteRuleService;
 import com.wei.wreader.util.WReaderIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -38,12 +40,14 @@ public class AddToShelfAction extends BaseAction {
             BookshelfItem item = new BookshelfItem();
             item.setUniqueKey(uniqueKey);
             SiteBean siteBean = cacheService.getSelectedSiteBean();
+            String siteGroupKey = SiteRuleService.getInstance().getSelectedCustomSiteRuleKey();
+            item.setSiteGroupKey(siteGroupKey != null ? siteGroupKey : "default");
             item.setSiteId(siteBean != null ? siteBean.getId() : "local");
             item.setBookId(resolveBookId(bookInfo));
             item.copyFromBookInfo(bookInfo);
             item.setDataLoadType(settings.getDataLoadType());
 
-            com.wei.wreader.model.ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
+            ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
             if (chapterInfo != null) {
                 item.setChapterIndex(chapterInfo.getSelectedChapterIndex());
                 item.setChapterTitle(chapterInfo.getChapterTitle());
@@ -87,7 +91,11 @@ public class AddToShelfAction extends BaseAction {
         SiteBean siteBean = cs.getSelectedSiteBean();
         String siteId = siteBean != null ? siteBean.getId() : "local";
         String bookId = resolveBookId(bookInfo);
-        return BookshelfItem.buildUniqueKey(siteId, bookId);
+        String siteGroupKey = SiteRuleService.getInstance().getSelectedCustomSiteRuleKey();
+        if (siteGroupKey == null) {
+            siteGroupKey = "default";
+        }
+        return BookshelfItem.buildUniqueKey(siteGroupKey, siteId, bookId);
     }
 
     private String resolveBookId(BookInfo bookInfo) {

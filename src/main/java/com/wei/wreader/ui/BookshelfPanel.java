@@ -11,6 +11,7 @@ import com.wei.wreader.reader.ReaderOrchestrator;
 import com.wei.wreader.search.SearchService;
 import com.wei.wreader.service.BookshelfService;
 import com.wei.wreader.service.CacheService;
+import com.wei.wreader.service.SiteRuleService;
 import com.wei.wreader.util.CustomSiteUtil;
 import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.file.FileUtil;
@@ -35,6 +36,7 @@ public class BookshelfPanel extends JPanel {
     private final Project project;
     private final CacheService cacheService;
     private final BookshelfService bookshelfService;
+    private final SiteRuleService siteRuleService;
 
     private JBList<String> shelfList;
     private DefaultListModel<String> shelfListModel;
@@ -48,6 +50,7 @@ public class BookshelfPanel extends JPanel {
         this.project = project;
         this.cacheService = CacheService.getInstance();
         this.bookshelfService = BookshelfService.getInstance();
+        this.siteRuleService = SiteRuleService.getInstance();
 
         setLayout(new BorderLayout());
         setBorder(JBUI.Borders.empty(5));
@@ -59,7 +62,7 @@ public class BookshelfPanel extends JPanel {
     private void createUI() {
         JLabel titleLabel = new JLabel("📚 书架");
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 14f));
-        titleLabel.setBorder(JBUI.Borders.empty(5, 0, 5, 0));
+        titleLabel.setBorder(JBUI.Borders.empty(5, 0));
         add(titleLabel, BorderLayout.NORTH);
 
         shelfListModel = new DefaultListModel<>();
@@ -137,7 +140,10 @@ public class BookshelfPanel extends JPanel {
 
     private String formatDisplayText(BookshelfItem item) {
         StringBuilder sb = new StringBuilder();
-        sb.append(item.getBookName());
+        sb.append("【")
+                .append(item.getSiteGroupKey())
+                .append("】 ")
+                .append(item.getBookName());
         if (StringUtils.isNotBlank(item.getBookAuthor())) {
             sb.append("  -  ").append(item.getBookAuthor());
         }
@@ -197,26 +203,106 @@ public class BookshelfPanel extends JPanel {
     }
 
     private void openBookFromShelf(BookshelfItem item) {
-        SiteBean siteBean = null;
-        if (StringUtils.isNotBlank(item.getSiteId()) && !item.getSiteId().equals("local")) {
-            List<SiteBean> siteBeanList = FileUtil.readResourcesJsonList(
-                    CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class);
-            for (SiteBean sb : siteBeanList) {
-                if (item.getSiteId().equals(sb.getId())) {
-                    siteBean = sb;
-                    cacheService.setSelectedSiteBean(siteBean);
-                    cacheService.setSelectedBookSiteIndex(siteBeanList.indexOf(siteBean));
-                    cacheService.setSelectedBookInfoRules(siteBean.getBookInfoRules());
-                    cacheService.setSelectedChapterRules(siteBean.getChapterRules());
-                    break;
-                }
-            }
-        }
-
+        SiteBean siteBean = findSiteBean(item);
         if (siteBean == null) {
             siteBean = cacheService.getSelectedSiteBean();
         }
 
+        prepareBookContext(item, siteBean);
+        loadBookContent(item, siteBean);
+    }
+
+    /**
+     * 根据书架条目查找对应的书源规则
+     */
+    private SiteBean findSiteBean(BookshelfItem item) {
+        if (StringUtils.isBlank(item.getSiteId()) || item.getSiteId().equals("local")) {
+            return null;
+        }
+
+        Map<String, List<SiteBean>> customSiteRuleGroupMap = siteRuleService.getCustomSiteRuleGroupMap();
+
+        // 无自定义书源，从默认规则中查找
+        if (customSiteRuleGroupMap == null || customSiteRuleGroupMap.isEmpty()) {
+            return findSiteBeanFromDefault(item);
+        }
+
+        // 优先使用 siteGroupKey 精确定位分组
+        String siteGroupKey = item.getSiteGroupKey();
+        if (StringUtils.isNotBlank(siteGroupKey)) {
+            List<SiteBean> targetGroup = customSiteRuleGroupMap.get(siteGroupKey);
+            SiteBean found = findSiteBeanInGroup(targetGroup, item.getSiteId());
+            if (found != null) {
+                applySiteBean(found, targetGroup.indexOf(found), siteGroupKey);
+                return found;
+            }
+        }
+
+        // 回退：遍历所有分组查找
+        return findSiteBeanFromAllGroups(customSiteRuleGroupMap, item.getSiteId());
+    }
+
+    /**
+     * 从默认书源规则中查找
+     */
+    private SiteBean findSiteBeanFromDefault(BookshelfItem item) {
+        List<SiteBean> siteBeanList = FileUtil.readResourcesJsonList(
+                CustomSiteUtil.DEFAULT_SITE_RULE_PATH, SiteBean.class
+        );
+        if (siteBeanList == null) return null;
+
+        SiteBean found = findSiteBeanInGroup(siteBeanList, item.getSiteId());
+        if (found != null) {
+            cacheService.setSelectedSiteBean(found);
+            cacheService.setSelectedBookSiteIndex(siteBeanList.indexOf(found));
+            cacheService.setSelectedBookInfoRules(found.getBookInfoRules());
+            cacheService.setSelectedChapterRules(found.getChapterRules());
+        }
+        return found;
+    }
+
+    /**
+     * 从所有分组中查找书源
+     */
+    private SiteBean findSiteBeanFromAllGroups(Map<String, List<SiteBean>> groupMap, String siteId) {
+        for (Map.Entry<String, List<SiteBean>> entry : groupMap.entrySet()) {
+            SiteBean found = findSiteBeanInGroup(entry.getValue(), siteId);
+            if (found != null) {
+                applySiteBean(found, entry.getValue().indexOf(found), entry.getKey());
+                return found;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 在指定分组中查找书源
+     */
+    private SiteBean findSiteBeanInGroup(List<SiteBean> group, String siteId) {
+        if (group == null || StringUtils.isBlank(siteId)) return null;
+        for (SiteBean sb : group) {
+            if (siteId.equals(sb.getId())) {
+                return sb;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 应用选中的书源到缓存
+     */
+    private void applySiteBean(SiteBean siteBean, int index, String siteGroupKey) {
+        cacheService.setSelectedSiteBean(siteBean);
+        cacheService.setSelectedBookSiteIndex(index);
+        cacheService.setSelectedBookInfoRules(siteBean.getBookInfoRules());
+        cacheService.setSelectedChapterRules(siteBean.getChapterRules());
+        siteRuleService.setSelectedCustomSiteRuleKey(siteGroupKey);
+    }
+
+    /**
+     * 准备书籍上下文信息
+     */
+    private void prepareBookContext(BookshelfItem item, SiteBean siteBean) {
         BookInfo bookInfo = item.toBookInfo();
         cacheService.setSelectedBookInfo(bookInfo);
         cacheService.setTempSelectedBookInfo(bookInfo);
@@ -229,63 +315,77 @@ public class BookshelfPanel extends JPanel {
         if (settings != null) {
             settings.setDataLoadType(item.getDataLoadType());
         }
+    }
 
+    /**
+     * 加载书籍内容
+     */
+    private void loadBookContent(BookshelfItem item, SiteBean siteBean) {
         final int targetChapterIndex = item.getChapterIndex();
         final String targetChapterTitle = item.getChapterTitle();
-        final SiteBean finalSiteBean = siteBean;
 
         SearchService searchService = new SearchService(project);
-        searchService.loadBookDirectory(bookInfo,
+        searchService.loadBookDirectory(item.toBookInfo(),
                 chapterNames -> {
-                    if (chapterNames == null || chapterNames.isEmpty()) {
-                        return;
+                    if (chapterNames != null && !chapterNames.isEmpty()) {
+                        cacheService.setChapterList(new ArrayList<>(chapterNames));
                     }
-                    cacheService.setChapterList(new ArrayList<>(chapterNames));
                 },
                 chapterUrls -> {
-                    if (chapterUrls == null || chapterUrls.isEmpty()) {
-                        return;
-                    }
+                    if (chapterUrls == null || chapterUrls.isEmpty()) return;
                     cacheService.setChapterUrlList(new ArrayList<>(chapterUrls));
-
-                    int rawIdx = Math.min(targetChapterIndex, chapterUrls.size() - 1);
-                    final int idx = Math.max(rawIdx, 0);
-
-                    String chapterSuffixUrl = (idx < chapterUrls.size()) ? chapterUrls.get(idx) : "";
-                    String chapterUrl = buildFullChapterUrl(chapterSuffixUrl, finalSiteBean);
-
-                    ChapterInfo chapterInfo = new ChapterInfo();
-                    chapterInfo.setChapterTitle(
-                            idx < cacheService.getChapterList().size()
-                                    ? cacheService.getChapterList().get(idx)
-                                    : targetChapterTitle);
-                    chapterInfo.setChapterUrl(chapterUrl);
-                    chapterInfo.setSelectedChapterIndex(idx);
-                    chapterInfo.setLastReadLineNum(item.getLastReadLineNum());
-
-                    searchService.searchBookContentRemote(chapterUrl, chapterInfo, param -> {
-                        processChapterContent(param, chapterInfo, idx);
-                    });
+                    loadChapterContent(item, siteBean, targetChapterIndex, targetChapterTitle, searchService);
                 },
-                appendResult -> {
-                    List<String> extraNames = appendResult.get("chapterNames");
-                    List<String> extraUrls = appendResult.get("chapterUrls");
-                    if (extraNames != null) {
-                        List<String> current = cacheService.getChapterList();
-                        if (current != null) {
-                            current.addAll(extraNames);
-                            cacheService.setChapterList(current);
-                        }
-                    }
-                    if (extraUrls != null) {
-                        List<String> currentUrls = cacheService.getChapterUrlList();
-                        if (currentUrls != null) {
-                            currentUrls.addAll(extraUrls);
-                            cacheService.setChapterUrlList(currentUrls);
-                        }
-                    }
-                }
+                appendResult -> appendChapterData(appendResult)
         );
+    }
+
+    /**
+     * 加载指定章节内容
+     */
+    private void loadChapterContent(BookshelfItem item, SiteBean siteBean,
+                                     int targetChapterIndex, String targetChapterTitle,
+                                     SearchService searchService) {
+        List<String> chapterUrls = cacheService.getChapterUrlList();
+        int rawIdx = Math.min(targetChapterIndex, chapterUrls.size() - 1);
+        int idx = Math.max(rawIdx, 0);
+
+        String chapterSuffixUrl = chapterUrls.get(idx);
+        String chapterUrl = buildFullChapterUrl(chapterSuffixUrl, siteBean);
+
+        ChapterInfo chapterInfo = new ChapterInfo();
+        List<String> chapterList = cacheService.getChapterList();
+        chapterInfo.setChapterTitle(idx < chapterList.size() ? chapterList.get(idx) : targetChapterTitle);
+        chapterInfo.setChapterUrl(chapterUrl);
+        chapterInfo.setSelectedChapterIndex(idx);
+        chapterInfo.setLastReadLineNum(item.getLastReadLineNum());
+
+        searchService.searchBookContentRemote(chapterUrl, chapterInfo, param -> {
+            processChapterContent(param, chapterInfo, idx);
+        });
+    }
+
+    /**
+     * 追加章节数据（分页加载）
+     */
+    private void appendChapterData(Map<String, List<String>> appendResult) {
+        List<String> extraNames = appendResult.get("chapterNames");
+        List<String> extraUrls = appendResult.get("chapterUrls");
+
+        if (extraNames != null) {
+            List<String> current = cacheService.getChapterList();
+            if (current != null) {
+                current.addAll(extraNames);
+                cacheService.setChapterList(current);
+            }
+        }
+        if (extraUrls != null) {
+            List<String> currentUrls = cacheService.getChapterUrlList();
+            if (currentUrls != null) {
+                currentUrls.addAll(extraUrls);
+                cacheService.setChapterUrlList(currentUrls);
+            }
+        }
     }
 
     private String buildFullChapterUrl(String suffixUrl, SiteBean siteBean) {

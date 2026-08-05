@@ -444,7 +444,11 @@ public final class ReaderOrchestrator {
             SiteBean siteBean = cacheService.getSelectedSiteBean();
             String siteId = siteBean != null ? siteBean.getId() : "local";
             String bookId = resolveBookId(bookInfo);
-            String uniqueKey = BookshelfItem.buildUniqueKey(siteId, bookId);
+            String siteGroupKey = SiteRuleService.getInstance().getSelectedCustomSiteRuleKey();
+            if (siteGroupKey == null) {
+                siteGroupKey = "default";
+            }
+            String uniqueKey = BookshelfItem.buildUniqueKey(siteGroupKey, siteId, bookId);
 
             ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
             int chapterIndex = chapterInfo != null ? chapterInfo.getSelectedChapterIndex() : 0;
@@ -463,6 +467,7 @@ public final class ReaderOrchestrator {
             } else {
                 BookshelfItem item = new BookshelfItem();
                 item.setUniqueKey(uniqueKey);
+                item.setSiteGroupKey(siteGroupKey);
                 item.setSiteId(siteId);
                 item.setBookId(bookId);
                 item.copyFromBookInfo(bookInfo);
