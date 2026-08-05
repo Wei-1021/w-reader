@@ -20,6 +20,7 @@ import com.wei.wreader.content.ContentFormatter;
 import com.wei.wreader.content.ContentParser;
 import com.wei.wreader.listener.BookDirectoryListener;
 import com.wei.wreader.model.*;
+import com.wei.wreader.search.SearchService;
 import com.wei.wreader.service.AppConfigService;
 import com.wei.wreader.service.AppStateService;
 import com.wei.wreader.service.CacheService;
@@ -59,6 +60,7 @@ import org.jsoup.select.Elements;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -122,24 +124,135 @@ public class ChapterNavigator {
             ChapterInfo currentChapterInfo = cacheService.getSelectedChapterInfo();
             int currentChapterIndex = currentChapterInfo != null ? currentChapterInfo.getSelectedChapterIndex() : 0;
 
-            JBList<String> chapterListJBList = new JBList<>(chapterList);
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (String chapter : chapterList) {
+                listModel.addElement(chapter);
+            }
+
+            JBList<String> chapterListJBList = new JBList<>(listModel);
             chapterListJBList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             chapterListJBList.setBorder(JBUI.Borders.empty());
             chapterListJBList.setSelectedIndex(currentChapterIndex);
 
-            chapterListJBList.addListSelectionListener(e -> {
+            // 创建监听器并保存引用，供刷新时临时移除避免重复触发
+            ListSelectionListener chapterSelectionListener = e -> {
                 if (!e.getValueIsAdjusting()) {
                     handleChapterSelection(chapterListJBList, listener, dataLoadType);
                 }
-            });
+            };
+            chapterListJBList.addListSelectionListener(chapterSelectionListener);
 
             JBScrollPane scrollPane = new JBScrollPane(chapterListJBList);
             scrollPane.setPreferredSize(new Dimension(400, 500));
 
             chapterListJBList.ensureIndexIsVisible(currentChapterIndex);
 
-            MessageDialogUtil.showMessage(project, "目录", scrollPane);
+            MessageDialogUtil.showMessage(
+                    project,
+                    "目录",
+                    "刷新目录",
+                    scrollPane,
+                    e -> {
+                        if (e.getActionCommand().equals("刷新目录")) {
+                            refreshBookDirectory(chapterListJBList, listModel, listener, chapterSelectionListener);
+                        }
+                    }
+            );
         });
+    }
+
+    /**
+     * 刷新目录列表
+     */
+    private void refreshBookDirectory(JBList<String> chapterListJBList,
+                                       DefaultListModel<String> listModel,
+                                       BookDirectoryListener listener,
+                                       javax.swing.event.ListSelectionListener chapterSelectionListener) {
+        Settings settings = cacheService.getSettings();
+        int dataLoadType = settings.getDataLoadType();
+
+        if (dataLoadType == Settings.DATA_LOAD_TYPE_LOCAL) {
+            Messages.showInfoMessage("本地文件目录无需刷新", "提示");
+            return;
+        }
+
+        BookInfo bookInfo = cacheService.getSelectedBookInfo();
+        SiteBean siteBean = cacheService.getSelectedSiteBean();
+        if (bookInfo == null || siteBean == null) {
+            Messages.showWarningDialog("未找到书籍信息，无法刷新", "提示");
+            return;
+        }
+
+        // 将当前 siteBean 设为临时选中，供 SearchService 使用
+        cacheService.setTempSelectedSiteBean(siteBean);
+
+        SearchService searchService = new SearchService(project);
+        searchService.loadBookDirectory(bookInfo,
+                chapterNames -> {
+                    if (chapterNames == null || chapterNames.isEmpty()) {
+                        Messages.showInfoMessage("未找到章节列表", "提示");
+                        return;
+                    }
+                    // 更新缓存
+                    cacheService.setChapterList(new ArrayList<>(chapterNames));
+
+                    // 更新 UI
+                    SwingUtilities.invokeLater(() -> {
+                        // 临时移除监听器，避免 clear/addElement 触发重复任务
+                        chapterListJBList.removeListSelectionListener(chapterSelectionListener);
+                        try {
+                            int selectedIndex = chapterListJBList.getSelectedIndex();
+                            listModel.clear();
+                            for (String name : chapterNames) {
+                                listModel.addElement(name);
+                            }
+                            // 恢复选中位置
+                            if (selectedIndex >= 0 && selectedIndex < listModel.size()) {
+                                chapterListJBList.setSelectedIndex(selectedIndex);
+                                chapterListJBList.ensureIndexIsVisible(selectedIndex);
+                            }
+                        } finally {
+                            chapterListJBList.addListSelectionListener(chapterSelectionListener);
+                        }
+                    });
+                },
+                chapterUrls -> {
+                    if (chapterUrls != null) {
+                        cacheService.setChapterUrlList(new ArrayList<>(chapterUrls));
+                    }
+                },
+                appendResult -> {
+                    // 追加章节（下一页目录）
+                    List<String> extraNames = appendResult.get("chapterNames");
+                    List<String> extraUrls = appendResult.get("chapterUrls");
+                    if (extraNames != null && !extraNames.isEmpty()) {
+                        // 更新缓存
+                        List<String> currentList = cacheService.getChapterList();
+                        if (currentList == null) currentList = new ArrayList<>();
+                        currentList.addAll(extraNames);
+                        cacheService.setChapterList(currentList);
+
+                        // 更新 UI
+                        SwingUtilities.invokeLater(() -> {
+                            // 临时移除监听器，避免 clear/addElement 触发重复任务
+                            chapterListJBList.removeListSelectionListener(chapterSelectionListener);
+                            try {
+                                for (String name : extraNames) {
+                                    listModel.addElement(name);
+                                }
+                            } finally {
+                                chapterListJBList.addListSelectionListener(chapterSelectionListener);
+                            }
+                        });
+                    }
+                    if (extraUrls != null) {
+                        List<String> currentUrls = cacheService.getChapterUrlList();
+                        if (currentUrls == null) currentUrls = new ArrayList<>();
+                        currentUrls.addAll(extraUrls);
+                        cacheService.setChapterUrlList(currentUrls);
+                    }
+                }
+        );
     }
 
     private void handleChapterSelection(JBList<String> chapterListJBList, BookDirectoryListener listener, int dataLoadType) {

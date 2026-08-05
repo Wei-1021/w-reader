@@ -10,6 +10,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.function.Consumer;
 
 /**
  * 消息对话框工具类
@@ -376,6 +378,36 @@ public class MessageDialogUtil {
         DialogBuilder builder = new DialogBuilder(project);
         builder.centerPanel(centerPanel);
         builder.title(title);
+        builder.show();
+
+        return builder;
+    }
+
+
+    /**
+     * 显示消息对话框
+     *
+     * @param project
+     * @param title
+     * @param centerPanel
+     */
+    public static DialogBuilder showMessage(Project project,
+                                            String title,
+                                            String currentActionTitle,
+                                            JComponent centerPanel,
+                                            Consumer<ActionEvent> currentAction) {
+
+        DialogBuilder builder = new DialogBuilder(project);
+        builder.centerPanel(centerPanel);
+        builder.title(title);
+        builder.addAction(new AbstractAction(currentActionTitle) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentAction.accept(e);
+            }
+        });
+        builder.addOkAction();
+        builder.addCancelAction();
         builder.show();
 
         return builder;
