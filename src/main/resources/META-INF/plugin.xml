@@ -71,11 +71,13 @@
     <div>
         0.5.0:
         <ul>
-            <li>1.【新增】添加本地文件文本内容规则处理功能；</li>
-            <li>2.【新增】添加音频播放控制：暂停播放、恢复播放；</li>
-            <li>3.【新增】目录列表弹窗添加“刷新目录”功能；</li>
-            <li>4.【优化】重构“加载本地文件”界面布局；</li>
-            <li>5.【优化】搜索弹窗左下角添加操作提示；</li>
+            <li>1.【新增】新增书架功能，支持书架管理、书架书源切换；</li>
+            <li>2.【新增】新增本地文件的内容规则处理功能；</li>
+            <li>3.【新增】添加音频播放控制：暂停播放、恢复播放；</li>
+            <li>4.【新增】目录列表弹窗添加“刷新目录”功能；</li>
+            <li>5.【优化】修改侧边栏默认停靠状态，将View Mode默认设置成Undock模式，以实现失焦自动隐藏；</li>
+            <li>6.【优化】重构“加载本地文件”界面布局；</li>
+            <li>7.【优化】搜索弹窗左下角添加操作提示；</li>
         </ul>
     </div>
     <div>
@@ -389,12 +391,12 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
-            <reference ref="wreader.BookshelfAction"/>
-            <reference ref="wreader.AddToShelfAction"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
         <!-- Tool菜单分组 -->
@@ -405,6 +407,8 @@
             <reference ref="wreader.BookshelfAction"/>
             <reference ref="wreader.AddToShelfAction"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <separator/>
@@ -439,22 +443,22 @@
             <reference ref="wreader.LoadLocalFileAction"/>
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
 <!--            <reference ref="wreader.LegadoConvertAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
-            <reference ref="wreader.BookshelfAction"/>
-            <reference ref="wreader.AddToShelfAction"/>
         </group>
         <!-- 状态栏 -->
         <group id="wreader.group.statusBar">
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
+            <reference ref="wreader.BookshelfAction"/>
+            <reference ref="wreader.AddToShelfAction"/>
 <!--            <reference ref="wreader.AiGenerateSiteRuleAction"/>-->
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
-            <reference ref="wreader.BookshelfAction"/>
-            <reference ref="wreader.AddToShelfAction"/>
             <separator/>
             <reference ref="wreader.SearchBookName"/>
             <reference ref="wreader.LoadLocalFileAction"/>
