@@ -38,8 +38,9 @@ public final class SettingConstants {
     // ==================== 主图标风格 ====================
     public static final int ICON_STYLE_DEFAULT = 1;
     public static final int ICON_STYLE_LIGHT = 2;
-    public static final String[] ICON_STYLE_NAMES = {"默认", "浅色"};
-    public static final int[] ICON_STYLE_VALUES = {ICON_STYLE_DEFAULT, ICON_STYLE_LIGHT};
+    public static final int ICON_STYLE_HOLLOW = 3;
+    public static final String[] ICON_STYLE_NAMES = {"默认", "浅色", "镂空"};
+    public static final int[] ICON_STYLE_VALUES = {ICON_STYLE_DEFAULT, ICON_STYLE_LIGHT, ICON_STYLE_HOLLOW};
 
     // ==================== 编辑器提示窗口尺寸 ====================
     public static final Integer[] EDITOR_HINT_WIDTHS = {100, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800};

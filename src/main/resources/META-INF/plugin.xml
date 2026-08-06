@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -68,6 +68,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.5.1:
+        <ul>
+            <li>1.【新增】新增镂空风格主图标；</li>
+            <li>2.【修复】修复部分版本更新至0.5.0后，出现插件不可用的问题；</li>
+        </ul>
+    </div>
     <div>
         0.5.0:
         <ul>
@@ -404,8 +411,6 @@
             <reference ref="wreader.WReaderSetting"/>
             <reference ref="wreader.HelpAction"/>
             <reference ref="wreader.ShowBookInfoAction"/>
-            <reference ref="wreader.BookshelfAction"/>
-            <reference ref="wreader.AddToShelfAction"/>
             <reference ref="wreader.CustomSiteRuleAction"/>
             <reference ref="wreader.BookshelfAction"/>
             <reference ref="wreader.AddToShelfAction"/>

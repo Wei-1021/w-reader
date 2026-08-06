@@ -12,6 +12,7 @@ public class WReaderIcons {
     public static final Icon FONT_SIZE_ADD = IconLoader.getIcon("/icon/font_add.svg", WReaderIcons.class);
     public static final Icon MAIN_ICON = IconLoader.getIcon("/icon/mainIcon.svg", WReaderIcons.class);
     public static final Icon MAIN_ICON_BLEAK = IconLoader.getIcon("/icon/mainIcon_bleak.svg", WReaderIcons.class);
+    public static final Icon MAIN_ICON_HOLLOW = IconLoader.getIcon("/icon/mainIcon_hollow.svg", WReaderIcons.class);
     public static final Icon AUTO_READ_PLAY = IconLoader.getIcon("/icon/auto_read_play.svg", WReaderIcons.class);
     public static final Icon AUTO_READ_STOP = IconLoader.getIcon("/icon/auto_read_stop.svg", WReaderIcons.class);
     public static final Icon AUTO_SCROLL_PLAY = IconLoader.getIcon("/icon/auto_scroll_play.svg", WReaderIcons.class);
@@ -44,8 +45,11 @@ public class WReaderIcons {
             return MAIN_ICON;
         }
 
-        if (settings.getMainIconStyle() == 2) {
+        int iconStyle = settings.getMainIconStyle();
+        if (iconStyle == 2) {
             return MAIN_ICON_BLEAK;
+        } else if (iconStyle == 3) {
+            return MAIN_ICON_HOLLOW;
         }
 
         return MAIN_ICON;
