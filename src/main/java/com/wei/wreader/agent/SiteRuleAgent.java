@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 书源规则生成 Agent 编排器
@@ -29,7 +30,7 @@ public class SiteRuleAgent {
     private static final Logger LOG = Logger.getInstance(SiteRuleAgent.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final int MAX_ITERATIONS = 20;
+    private static final int MAX_ITERATIONS = 35;
 
     private final Project project;
     private final String llmBaseUrl;
@@ -37,6 +38,7 @@ public class SiteRuleAgent {
     private final String llmModel;
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
+    private final AtomicReference<CLIAgentRunner> cliRunner = new AtomicReference<>();
 
     public SiteRuleAgent(Project project, String llmBaseUrl, String llmApiKey, String llmModel) {
         this.project = project;
@@ -50,6 +52,31 @@ public class SiteRuleAgent {
      */
     public void cancel() {
         cancelled.set(true);
+        CLIAgentRunner runner = cliRunner.get();
+        if (runner != null) {
+            runner.cancel();
+        }
+    }
+
+    /**
+     * 使用 CLI 工具生成书源规则
+     *
+     * @param cliType    CLI 类型
+     * @param websiteUrl 目标网站 URL
+     * @param callback   事件回调
+     */
+    public void generateWithCLI(CLIAgentRunner.CLIType cliType, String websiteUrl, AgentCallback callback) {
+        cancelled.set(false);
+
+        CLIAgentRunner runner = new CLIAgentRunner();
+        cliRunner.set(runner);
+
+        String ruleDoc = loadResource("md/custom-rule-info.md");
+        String exampleRule = loadResource("json/default-site-rule.json");
+
+        runner.generate(cliType, websiteUrl, ruleDoc, exampleRule, callback);
+
+        cliRunner.set(null);
     }
 
     /**

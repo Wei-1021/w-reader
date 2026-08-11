@@ -1,5 +1,6 @@
 package com.wei.wreader.ui;
 
+import com.intellij.formatting.Alignment;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
@@ -12,6 +13,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,6 +26,7 @@ import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.agent.AgentCallback;
+import com.wei.wreader.agent.CLIAgentRunner;
 import com.wei.wreader.agent.SiteRuleAgent;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.service.CredentialService;
@@ -66,6 +69,8 @@ public class AgentSiteRuleDialog {
     private JButton generateButton;
     private JButton cancelButton;
     private JPanel chatPanel;
+    private ComboBox<String> aiModeComboBox;
+    private JPanel apiConfigPanel;
     private JBScrollPane chatScrollPane;
     private JLabel statusLabel;
     private JButton copyButton;
@@ -108,11 +113,11 @@ public class AgentSiteRuleDialog {
 
         mainPanel.add(createTopPanel(), BorderLayout.NORTH);
 
-        // 中间区域：聊天 + 生成规则显示（上下分割）
-        JBSplitter splitter = new JBSplitter(true, "w-reader.agent-site-rule.splitter", 0.4f);
-        splitter.setFirstComponent(createChatArea());
-        splitter.setSecondComponent(createRuleDisplayArea());
-        mainPanel.add(splitter, BorderLayout.CENTER);
+        // 中间区域：聊天/输出 + 规则显示（上下分割）
+        JBSplitter mainSplitter = new JBSplitter(true, "w-reader.agent-site-rule.main-splitter", 0.5f);
+        mainSplitter.setFirstComponent(createChatArea());
+        mainSplitter.setSecondComponent(createRuleDisplayArea());
+        mainPanel.add(mainSplitter, BorderLayout.CENTER);
 
         mainPanel.add(createBottomPanel(), BorderLayout.SOUTH);
 
@@ -128,39 +133,51 @@ public class AgentSiteRuleDialog {
     private JPanel createTopPanel() {
         JPanel topPanel = new JPanel(new BorderLayout(0, 5));
 
-        // API 配置面板
-        JPanel apiPanel = new JPanel(new GridBagLayout());
-        apiPanel.setBorder(BorderFactory.createTitledBorder("API 配置"));
+        // AI 模式选择面板
+        JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        modePanel.add(new JLabel("AI 模式:"));
+        aiModeComboBox = new ComboBox<>(new String[]{
+                "API 接口（自定义 OpenAI 兼容）",
+                CLIAgentRunner.CLIType.CLAUDE.displayName + "（本地 CLI）",
+                CLIAgentRunner.CLIType.OPENCODE.displayName + "（本地 CLI）",
+                CLIAgentRunner.CLIType.MIMOCODE.displayName + "（本地 CLI）"
+        });
+        aiModeComboBox.setToolTipText("选择 AI 生成模式：API 接口需要配置 Base URL/Key/Model，CLI 模式需要本地安装对应工具");
+        aiModeComboBox.addActionListener(e -> onAiModeChanged());
+        modePanel.add(aiModeComboBox);
+        topPanel.add(modePanel, BorderLayout.NORTH);
+
+        // API 配置面板（可隐藏）
+        apiConfigPanel = new JPanel(new GridBagLayout());
+        apiConfigPanel.setBorder(BorderFactory.createTitledBorder("API 配置"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(3);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        apiPanel.add(new JLabel("Base URL:"), gbc);
+        apiConfigPanel.add(new JLabel("Base URL:"), gbc);
         gbc.gridx = 1; gbc.weightx = 1.0;
         baseUrlField = new JTextField();
         baseUrlField.setToolTipText("OpenAI 格式，如 https://api.deepseek.com/v1");
-        apiPanel.add(baseUrlField, gbc);
+        apiConfigPanel.add(baseUrlField, gbc);
 
         gbc.gridx = 2; gbc.weightx = 0;
-        apiPanel.add(new JLabel("  API Key:"), gbc);
+        apiConfigPanel.add(new JLabel("  API Key:"), gbc);
         gbc.gridx = 3; gbc.weightx = 0.8;
         apiKeyField = new JPasswordField(20);
-        apiPanel.add(apiKeyField, gbc);
+        apiConfigPanel.add(apiKeyField, gbc);
 
         gbc.gridx = 4; gbc.weightx = 0;
-        apiPanel.add(new JLabel("  Model:"), gbc);
+        apiConfigPanel.add(new JLabel("  Model:"), gbc);
         gbc.gridx = 5; gbc.weightx = 0.6;
         modelField = new JTextField(15);
-        apiPanel.add(modelField, gbc);
+        apiConfigPanel.add(modelField, gbc);
 
         gbc.gridx = 6; gbc.weightx = 0;
         JButton saveBtn = new JButton("保存");
         saveBtn.setToolTipText("保存 API 配置到 IDE 凭证管理器");
         saveBtn.addActionListener(e -> onSaveConfig());
-        apiPanel.add(saveBtn, gbc);
-
-        topPanel.add(apiPanel, BorderLayout.NORTH);
+        apiConfigPanel.add(saveBtn, gbc);
 
         // 网站 URL 面板
         JPanel urlPanel = new JPanel(new BorderLayout(5, 0));
@@ -180,13 +197,43 @@ public class AgentSiteRuleDialog {
         inputPanel.add(btnPanel, BorderLayout.EAST);
         urlPanel.add(inputPanel, BorderLayout.CENTER);
 
-        topPanel.add(urlPanel, BorderLayout.SOUTH);
+        // 将 API 配置和 URL 面板组合到 centerPanel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.add(apiConfigPanel);
+        centerPanel.add(urlPanel);
+
+        topPanel.add(centerPanel, BorderLayout.CENTER);
 
         // 事件绑定
         generateButton.addActionListener(e -> onGenerate());
         cancelButton.addActionListener(e -> onCancel());
 
         return topPanel;
+    }
+
+    /**
+     * AI 模式切换事件
+     */
+    private void onAiModeChanged() {
+        int mode = aiModeComboBox.getSelectedIndex();
+        // API 模式（index=0）显示 API 配置面板，CLI 模式隐藏
+        apiConfigPanel.setVisible(mode == 0);
+        apiConfigPanel.revalidate();
+        apiConfigPanel.repaint();
+    }
+
+    /**
+     * 根据下拉框索引获取 CLI 类型
+     * 0=API, 1=Claude Code, 2=OpenCode, 3=mimo
+     */
+    private static CLIAgentRunner.CLIType getCLIType(int aiMode) {
+        return switch (aiMode) {
+            case 1 -> CLIAgentRunner.CLIType.CLAUDE;
+            case 2 -> CLIAgentRunner.CLIType.OPENCODE;
+            case 3 -> CLIAgentRunner.CLIType.MIMOCODE;
+            default -> CLIAgentRunner.CLIType.CLAUDE;
+        };
     }
 
     private JScrollPane createChatArea() {
@@ -198,7 +245,7 @@ public class AgentSiteRuleDialog {
         chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         chatScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        chatScrollPane.setBorder(BorderFactory.createTitledBorder("Agent 对话"));
+        chatScrollPane.setBorder(BorderFactory.createTitledBorder("对话 / 输出"));
 
         return chatScrollPane;
     }
@@ -349,57 +396,139 @@ public class AgentSiteRuleDialog {
 
     // ==================== 消息添加 ====================
 
+    /**
+     * 添加用户消息
+     * @param text
+     */
     private void addUserMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Alignment.RIGHT);
-        JLabel label = new JLabel("<html><b>「你」</b> " + escapeHtml(text) + "</html>");
-        label.setFont(label.getFont().deriveFont(Font.PLAIN, 12f));
-        label.setBorder(JBUI.Borders.empty(4, 10));
-        label.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
-        wrapper.add(label);
+        JPanel wrapper = createMessageWrapper(Component.LEFT_ALIGNMENT);
+        JTextArea area = createMessageArea("「你」 " + text, 12f, Font.PLAIN);
+        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.LEFT_ALIGNMENT);
+        wrapper.add(area);
+        // 右侧填充，让消息靠左
+        wrapper.add(Box.createHorizontalGlue());
         addMessageToChat(wrapper);
     }
 
+    /**
+     * 添加代理消息
+     * @param text
+     */
     private void addAgentMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Alignment.LEFT);
-        JLabel label = new JLabel("<html><b>「Agent」</b> " + escapeHtml(text) + "</html>");
-        label.setFont(label.getFont().deriveFont(Font.PLAIN, 12f));
-        label.setBorder(JBUI.Borders.empty(4, 10));
-        label.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
-        wrapper.add(label);
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JTextArea area = createMessageArea("「Agent」 " + text, 12f, Font.PLAIN);
+        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(Box.createHorizontalGlue());
+        // 左侧填充，让消息靠右
+        wrapper.add(area);
         addMessageToChat(wrapper);
     }
 
+    /**
+     * 添加代理消息
+     * @param agentName 智能体名称
+     * @param text 代理消息内容
+     */
+    public void addAgentMessage(String agentName, String text) {
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JTextArea area = createMessageArea("「" + agentName + "」 " + text, 12f, Font.PLAIN);
+        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(Box.createHorizontalGlue());
+        wrapper.add(area);
+        addMessageToChat(wrapper);
+    }
+
+    /**
+     * 添加工具调用消息
+     * @param toolName
+     * @param arguments
+     */
     private void addToolCallMessage(String toolName, String arguments) {
-        JPanel wrapper = createMessageWrapper(Alignment.LEFT);
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
         String toolLabel = getToolDisplayName(toolName);
         String argsSummary = summarizeArgs(toolName, arguments);
-        JLabel label = new JLabel("<html>🔧 <b>" + escapeHtml(toolLabel) + "</b>: " + escapeHtml(argsSummary) + "</html>");
-        label.setFont(label.getFont().deriveFont(Font.PLAIN, 11f));
-        label.setBorder(JBUI.Borders.empty(3, 10));
-        label.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        wrapper.add(label);
+        JTextArea area = createMessageArea(">> " + toolLabel + ": " + argsSummary, 12f, Font.PLAIN);
+        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(Box.createHorizontalGlue());
+        wrapper.add(area);
         addMessageToChat(wrapper);
     }
 
+    /**
+     * 添加工具结果消息
+     * @param toolName
+     * @param result
+     */
     private void addToolResultMessage(String toolName, String result) {
-        JPanel wrapper = createMessageWrapper(Alignment.LEFT);
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
         String resultSummary = summarizeResult(toolName, result);
-        JLabel label = new JLabel("<html>✅ <b>" + escapeHtml(getToolDisplayName(toolName)) + "</b>: " + escapeHtml(resultSummary) + "</html>");
-        label.setFont(label.getFont().deriveFont(Font.PLAIN, 11f));
-        label.setBorder(JBUI.Borders.empty(3, 10));
-        label.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        wrapper.add(label);
+        JTextArea area = createMessageArea("OK " + getToolDisplayName(toolName) + ": " + resultSummary, 12f, Font.PLAIN);
+        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(Box.createHorizontalGlue());
+        wrapper.add(area);
         addMessageToChat(wrapper);
     }
 
+    /**
+     * 添加系统消息
+     * @param text
+     */
     private void addSystemMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Alignment.CENTER);
-        JLabel label = new JLabel("<html><center>" + text + "</center></html>");
-        label.setFont(label.getFont().deriveFont(Font.ITALIC, 11f));
-        label.setForeground(JBColor.GRAY);
-        label.setBorder(JBUI.Borders.empty(8, 10));
-        wrapper.add(label);
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JTextArea area = createMessageArea(text, 12f, Font.ITALIC);
+        area.setForeground(JBColor.GRAY);
+        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(Box.createHorizontalGlue());
+        wrapper.add(area);
         addMessageToChat(wrapper);
+    }
+
+    /**
+     * 向聊天区域追加 CLI 输出
+     */
+    private void addCLIOutputMessage(String text, String cliName) {
+        if (text == null || text.isEmpty() || text.startsWith("system")) {
+            return;
+        }
+
+        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JTextArea area = createMessageArea(">>【" + cliName + "】 " + text, 12f, Font.PLAIN);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        area.setForeground(JBColor.BLACK);
+        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        area.setMinimumSize(new Dimension(650, 20));
+        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        wrapper.add(area);
+        wrapper.add(Box.createHorizontalGlue());
+        addMessageToChat(wrapper);
+    }
+
+    /**
+     * 创建消息文本区域（不可编辑，可选择复制，自动换行）
+     */
+    private JTextArea createMessageArea(String text, float fontSize, int style) {
+        JTextArea area = new JTextArea(text);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setOpaque(false);
+        area.setFocusable(true);
+        area.setFont(area.getFont().deriveFont(style, fontSize));
+        area.setBorder(JBUI.Borders.empty(4, 10));
+        area.setMargin(JBUI.emptyInsets());
+        return area;
     }
 
     private void showRuleInDisplayArea(String jsonRule) {
@@ -420,15 +549,13 @@ public class AgentSiteRuleDialog {
 
     // ==================== UI 辅助 ====================
 
-    private enum Alignment { LEFT, CENTER, RIGHT }
 
-    private JPanel createMessageWrapper(Alignment align) {
-        JPanel wrapper = new JPanel(new FlowLayout(
-                align == Alignment.LEFT ? FlowLayout.LEFT :
-                align == Alignment.RIGHT ? FlowLayout.RIGHT : FlowLayout.CENTER,
-                0, 2));
+    private JPanel createMessageWrapper(float align) {
+        // 使用 BoxLayout 以支持 alignmentX 对齐
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.X_AXIS));
         wrapper.setOpaque(false);
-        wrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        wrapper.setAlignmentX(align);
         return wrapper;
     }
 
@@ -499,6 +626,9 @@ public class AgentSiteRuleDialog {
         if (savedBaseUrl != null && !savedBaseUrl.isEmpty()) baseUrlField.setText(savedBaseUrl);
         if (savedApiKey != null && !savedApiKey.isEmpty()) apiKeyField.setText(savedApiKey);
         if (savedModel != null && !savedModel.isEmpty()) modelField.setText(savedModel);
+
+        // 初始化 AI 模式面板可见性
+        onAiModeChanged();
     }
 
     private void onSaveConfig() {
@@ -522,13 +652,10 @@ public class AgentSiteRuleDialog {
      * 生成按钮点击事件处理
      */
     private void onGenerate() {
-        String baseUrl = baseUrlField.getText().trim();
-        String apiKey = new String(apiKeyField.getPassword()).trim();
-        String model = modelField.getText().trim();
         String websiteUrl = websiteUrlField.getText().trim();
 
-        if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty() || websiteUrl.isEmpty()) {
-            Messages.showInfoMessage("请填写完整的 API 配置和网站 URL", "提示");
+        if (websiteUrl.isEmpty()) {
+            Messages.showInfoMessage("请输入网站 URL", "提示");
             return;
         }
 
@@ -538,6 +665,27 @@ public class AgentSiteRuleDialog {
         }
 
         final String finalWebsiteUrl = websiteUrl;
+        final int aiMode = aiModeComboBox.getSelectedIndex();
+        final boolean isCLIMode = aiMode > 0;
+
+        // API 模式需要验证 API 配置
+        if (aiMode == 0) {
+            String baseUrl = baseUrlField.getText().trim();
+            String apiKey = new String(apiKeyField.getPassword()).trim();
+            String model = modelField.getText().trim();
+            if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) {
+                Messages.showInfoMessage("请填写完整的 API 配置（base URL / API key / model）", "提示");
+                return;
+            }
+        } else {
+            // CLI 模式检测 CLI 是否可用
+            CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
+            if (!CLIAgentRunner.detectCLI(cliType)) {
+                Messages.showInfoMessage(cliType.displayName + " 未安装或不可用，请确保 "
+                        + cliType.command + " 命令可在终端中执行", "提示");
+                return;
+            }
+        }
 
         generating = true;
         finalRuleJson = null;
@@ -553,79 +701,33 @@ public class AgentSiteRuleDialog {
         showRuleInDisplayArea("");
 
         addUserMessage("请为 " + finalWebsiteUrl + " 生成书源规则");
-        statusLabel.setText("Agent 正在工作...");
+        statusLabel.setText(isCLIMode ? "CLI Agent 正在工作..." : "Agent 正在工作...");
 
-        SiteRuleAgent agent = new SiteRuleAgent(project, baseUrl, apiKey, model);
+        SiteRuleAgent agent;
+        if (aiMode == 0) {
+            String baseUrl = baseUrlField.getText().trim();
+            String apiKey = new String(apiKeyField.getPassword()).trim();
+            String model = modelField.getText().trim();
+            agent = new SiteRuleAgent(project, baseUrl, apiKey, model);
+        } else {
+            agent = new SiteRuleAgent(project, "", "", "");
+        }
         currentAgent.set(agent);
+
+        // 构建回调（根据模式传递参数）
+        AgentCallback agentCallback = createAgentCallback(isCLIMode);
 
         new Task.Backgroundable(project, "AI Agent 生成书源规则", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
 
-                agent.generate(finalWebsiteUrl, new AgentCallback() {
-                    @Override
-                    public void onMessage(String text) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (frame != null && frame.isDisplayable()) {
-                                addAgentMessage(text);
-                                statusLabel.setText("Agent 思考中...");
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onToolCall(String toolName, String arguments) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (frame != null && frame.isDisplayable()) {
-                                addToolCallMessage(toolName, arguments);
-                                statusLabel.setText("执行: " + getToolDisplayName(toolName));
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onToolResult(String toolName, String result) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (frame != null && frame.isDisplayable()) {
-                                addToolResultMessage(toolName, result);
-                                statusLabel.setText("Agent 分析中...");
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onComplete(String siteRuleJson) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (frame != null && frame.isDisplayable()) {
-                                finalRuleJson = siteRuleJson;
-                                addAgentMessage("规则生成完成！请查看下方「生成的书源规则」区域。");
-                                showRuleInDisplayArea(siteRuleJson);
-                                statusLabel.setText("生成完成");
-                                generateButton.setEnabled(true);
-                                cancelButton.setEnabled(false);
-                                copyButton.setEnabled(true);
-                                importButton.setEnabled(true);
-                                generating = false;
-                                currentAgent.set(null);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (frame != null && frame.isDisplayable()) {
-                                addSystemMessage("❌ " + error);
-                                statusLabel.setText("生成失败");
-                                generateButton.setEnabled(true);
-                                cancelButton.setEnabled(false);
-                                generating = false;
-                                currentAgent.set(null);
-                            }
-                        });
-                    }
-                });
+                if (aiMode == 0) {
+                    agent.generate(finalWebsiteUrl, agentCallback);
+                } else {
+                    CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
+                    agent.generateWithCLI(cliType, finalWebsiteUrl, agentCallback);
+                }
             }
 
             @Override
@@ -642,6 +744,88 @@ public class AgentSiteRuleDialog {
                 });
             }
         }.queue();
+    }
+
+    /**
+     * 创建 Agent 回调（API 和 CLI 模式共用）
+     */
+    private AgentCallback createAgentCallback(boolean isCLIMode) {
+        return new AgentCallback() {
+            @Override
+            public void onMessage(String text) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (frame != null && frame.isDisplayable()) {
+                        addAgentMessage(text);
+                        statusLabel.setText("Agent 思考中...");
+                    }
+                });
+            }
+
+            @Override
+            public void onToolCall(String toolName, String arguments) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (frame != null && frame.isDisplayable()) {
+                        if (isCLIMode) {
+                            // CLI 模式：直接显示在聊天区域
+                            addCLIOutputMessage(arguments, toolName);
+                            statusLabel.setText("CLI 输出中...");
+                        } else {
+                            // API 模式：显示在聊天区域
+                            addToolCallMessage(toolName, arguments);
+                            statusLabel.setText("执行: " + getToolDisplayName(toolName));
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onToolResult(String toolName, String result) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (frame != null && frame.isDisplayable()) {
+                        if (isCLIMode) {
+                            // CLI 模式：不显示工具结果（已经在 onToolCall 中显示了）
+                            statusLabel.setText("CLI 分析中...");
+                        } else {
+                            // API 模式：显示在聊天区域
+                            addToolResultMessage(toolName, result);
+                            statusLabel.setText("Agent 分析中...");
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onComplete(String siteRuleJson) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (frame != null && frame.isDisplayable()) {
+                        finalRuleJson = siteRuleJson;
+                        addAgentMessage("✓ 规则生成完成！请查看下方「生成的书源规则」区域。");
+                        showRuleInDisplayArea(siteRuleJson);
+                        statusLabel.setText("生成完成");
+                        generateButton.setEnabled(true);
+                        cancelButton.setEnabled(false);
+                        copyButton.setEnabled(true);
+                        importButton.setEnabled(true);
+                        generating = false;
+                        currentAgent.set(null);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (frame != null && frame.isDisplayable()) {
+                        addSystemMessage("❌ " + error);
+                        statusLabel.setText("生成失败");
+                        generateButton.setEnabled(true);
+                        cancelButton.setEnabled(false);
+                        generating = false;
+                        currentAgent.set(null);
+                    }
+                });
+            }
+        };
     }
 
     private void onCancel() {
