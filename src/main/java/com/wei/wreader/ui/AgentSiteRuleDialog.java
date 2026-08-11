@@ -21,6 +21,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.ErrorStripeEditorCustomization;
+import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
@@ -396,20 +397,58 @@ public class AgentSiteRuleDialog {
 
     // ==================== 消息添加 ====================
 
+    // IDEA AI Chat 风格颜色 - 使用 JBColor 自动适配深色/浅色主题
+    private JBColor getUserBgColor() {
+        return new JBColor(new Color(59, 130, 246), new Color(59, 130, 246));
+    }
+
+    private JBColor getUserTextColor() {
+        return new JBColor(Gray.WHITE, Gray.WHITE);
+    }
+
+    private JBColor getAgentBgColor() {
+        return new JBColor(new Color(243, 244, 246), new Color(57, 59, 63));
+    }
+
+    private JBColor getAgentTextColor() {
+        return new JBColor(JBColor.BLACK, Gray._187);
+    }
+
+    private JBColor getToolBgColor() {
+        return new JBColor(new Color(254, 243, 199), new Color(60, 55, 30));
+    }
+
+    private JBColor getToolTextColor() {
+        return new JBColor(new Color(146, 64, 14), new Color(253, 230, 138));
+    }
+
+    private JBColor getSystemTextColor() {
+        return JBColor.GRAY;
+    }
+
     /**
      * 添加用户消息
      * @param text
      */
     private void addUserMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Component.LEFT_ALIGNMENT);
-        JTextArea area = createMessageArea("「你」 " + text, 12f, Font.PLAIN);
-        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.LEFT_ALIGNMENT);
-        wrapper.add(area);
-        // 右侧填充，让消息靠左
-        wrapper.add(Box.createHorizontalGlue());
-        addMessageToChat(wrapper);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
+
+        // 用户名称标签
+        JLabel nameLabel = new JLabel("You");
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
+        nameLabel.setForeground(JBColor.GRAY);
+        nameLabel.setBorder(JBUI.Borders.empty(0, 8, 2, 0));
+        messageBlock.add(nameLabel, BorderLayout.NORTH);
+
+        // 消息内容气泡
+        JTextArea area = createStyledMessageArea(text, getUserTextColor());
+        JPanel bubble = createBubblePanel(area, getUserBgColor(), getUserTextColor(), false);
+        messageBlock.add(bubble, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
@@ -417,15 +456,7 @@ public class AgentSiteRuleDialog {
      * @param text
      */
     private void addAgentMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
-        JTextArea area = createMessageArea("「Agent」 " + text, 12f, Font.PLAIN);
-        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(Box.createHorizontalGlue());
-        // 左侧填充，让消息靠右
-        wrapper.add(area);
-        addMessageToChat(wrapper);
+        addAgentMessage("W-Reader Agent", text);
     }
 
     /**
@@ -434,14 +465,25 @@ public class AgentSiteRuleDialog {
      * @param text 代理消息内容
      */
     public void addAgentMessage(String agentName, String text) {
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
-        JTextArea area = createMessageArea("「" + agentName + "」 " + text, 12f, Font.PLAIN);
-        area.setMaximumSize(new Dimension(650, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(Box.createHorizontalGlue());
-        wrapper.add(area);
-        addMessageToChat(wrapper);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+
+        // Agent 名称标签
+        JLabel nameLabel = new JLabel(agentName);
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
+        nameLabel.setForeground(JBColor.GRAY);
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
+        messageBlock.add(nameLabel, BorderLayout.NORTH);
+
+        // 消息内容气泡
+        JTextArea area = createStyledMessageArea(text, getAgentTextColor());
+        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), true);
+        messageBlock.add(bubble, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
@@ -450,16 +492,29 @@ public class AgentSiteRuleDialog {
      * @param arguments
      */
     private void addToolCallMessage(String toolName, String arguments) {
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+
         String toolLabel = getToolDisplayName(toolName);
         String argsSummary = summarizeArgs(toolName, arguments);
-        JTextArea area = createMessageArea(">> " + toolLabel + ": " + argsSummary, 12f, Font.PLAIN);
-        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(Box.createHorizontalGlue());
-        wrapper.add(area);
-        addMessageToChat(wrapper);
+
+        // 工具名称标签
+        JLabel nameLabel = new JLabel("Tool: " + toolLabel);
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
+        nameLabel.setForeground(getToolTextColor());
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
+        messageBlock.add(nameLabel, BorderLayout.NORTH);
+
+        // 工具调用内容
+        JTextArea area = createStyledMessageArea(">> " + argsSummary, getToolTextColor());
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), true);
+        messageBlock.add(bubble, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
@@ -468,15 +523,28 @@ public class AgentSiteRuleDialog {
      * @param result
      */
     private void addToolResultMessage(String toolName, String result) {
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+
         String resultSummary = summarizeResult(toolName, result);
-        JTextArea area = createMessageArea("OK " + getToolDisplayName(toolName) + ": " + resultSummary, 12f, Font.PLAIN);
-        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(Box.createHorizontalGlue());
-        wrapper.add(area);
-        addMessageToChat(wrapper);
+
+        // 结果标签
+        JLabel nameLabel = new JLabel("Result: " + getToolDisplayName(toolName));
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
+        nameLabel.setForeground(getToolTextColor());
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
+        messageBlock.add(nameLabel, BorderLayout.NORTH);
+
+        // 结果内容
+        JTextArea area = createStyledMessageArea(resultSummary, getToolTextColor());
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), true);
+        messageBlock.add(bubble, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
@@ -484,15 +552,23 @@ public class AgentSiteRuleDialog {
      * @param text
      */
     private void addSystemMessage(String text) {
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
-        JTextArea area = createMessageArea(text, 12f, Font.ITALIC);
-        area.setForeground(JBColor.GRAY);
-        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(Box.createHorizontalGlue());
-        wrapper.add(area);
-        addMessageToChat(wrapper);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+
+        // 系统消息居中显示
+        JTextArea area = createStyledMessageArea(text, getSystemTextColor());
+        area.setFont(area.getFont().deriveFont(Font.ITALIC));
+        area.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        area.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.add(area, BorderLayout.CENTER);
+        messageBlock.add(centerWrapper, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
@@ -503,32 +579,79 @@ public class AgentSiteRuleDialog {
             return;
         }
 
-        JPanel wrapper = createMessageWrapper(Component.RIGHT_ALIGNMENT);
-        JTextArea area = createMessageArea(">>【" + cliName + "】 " + text, 12f, Font.PLAIN);
+        JPanel messageBlock = new JPanel(new BorderLayout());
+        messageBlock.setOpaque(false);
+        messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+
+        // CLI 名称标签
+        JLabel nameLabel = new JLabel("CLI: " + cliName);
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
+        nameLabel.setForeground(getAgentTextColor());
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
+        messageBlock.add(nameLabel, BorderLayout.NORTH);
+
+        // CLI 输出内容
+        JTextArea area = createStyledMessageArea(text, getAgentTextColor());
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-        area.setForeground(JBColor.BLACK);
-        area.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        area.setMinimumSize(new Dimension(650, 20));
-        area.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        wrapper.add(area);
-        wrapper.add(Box.createHorizontalGlue());
-        addMessageToChat(wrapper);
+        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), true);
+        messageBlock.add(bubble, BorderLayout.CENTER);
+
+        addMessageToChat(messageBlock);
     }
 
     /**
-     * 创建消息文本区域（不可编辑，可选择复制，自动换行）
+     * 创建带样式的消息文本区域
      */
-    private JTextArea createMessageArea(String text, float fontSize, int style) {
-        JTextArea area = new JTextArea(text);
+    private JTextArea createStyledMessageArea(String text, JBColor textColor) {
+        JTextArea area = new JTextArea(text) {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension max = super.getMaximumSize();
+                max.width = Integer.MAX_VALUE;
+                return max;
+            }
+        };
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setOpaque(false);
         area.setFocusable(true);
-        area.setFont(area.getFont().deriveFont(style, fontSize));
-        area.setBorder(JBUI.Borders.empty(4, 10));
+        area.setForeground(textColor);
+        area.setFont(area.getFont().deriveFont(Font.PLAIN, 13f));
+        area.setBorder(JBUI.Borders.empty(8, 12));
         area.setMargin(JBUI.emptyInsets());
         return area;
+    }
+
+    /**
+     * 创建气泡面板
+     */
+    private JPanel createBubblePanel(JTextArea area, JBColor bgColor, JBColor textColor, boolean rightAlign) {
+        JPanel bubble = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                g2.dispose();
+            }
+        };
+        bubble.setOpaque(false);
+        bubble.setBackground(bgColor);
+        bubble.setForeground(textColor);
+        bubble.add(area, BorderLayout.CENTER);
+
+        // 根据对齐方式设置边距
+        if (rightAlign) {
+            bubble.setBorder(JBUI.Borders.empty(0, 60, 0, 8));
+        } else {
+            bubble.setBorder(JBUI.Borders.empty(0, 8, 0, 60));
+        }
+
+        return bubble;
     }
 
     private void showRuleInDisplayArea(String jsonRule) {
@@ -548,16 +671,6 @@ public class AgentSiteRuleDialog {
     }
 
     // ==================== UI 辅助 ====================
-
-
-    private JPanel createMessageWrapper(float align) {
-        // 使用 BoxLayout 以支持 alignmentX 对齐
-        JPanel wrapper = new JPanel();
-        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.X_AXIS));
-        wrapper.setOpaque(false);
-        wrapper.setAlignmentX(align);
-        return wrapper;
-    }
 
     private void addMessageToChat(JComponent message) {
         SwingUtilities.invokeLater(() -> {

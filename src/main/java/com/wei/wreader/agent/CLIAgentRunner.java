@@ -370,7 +370,7 @@ public class CLIAgentRunner {
         // 各 CLI 的额外参数
         // Claude Code: 使用 stream-json + verbose 获取流式输出，预先授权 curl 等命令
         String extraArgs = switch (cliType) {
-            case CLAUDE -> " --output-format stream-json --verbose --allowedTools \"Bash(curl *)\" \"Bash(head *)\" \"Bash(wc *)\" \"Bash(grep *)\"";
+            case CLAUDE -> " --output-format stream-json --verbose --allowedTools \"Bash(*)\" \"WebFetch(domain:*)\"";
             case OPENCODE -> " run";
             case MIMOCODE -> " run";
             default -> "";
@@ -417,13 +417,13 @@ public class CLIAgentRunner {
                 + "## 目标网站\n" + websiteUrl + "\n\n"
                 + "## 重要限制\n"
                 + "**⚠️ 工具使用规则：**\n"
-                + "- **必须使用 curl 获取网页，不要使用 WebFetch！**\n"
+//                + "- **必须使用 curl 获取网页，不要使用 WebFetch！**\n"
                 + "- curl 命令已被预先授权，可以直接执行，无需等待用户批准\n"
                 + "- 使用 curl 时请加 -s 参数（静默模式）避免进度输出\n"
-                + "- 使用 head -c 50000 限制输出大小，避免内容过长\n\n"
+//                + "- 使用 head -c 50000 限制输出大小，避免内容过长\n\n"
                 + "### curl 使用示例\n"
                 + "```bash\n"
-                + "curl -s -L \"http://example.com\" | head -c 50000\n"
+                + "curl -s -L \"http://example.com\"\n"
                 + "```\n\n"
                 + "## 工作流程\n"
                 + "1. 使用 curl 获取网站首页，了解网站结构\n"
@@ -433,7 +433,7 @@ public class CLIAgentRunner {
                 + "5. 获取一个章节内容页，分析正文提取方式\n"
                 + "6. 根据分析结果组装 SiteBean 规则 JSON\n\n"
                 + "## 重要提示\n"
-                + "- **必须使用 curl 而不是 WebFetch 获取网页**\n"
+//                + "- **必须使用 curl 而不是 WebFetch 获取网页**\n"
                 + "- curl 命令已被授权，可以直接执行\n"
                 + "- CSS 选择器必须是有效的 Jsoup 语法\n"
                 + "- hasHtml: HTML 页面填 true，JSON API 填 false\n"
