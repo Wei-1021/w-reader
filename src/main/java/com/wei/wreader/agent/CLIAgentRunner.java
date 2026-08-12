@@ -368,11 +368,12 @@ public class CLIAgentRunner {
         List<String> args = new ArrayList<>();
 
         // 各 CLI 的额外参数
-        // Claude Code: 使用 stream-json + verbose 获取流式输出，预先授权 curl 等命令
+        // Claude Code: 使用 stream-json + verbose 获取流式输出
+        // OpenCode/MiMo Code: 使用 --output json 获取 JSON 格式输出
         String extraArgs = switch (cliType) {
             case CLAUDE -> " --output-format stream-json --verbose --allowedTools \"Bash(*)\" \"WebFetch(domain:*)\"";
-            case OPENCODE -> " run";
-            case MIMOCODE -> " run";
+            case OPENCODE -> " run --format json";
+            case MIMOCODE -> " run --format json";
             default -> "";
         };
 
@@ -625,11 +626,10 @@ public class CLIAgentRunner {
     }
 
     /**
-     * 解析 Claude Code 的 stream-json 格式输出
-     * 根据日志分析，格式为：
-     * {"type":"assistant","message":{"id":"...","type":"message","role":"assistant","model":"...","content":[{"type":"text","text":"..."}]}}
-     * {"type":"assistant","message":{"id":"...","type":"message","role":"assistant","model":"...","content":[{"type":"tool_use","id":"...","name":"Bash","input":{"command":"..."}}]}}
-     * {"type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"..."}]}}
+     * 解析 CLI 工具的 JSON 格式输出<br>
+     * 支持的格式：<br>
+     * 1. Claude Code stream-json 格式：<br>
+     * 2. OpenCode/MiMo Code JSON 格式：<br>
      *
      * @param line     JSON 行
      * @param cliType  CLI 类型
@@ -644,96 +644,154 @@ public class CLIAgentRunner {
             JsonNode node = objectMapper.readTree(line);
             String type = node.path("type").asText();
 
-            // Claude Code 的 stream-json 格式
-            if ("assistant".equals(type)) {
-                JsonNode message = node.path("message");
-                JsonNode content = message.path("content");
-
-                if (content.isArray()) {
-                    StringBuilder sb = new StringBuilder();
-                    for (JsonNode item : content) {
-                        String itemType = item.path("type").asText();
-
-                        if ("text".equals(itemType)) {
-                            // 文本内容
-                            String text = item.path("text").asText();
-                            if (!text.isEmpty()) {
-                                sb.append(text);
-                            }
-                        } else if ("thinking".equals(itemType)) {
-                            // 思考内容
-                            String thinking = item.path("thinking").asText();
-                            if (!thinking.isEmpty()) {
-                                sb.append(" - [ thinking ] ").append(thinking);
-                            }
-                        } else if ("tool_use".equals(itemType)) {
-                            // 工具调用
-                            String toolName = item.path("name").asText();
-                            JsonNode input = item.path("input");
-
-                            if ("Bash".equals(toolName)) {
-                                String command = input.path("command").asText();
-                                String description = input.path("description").asText();
-                                if (!description.isEmpty()) {
-                                    sb.append("🔧 ").append(description).append("\n");
-                                }
-                                sb.append("$ ").append(command);
-                            } else {
-                                sb.append("🔧 工具调用: ").append(toolName);
-                            }
-                        }
-                    }
-                    String result = sb.toString();
-                    if (!result.isEmpty()) {
-                        return result;
-                    }
-                }
-            } else if ("user".equals(type)) {
-                // 用户消息或工具结果
-                JsonNode message = node.path("message");
-                JsonNode content = message.path("content");
-
-                if (content.isArray()) {
-                    StringBuilder sb = new StringBuilder();
-                    for (JsonNode item : content) {
-                        String itemType = item.path("type").asText();
-
-                        if ("tool_result".equals(itemType)) {
-                            // 工具结果
-                            String contentText = item.path("content").asText();
-                            if (!contentText.isEmpty()) {
-                                // 截断过长的输出
-                                if (contentText.length() > 500) {
-                                    contentText = contentText.substring(0, 500) + "...";
-                                }
-                                sb.append("📋 结果: ").append(contentText);
-                            }
-                        }
-                    }
-                    String result = sb.toString();
-                    if (!result.isEmpty()) {
-                        return result;
-                    }
-                }
-            } else if ("system".equals(type)) {
-                // 系统消息
-                return "system: " + node.asText();
-            } else if ("result".equals(type)) {
-                // 最终结果
-                String result = node.path("result").asText();
-                if (!StringUtils.isNotBlank(result)) {
-                    return "✅ 完成: " + result;
-                }
-            } else if ("error".equals(type)) {
-                // 错误信息
-                String errorMessage = node.path("message").asText();
-                if (!errorMessage.isEmpty()) {
-                    return "❌ 错误: " + errorMessage;
-                }
+            // 根据 CLI 类型选择不同的解析策略
+            if (CLIType.CLAUDE.equals(cliType)) {
+                return parseClaudeCodeJson(node, type);
+            } else {
+                return parseOpenCodeJson(node, type);
             }
         } catch (Exception e) {
             // JSON 解析失败，返回原始行
             LOG.debug("Failed to parse stream-json line: " + line, e);
+        }
+
+        return null;
+    }
+
+    /**
+     * 解析 Claude Code 的 stream-json 格式
+     */
+    private static String parseClaudeCodeJson(JsonNode node, String type) {
+        if ("assistant".equals(type)) {
+            JsonNode message = node.path("message");
+            JsonNode content = message.path("content");
+
+            if (content.isArray()) {
+                StringBuilder sb = new StringBuilder();
+                for (JsonNode item : content) {
+                    String itemType = item.path("type").asText();
+
+                    if ("text".equals(itemType)) {
+                        // 文本内容
+                        String text = item.path("text").asText();
+                        if (!text.isEmpty()) {
+                            sb.append(text);
+                        }
+                    } else if ("thinking".equals(itemType)) {
+                        // 思考内容
+                        String thinking = item.path("thinking").asText();
+                        if (!thinking.isEmpty()) {
+                            sb.append(" [ thinking ] ").append(thinking);
+                        }
+                    } else if ("tool_use".equals(itemType)) {
+                        // 工具调用
+                        String toolName = item.path("name").asText();
+                        JsonNode input = item.path("input");
+
+                        if ("Bash".equals(toolName)) {
+                            String command = input.path("command").asText();
+                            String description = input.path("description").asText();
+                            if (!description.isEmpty()) {
+                                sb.append("🔧 ").append(description).append("\n");
+                            }
+                            sb.append("$ ").append(command);
+                        } else {
+                            sb.append("🔧 工具调用: ").append(toolName);
+                        }
+                    }
+                }
+                String result = sb.toString();
+                if (!result.isEmpty()) {
+                    return result;
+                }
+            }
+        } else if ("user".equals(type)) {
+            // 用户消息或工具结果
+            JsonNode message = node.path("message");
+            JsonNode content = message.path("content");
+
+            if (content.isArray()) {
+                StringBuilder sb = new StringBuilder();
+                for (JsonNode item : content) {
+                    String itemType = item.path("type").asText();
+
+                    if ("tool_result".equals(itemType)) {
+                        // 工具结果
+                        String contentText = item.path("content").asText();
+                        if (!contentText.isEmpty()) {
+                            // 截断过长的输出
+                            if (contentText.length() > 500) {
+                                contentText = contentText.substring(0, 500) + "...";
+                            }
+                            sb.append("📋 结果: ").append(contentText);
+                        }
+                    }
+                }
+                String result = sb.toString();
+                if (!result.isEmpty()) {
+                    return result;
+                }
+            }
+        }  else if ("system".equals(type)) {
+            // 系统消息
+            return "system: " + node.asText();
+        }else if ("result".equals(type)) {
+            // 最终结果
+            String result = node.path("result").asText();
+            if (!result.isEmpty()) {
+                return "✅ 完成: " + result;
+            }
+        } else if ("error".equals(type)) {
+            // 错误信息
+            String errorMessage = node.path("message").asText();
+            if (!errorMessage.isEmpty()) {
+                return "❌ 错误: " + errorMessage;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 解析 OpenCode/MiMo Code 的 JSON 格式
+     */
+    private static String parseOpenCodeJson(JsonNode node, String type) {
+        if ("message".equals(type) || "text".equals(type)) {
+            // 消息内容
+            JsonNode partNode = node.path("part");
+            if (partNode != null) {
+                return partNode.path("text").asText();
+            }
+        } else if ("tool_use".equals(type) || "tool_call".equals(type)) {
+            // 工具调用
+            JsonNode partNode = node.path("part");
+            if (partNode == null) {
+                return null;
+            }
+            String partTool = partNode.path("tool").asText();
+            JsonNode stateNode = node.path("state");
+            JsonNode inputNode = null;
+            if (stateNode != null) {
+                inputNode = stateNode.path("input");
+            }
+
+            if (inputNode == null) {
+                return null;
+            }
+
+            String command = inputNode.path("command").asText();
+            String description = inputNode.path("description").asText();
+            String output = stateNode.path("output").asText();
+
+            return "🔧 " + description + ": " + partTool + "(" + command + ")" + "\n$ " + output;
+        } else if (type.startsWith("step_")) {
+            String tokens = "";
+            JsonNode partNode = node.path("part");
+            if (partNode != null) {
+                tokens =  ", tokens: " + partNode.path("tokens").asText();
+            }
+
+            return "step: " + type + tokens;
         }
 
         return null;

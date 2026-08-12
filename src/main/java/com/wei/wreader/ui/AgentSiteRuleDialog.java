@@ -575,7 +575,7 @@ public class AgentSiteRuleDialog {
      * 向聊天区域追加 CLI 输出
      */
     private void addCLIOutputMessage(String text, String cliName) {
-        if (text == null || text.isEmpty() || text.startsWith("system")) {
+        if (text == null || text.isEmpty() || text.startsWith("system") || text.startsWith("step")) {
             return;
         }
 
