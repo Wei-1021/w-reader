@@ -769,7 +769,7 @@ public class CLIAgentRunner {
                 return null;
             }
             String partTool = partNode.path("tool").asText();
-            JsonNode stateNode = node.path("state");
+            JsonNode stateNode = partNode.path("state");
             JsonNode inputNode = null;
             if (stateNode != null) {
                 inputNode = stateNode.path("input");
