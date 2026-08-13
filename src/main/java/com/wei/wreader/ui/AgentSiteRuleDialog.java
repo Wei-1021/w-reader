@@ -434,12 +434,13 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
 
         // 用户名称标签
         JLabel nameLabel = new JLabel("You");
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
         nameLabel.setForeground(JBColor.GRAY);
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         nameLabel.setBorder(JBUI.Borders.empty(0, 8, 2, 0));
         messageBlock.add(nameLabel, BorderLayout.NORTH);
 
@@ -468,19 +469,19 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
 
         // Agent 名称标签
         JLabel nameLabel = new JLabel(agentName);
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
         nameLabel.setForeground(JBColor.GRAY);
-        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
         messageBlock.add(nameLabel, BorderLayout.NORTH);
 
         // 消息内容气泡
         JTextArea area = createStyledMessageArea(text, getAgentTextColor());
-        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), true);
+        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), false);
         messageBlock.add(bubble, BorderLayout.CENTER);
 
         addMessageToChat(messageBlock);
@@ -495,7 +496,7 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
 
         String toolLabel = getToolDisplayName(toolName);
         String argsSummary = summarizeArgs(toolName, arguments);
@@ -504,14 +505,14 @@ public class AgentSiteRuleDialog {
         JLabel nameLabel = new JLabel("Tool: " + toolLabel);
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
         nameLabel.setForeground(getToolTextColor());
-        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
         messageBlock.add(nameLabel, BorderLayout.NORTH);
 
         // 工具调用内容
         JTextArea area = createStyledMessageArea(">> " + argsSummary, getToolTextColor());
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), true);
+        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), false);
         messageBlock.add(bubble, BorderLayout.CENTER);
 
         addMessageToChat(messageBlock);
@@ -526,7 +527,7 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
 
         String resultSummary = summarizeResult(toolName, result);
 
@@ -534,14 +535,14 @@ public class AgentSiteRuleDialog {
         JLabel nameLabel = new JLabel("Result: " + getToolDisplayName(toolName));
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
         nameLabel.setForeground(getToolTextColor());
-        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
         messageBlock.add(nameLabel, BorderLayout.NORTH);
 
         // 结果内容
         JTextArea area = createStyledMessageArea(resultSummary, getToolTextColor());
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), true);
+        JPanel bubble = createBubblePanel(area, getToolBgColor(), getToolTextColor(), false);
         messageBlock.add(bubble, BorderLayout.CENTER);
 
         addMessageToChat(messageBlock);
@@ -555,7 +556,7 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
 
         // 系统消息居中显示
         JTextArea area = createStyledMessageArea(text, getSystemTextColor());
@@ -582,20 +583,20 @@ public class AgentSiteRuleDialog {
         JPanel messageBlock = new JPanel(new BorderLayout());
         messageBlock.setOpaque(false);
         messageBlock.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        messageBlock.setBorder(JBUI.Borders.empty(4, 40, 4, 16));
+        messageBlock.setBorder(JBUI.Borders.empty(4, 16, 4, 40));
 
         // CLI 名称标签
         JLabel nameLabel = new JLabel("CLI: " + cliName);
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 11f));
         nameLabel.setForeground(getAgentTextColor());
-        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         nameLabel.setBorder(JBUI.Borders.empty(0, 0, 2, 8));
         messageBlock.add(nameLabel, BorderLayout.NORTH);
 
         // CLI 输出内容
         JTextArea area = createStyledMessageArea(text, getAgentTextColor());
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), true);
+        JPanel bubble = createBubblePanel(area, getAgentBgColor(), getAgentTextColor(), false);
         messageBlock.add(bubble, BorderLayout.CENTER);
 
         addMessageToChat(messageBlock);

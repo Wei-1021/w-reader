@@ -214,6 +214,7 @@ public class CLIAgentRunner {
                     while ((line = reader.readLine()) != null) {
                         if (cancelled.get()) break;
                         LOG.info("[" + cliType.command + " stderr] " + line);
+                        System.out.println("[" + cliType.command + " stderr] " + line);
 
                         // Claude Code 的 stderr 也可能包含有用信息
                         if (CLIType.CLAUDE.equals(cliType) && !line.trim().isEmpty()) {
@@ -243,6 +244,7 @@ public class CLIAgentRunner {
                     while ((line = reader.readLine()) != null) {
                         if (cancelled.get()) break;
 
+                        System.out.println("[" + cliType.command + " stdout] " + line);
                         // 尝试解析 stream-json 格式
                         String displayText = parseStreamJsonLine(line, cliType);
                         if (displayText != null && !displayText.isEmpty()) {
