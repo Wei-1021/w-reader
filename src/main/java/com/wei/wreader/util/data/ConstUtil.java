@@ -88,6 +88,10 @@ public class ConstUtil {
      */
     public static final String WREADER_GROUP_STATUS_BAR_ID = "wreader.group.statusBar";
     /**
+     * 配置文件id--组--通知
+     */
+    public static final String WREADER_GROUP_NOTIFICATION_ID = "wreader.group.notification";
+    /**
      * 工具窗口标题
      */
     public static final String WREADER_TOOL_WINDOW_TITLE = "WReader";

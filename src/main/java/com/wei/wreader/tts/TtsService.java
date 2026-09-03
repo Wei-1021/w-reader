@@ -1,6 +1,11 @@
 package com.wei.wreader.tts;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.NotificationsManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.wei.wreader.model.Settings;
 import com.wei.wreader.service.AppConfigService;
@@ -16,11 +21,15 @@ import com.wei.wreader.tts.mimo.enums.AudioFormat;
 import com.wei.wreader.tts.mimo.enums.MimoModel;
 import com.wei.wreader.tts.mimo.enums.Voice;
 import com.wei.wreader.tts.mimo.enums.VoiceStyle;
+import com.wei.wreader.tts.mimo.player.NonStreamTTSPlayer;
 import com.wei.wreader.tts.mimo.player.StreamTTSPlayer;
+import com.wei.wreader.util.data.ConstUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -182,43 +191,131 @@ public class TtsService {
             audioStyle = voiceDescription;
         }
 
-        // 分批处理文本
-        List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
+        // 判断是否使用非流式模式
+        boolean streamMode = settings.isMimoStreamMode();
+        LOG.info("MiMo TTS mode: " + (streamMode ? "stream" : "non-stream"));
 
-        // 如果只有一批，直接处理
-        if (textChunks.size() <= 1) {
-            synthesizeAndPlayWithStyleControl(apiKey, cleanedContent, audioStyle, styleControlType, settings, false);
-            return;
-        }
+        if (!streamMode) {
+            // 非流式模式：使用 NonStreamTTSPlayer，内置文本分割和预合成逻辑
+            mimoTTSWithPresetVoiceNonStream(apiKey, cleanedContent, audioStyle, styleControlType, settings);
+        } else {
+            // 流式模式：分批处理文本
+            List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
 
-        // 多批处理：启动后台线程顺序处理
-        final String style = audioStyle;
-        final int controlType = styleControlType;
-        batchThread = new Thread(() -> {
-            try {
-                for (int i = 0; i < textChunks.size(); i++) {
-                    if (userStopped || Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
+            // 如果只有一批，直接处理
+            if (textChunks.size() <= 1) {
+                synthesizeAndPlayWithStyleControl(apiKey, cleanedContent, audioStyle, styleControlType, settings, false);
+                return;
+            }
 
-                    String chunk = textChunks.get(i);
-                    synthesizeAndPlayWithStyleControl(apiKey, chunk, style, controlType, settings, true);
-
-                    if (i < textChunks.size() - 1) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
+            // 多批处理：启动后台线程顺序处理
+            final String style = audioStyle;
+            final int controlType = styleControlType;
+            batchThread = new Thread(() -> {
+                try {
+                    for (int i = 0; i < textChunks.size(); i++) {
+                        if (userStopped || Thread.currentThread().isInterrupted()) {
                             break;
                         }
+
+                        String chunk = textChunks.get(i);
+                        synthesizeAndPlayWithStyleControl(apiKey, chunk, style, controlType, settings, true);
+
+                        if (i < textChunks.size() - 1) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                        }
+                    }
+                } finally {
+                    batchThread = null;
+                }
+            }, "MimoTTS-Batch");
+            batchThread.setDaemon(true);
+            batchThread.start();
+        }
+    }
+
+    /**
+     * 使用非流式模式播放预置音色
+     * 特点：文本分段合成，边合成边播放，减少等待时间
+     */
+    private void mimoTTSWithPresetVoiceNonStream(String apiKey, String text, String audioStyle,
+                                                  int styleControlType, Settings settings) {
+        try {
+            Voice voice = Voice.fromValue(settings.getVoiceRole());
+            MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
+                    .model(MimoTTSRequest.MODEL_PRESET)
+                    .defaultVoice(voice)
+                    .build();
+
+            MimoTTS mimoTTS = new MimoTTS(config);
+            mimoTTS.setStreamMode(false);  // 设置为非流式模式
+
+            // 设置状态更新回调
+            mimoTTS.setPlayerListener(new NonStreamTTSPlayer.PlayerListener() {
+                @Override
+                public void onStarted() {
+                    System.out.println("MiMo TTS started");
+                }
+
+                @Override
+                public void onSynthesizeStart(int totalChunks) {
+                    NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
+                    notificationsManager.showNotification(
+                            new Notification(
+                                    ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
+                                    "MiMo TTS 开始合成, 共 " + totalChunks + " 段",
+                                    NotificationType.INFORMATION
+                            ),
+                            project
+                    );
+                }
+
+                @Override
+                public void onSynthesizeProgress(int currentChunk, int totalChunks) {
+                    System.out.println("MiMo TTS 合成进度, 当前段: " + currentChunk + ", 总段数: " + totalChunks);
+                    if (currentChunk == totalChunks) {
+                        NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
+                        notificationsManager.showNotification(
+                                new Notification(
+                                        ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
+                                        "MiMo TTS 合成完成",
+                                        NotificationType.INFORMATION
+                                ),
+                                project
+                        );
                     }
                 }
-            } finally {
-                batchThread = null;
+
+                @Override
+                public void onChunkPlayed(byte[] data, long totalBytes, long chunkCount) {
+                    System.out.println("MiMo TTS chunk played, chunk count: " + chunkCount);
+                }
+
+            });
+
+            // 根据风格控制类型处理
+            if (styleControlType == Settings.MIMO_STYLE_CONTROL_NATURAL_LANGUAGE) {
+                // 自然语言控制
+                if (StringUtils.isNotBlank(audioStyle) && !"默认".equals(audioStyle)) {
+                    mimoTTS.setStyleInstruction(audioStyle);
+                }
+            } else {
+                // 音频标签控制
+                mimoTTS.setStyle(audioStyle);
             }
-        }, "MimoTTS-Batch");
-        batchThread.setDaemon(true);
-        batchThread.start();
+
+            currentEngine = new MimoTtsEngineWrapper(mimoTTS);
+            currentEngineType = "mimo";
+            currentEngine.synthesize(text);
+            currentEngine.start();
+        } catch (Exception e) {
+            LOG.error("MiMo TTS non-stream synthesis failed", e);
+        }
     }
 
     /**
@@ -234,41 +331,109 @@ public class TtsService {
         // 清理文本中的特殊字符
         String cleanedContent = cleanTextForTTS(chapterContent);
 
-        // 分批处理文本
-        List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
+        // 判断是否使用非流式模式
+        // TODO: VoiceDesign 模型暂不支持流式模式
+//        boolean streamMode = settings.isMimoStreamMode();
+        boolean streamMode = false;
+        LOG.info("MiMo TTS VoiceDesign mode: " + (streamMode ? "stream" : "non-stream"));
 
-        // 如果只有一批，直接处理
-        if (textChunks.size() <= 1) {
-            synthesizeAndPlayVoiceDesign(apiKey, voiceDescription, cleanedContent, false);
-            return;
-        }
+        if (!streamMode) {
+            // 非流式模式：使用 NonStreamTTSPlayer
+            mimoTTSWithVoiceDesignNonStream(apiKey, voiceDescription, cleanedContent);
+        } else {
+            // 流式模式：分批处理文本
+            List<String> textChunks = splitTextIntoChunks(cleanedContent, MAX_CHUNK_LENGTH);
 
-        // 多批处理
-        batchThread = new Thread(() -> {
-            try {
-                for (int i = 0; i < textChunks.size(); i++) {
-                    if (userStopped || Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
+            // 如果只有一批，直接处理
+            if (textChunks.size() <= 1) {
+                synthesizeAndPlayVoiceDesign(apiKey, voiceDescription, cleanedContent, false);
+                return;
+            }
 
-                    String chunk = textChunks.get(i);
-                    synthesizeAndPlayVoiceDesign(apiKey, voiceDescription, chunk, true);
-
-                    if (i < textChunks.size() - 1) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
+            // 多批处理
+            batchThread = new Thread(() -> {
+                try {
+                    for (int i = 0; i < textChunks.size(); i++) {
+                        if (userStopped || Thread.currentThread().isInterrupted()) {
                             break;
                         }
+
+                        String chunk = textChunks.get(i);
+                        synthesizeAndPlayVoiceDesign(apiKey, voiceDescription, chunk, true);
+
+                        if (i < textChunks.size() - 1) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                        }
+                    }
+                } finally {
+                    batchThread = null;
+                }
+            }, "MimoTTS-VoiceDesign-Batch");
+            batchThread.setDaemon(true);
+            batchThread.start();
+        }
+    }
+
+    /**
+     * 使用非流式模式播放 VoiceDesign
+     */
+    private void mimoTTSWithVoiceDesignNonStream(String apiKey, String voiceDescription, String text) {
+        try {
+            MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
+                    .model(MimoTTSRequest.MODEL_VOICE_DESIGN)
+                    .defaultVoice(null)
+                    .build();
+
+            MimoTTS mimoTTS = new MimoTTS(config);
+            mimoTTS.setStreamMode(false);  // 设置为非流式模式
+            mimoTTS.setVoiceDescription(voiceDescription);
+
+            // 设置状态更新回调
+            mimoTTS.setPlayerListener(new NonStreamTTSPlayer.PlayerListener() {
+
+                @Override
+                public void onSynthesizeStart(int totalChunks) {
+                    NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
+                    notificationsManager.showNotification(
+                            new Notification(
+                                    ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
+                                    "MiMo TTS 开始合成, 共 " + totalChunks + " 段",
+                                    NotificationType.INFORMATION
+                            ),
+                            project
+                    );
+                }
+
+                @Override
+                public void onSynthesizeProgress(int currentChunk, int totalChunks) {
+                    System.out.println("MiMo TTS 合成进度, 当前段: " + currentChunk + ", 总段数: " + totalChunks);
+                    if (currentChunk == totalChunks) {
+                        NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
+                        notificationsManager.showNotification(
+                                new Notification(
+                                        ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
+                                        "MiMo TTS 合成完成",
+                                        NotificationType.INFORMATION
+                                ),
+                                project
+                        );
                     }
                 }
-            } finally {
-                batchThread = null;
-            }
-        }, "MimoTTS-VoiceDesign-Batch");
-        batchThread.setDaemon(true);
-        batchThread.start();
+
+            });
+
+            currentEngine = new MimoTtsEngineWrapper(mimoTTS);
+            currentEngineType = "mimo";
+            currentEngine.synthesize(text);
+            currentEngine.start();
+        } catch (Exception e) {
+            LOG.error("MiMo TTS VoiceDesign non-stream synthesis failed", e);
+        }
     }
 
     /**

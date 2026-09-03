@@ -525,14 +525,3 @@ os.makedirs("tmp", exist_ok=True)
 sf.write("tmp/output.wav", collected_chunks, samplerate=24000)
 print("Audio saved to tmp/output.wav")
 ```
-
-## 计费说明
-
-- 计费：限时免费。
-- 查看账单：您可以在控制台的 [账单明细](https://platform.xiaomimimo.com/#/console/usage) 页面查看用量。
-
-更新时间 2026 年 07 月 15 日
-
-[语音识别（MiMo-V2.5-ASR）](/docs/zh-CN/quick-start/usage-guide/audio/Speech-Recognition)
-
-[邀请有礼](/docs/zh-CN/quick-start/promotions/refer)

@@ -2,17 +2,31 @@ package com.wei.wreader.tts.mimo;
 
 import com.wei.wreader.tts.mimo.enums.Voice;
 import com.wei.wreader.tts.mimo.enums.VoiceStyle;
+import com.wei.wreader.tts.mimo.player.NonStreamTTSPlayer;
 import com.wei.wreader.tts.mimo.player.StreamTTSPlayer;
+
+import java.util.function.Consumer;
 
 /**
  * MiMo TTS v2.5 主入口
  *
+ * 支持两种播放模式：
+ * 1. 流式模式（Stream）：使用 SSE 流式 API，边接收边播放
+ * 2. 非流式模式（NonStream）：使用非流式 API，文本分段合成，边合成边播放
+ *
  * 使用方式：
  * <pre>
- * // 使用预置音色
+ * // 使用预置音色（流式模式）
  * MimoTTS tts = new MimoTTS("your-api-key");
  * tts.setVoice(Voice.BINGTANG)
  *    .synthesize("你好，世界");
+ * tts.start();
+ *
+ * // 使用预置音色（非流式模式）
+ * MimoTTS tts = new MimoTTS("your-api-key");
+ * tts.setVoice(Voice.BINGTANG)
+ *    .setStreamMode(false)
+ *    .synthesize("很长的文本...");
  * tts.start();
  *
  * // 使用风格标签
@@ -40,9 +54,21 @@ public class MimoTTS {
     private String styleInstruction;
     private String voiceDescription;
     private String currentText;
-    private StreamTTSPlayer currentPlayer;
+
+    /** 是否使用流式模式，默认 true */
+    private boolean streamMode = true;
+
+    /** 流式播放器 */
+    private StreamTTSPlayer streamPlayer;
+    /** 非流式播放器 */
+    private NonStreamTTSPlayer nonStreamPlayer;
 
     private volatile boolean disposed = false;
+
+    // 回调函数
+    private Consumer<String> onStatusUpdate;  // 状态更新回调
+    // 回调函数
+    private NonStreamTTSPlayer.PlayerListener playerListener;  // 播放器监听器
 
     /**
      * 使用 API Key 构造
@@ -102,10 +128,36 @@ public class MimoTTS {
         return this;
     }
 
+    /**
+     * 设置是否使用流式模式
+     *
+     * @param streamMode true=流式模式，false=非流式模式
+     */
+    public MimoTTS setStreamMode(boolean streamMode) {
+        this.streamMode = streamMode;
+        return this;
+    }
+
     public Voice getVoice() { return voice; }
     public String getStyle() { return style; }
     public String getStyleInstruction() { return styleInstruction; }
     public String getVoiceDescription() { return voiceDescription; }
+    public boolean isStreamMode() { return streamMode; }
+
+    /**
+     * 设置状态更新回调（用于显示合成进度等信息）
+     */
+    public MimoTTS setOnStatusUpdate(Consumer<String> callback) {
+        this.onStatusUpdate = callback;
+        return this;
+    }
+    /**
+     * 播放合成状态更新回调
+     */
+    public MimoTTS setPlayerListener(NonStreamTTSPlayer.PlayerListener listener) {
+        this.playerListener = listener;
+        return this;
+    }
 
     // ==================== 合成与播放 ====================
 
@@ -133,15 +185,93 @@ public class MimoTTS {
             }
         }
 
-        currentPlayer = new StreamTTSPlayer(config);
-        
+        if (streamMode) {
+            // 流式模式
+            startStreamMode(finalText);
+        } else {
+            // 非流式模式
+            startNonStreamMode(finalText);
+        }
+    }
+
+    /**
+     * 使用流式模式播放
+     */
+    private void startStreamMode(String text) throws MimoTTSException {
+        streamPlayer = new StreamTTSPlayer(config);
+
         // 判断是否为 VoiceDesign 模型
         if (voiceDescription != null && !voiceDescription.isEmpty()) {
             // VoiceDesign 模型：将音色描述作为 user 消息
-            currentPlayer.startVoiceDesign(voiceDescription, finalText);
+            streamPlayer.startVoiceDesign(voiceDescription, text);
         } else {
             // 预置音色模型
-            currentPlayer.startPresetWithInstruction(styleInstruction, config.getDefaultVoice(), finalText);
+            streamPlayer.startPresetWithInstruction(styleInstruction, config.getDefaultVoice(), text);
+        }
+    }
+
+    /**
+     * 使用非流式模式播放
+     * 特点：
+     * 1. 文本分段：每段最大200字
+     * 2. 边合成边播放：当前播放时，后台合成剩余内容
+     * 3. 连续播放：减少两段文字之间的等待时间
+     */
+    private void startNonStreamMode(String text) throws MimoTTSException {
+        nonStreamPlayer = new NonStreamTTSPlayer(config);
+        if (voice != null) {
+            nonStreamPlayer.setVoice(voice);
+        }
+        nonStreamPlayer.setStyle(style);
+        nonStreamPlayer.setStyleInstruction(styleInstruction);
+        nonStreamPlayer.setVoiceDescription(voiceDescription);
+
+        // 设置播放监听器
+        if (playerListener == null) {
+            playerListener = new NonStreamTTSPlayer.PlayerListener() {
+                @Override
+                public void onSynthesizeStart(int totalChunks) {
+                    if (onStatusUpdate != null) {
+                        onStatusUpdate.accept("正在合成音频，共 " + totalChunks + " 段...");
+                    }
+                }
+
+                @Override
+                public void onSynthesizeProgress(int currentChunk, int totalChunks) {
+                    if (onStatusUpdate != null) {
+                        onStatusUpdate.accept("正在合成第 " + currentChunk + "/" + totalChunks + " 段...");
+                    }
+                }
+
+                @Override
+                public void onStarted() {
+                    if (onStatusUpdate != null) {
+                        onStatusUpdate.accept("开始播放");
+                    }
+                }
+
+                @Override
+                public void onCompleted(long totalBytes, long durationMs) {
+                    if (onStatusUpdate != null) {
+                        onStatusUpdate.accept("播放完成");
+                    }
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    if (onStatusUpdate != null) {
+                        onStatusUpdate.accept("播放出错: " + e.getMessage());
+                    }
+                }
+            };
+        }
+        nonStreamPlayer.setListener(playerListener);
+
+        // 判断是否为 VoiceDesign 模型
+        if (voiceDescription != null && !voiceDescription.isEmpty()) {
+            nonStreamPlayer.startVoiceDesign(voiceDescription, text);
+        } else {
+            nonStreamPlayer.startPreset(text, voice, styleInstruction);
         }
     }
 
@@ -153,8 +283,15 @@ public class MimoTTS {
 
         stopCurrentPlayer();
 
-        currentPlayer = new StreamTTSPlayer(config);
-        currentPlayer.start(text, style);
+        if (streamMode) {
+            streamPlayer = new StreamTTSPlayer(config);
+            streamPlayer.start(text, style);
+        } else {
+            nonStreamPlayer = new NonStreamTTSPlayer(config);
+            nonStreamPlayer.setVoice(voice);
+            nonStreamPlayer.setStyle(style);
+            nonStreamPlayer.startPreset(text, voice);
+        }
     }
 
     /**
@@ -165,8 +302,16 @@ public class MimoTTS {
 
         stopCurrentPlayer();
 
-        currentPlayer = new StreamTTSPlayer(config);
-        currentPlayer.start(text, style, null, null, callback);
+        if (streamMode) {
+            streamPlayer = new StreamTTSPlayer(config);
+            streamPlayer.start(text, style, null, null, callback);
+        } else {
+            nonStreamPlayer = new NonStreamTTSPlayer(config);
+            nonStreamPlayer.setVoice(voice);
+            nonStreamPlayer.setStyle(style);
+            nonStreamPlayer.setCallback(callback);
+            nonStreamPlayer.startPreset(text, voice);
+        }
     }
 
     /**
@@ -180,8 +325,10 @@ public class MimoTTS {
      * 暂停播放
      */
     public void pause() {
-        if (currentPlayer != null) {
-            currentPlayer.pause();
+        if (streamPlayer != null) {
+            streamPlayer.pause();
+        } else if (nonStreamPlayer != null) {
+            nonStreamPlayer.pause();
         }
     }
 
@@ -189,8 +336,10 @@ public class MimoTTS {
      * 恢复播放
      */
     public void resume() {
-        if (currentPlayer != null) {
-            currentPlayer.resume();
+        if (streamPlayer != null) {
+            streamPlayer.resume();
+        } else if (nonStreamPlayer != null) {
+            nonStreamPlayer.resume();
         }
     }
 
@@ -198,14 +347,24 @@ public class MimoTTS {
      * 是否已暂停
      */
     public boolean isPaused() {
-        return currentPlayer != null && currentPlayer.isPaused();
+        if (streamPlayer != null) {
+            return streamPlayer.isPaused();
+        } else if (nonStreamPlayer != null) {
+            return nonStreamPlayer.isPaused();
+        }
+        return false;
     }
 
     /**
      * 是否正在播放
      */
     public boolean isPlaying() {
-        return currentPlayer != null && currentPlayer.isRunning() && !currentPlayer.isPaused();
+        if (streamPlayer != null) {
+            return streamPlayer.isRunning() && !streamPlayer.isPaused();
+        } else if (nonStreamPlayer != null) {
+            return nonStreamPlayer.isRunning() && !nonStreamPlayer.isPaused();
+        }
+        return false;
     }
 
     /**
@@ -217,9 +376,13 @@ public class MimoTTS {
     }
 
     private void stopCurrentPlayer() {
-        if (currentPlayer != null) {
-            currentPlayer.stop();
-            currentPlayer = null;
+        if (streamPlayer != null) {
+            streamPlayer.stop();
+            streamPlayer = null;
+        }
+        if (nonStreamPlayer != null) {
+            nonStreamPlayer.stop();
+            nonStreamPlayer = null;
         }
     }
 
@@ -230,6 +393,7 @@ public class MimoTTS {
         private Voice voice = Voice.MIMO_DEFAULT;
         private String style;
         private String styleInstruction;
+        private boolean streamMode = true;
 
         public Builder(String apiKey) {
             if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -253,9 +417,15 @@ public class MimoTTS {
             return this;
         }
 
+        public Builder streamMode(boolean streamMode) {
+            this.streamMode = streamMode;
+            return this;
+        }
+
         public MimoTTS build() {
             MimoTTS tts = new MimoTTS(apiKey);
             tts.setVoice(voice);
+            tts.setStreamMode(streamMode);
             if (style != null) tts.setStyle(style);
             if (styleInstruction != null) tts.setStyleInstruction(styleInstruction);
             return tts;

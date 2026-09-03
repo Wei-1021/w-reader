@@ -200,6 +200,10 @@ public class Settings {
      * MiMo TTS 风格控制类型：1-音频标签控制，2-自然语言控制
      */
     private int mimoStyleControlType;
+    /**
+     * MiMo TTS 播放模式：true-流式模式（默认），false-非流式模式（边合成边播放）
+     */
+    private boolean mimoStreamMode = true;
 
 
     public int getSingleLineChars() {
@@ -392,6 +396,14 @@ public class Settings {
 
     public void setMimoStyleControlType(int mimoStyleControlType) {
         this.mimoStyleControlType = mimoStyleControlType;
+    }
+
+    public boolean isMimoStreamMode() {
+        return mimoStreamMode;
+    }
+
+    public void setMimoStreamMode(boolean mimoStreamMode) {
+        this.mimoStreamMode = mimoStreamMode;
     }
 
     @Override

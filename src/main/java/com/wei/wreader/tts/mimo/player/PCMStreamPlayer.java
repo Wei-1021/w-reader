@@ -52,9 +52,20 @@ public class PCMStreamPlayer implements AudioPlayer {
             }
         }
 
+        // 写入数据，但分小块写入以便快速响应停止
         if (playing && line.isOpen()) {
-            int written = line.write(data, offset, length);
-            bytesWritten += written;
+            // 将数据分成小块写入，每块最多 4096 字节
+            int chunkSize = 4096;
+            int remaining = length;
+            int pos = offset;
+
+            while (remaining > 0 && playing && line.isOpen()) {
+                int writeSize = Math.min(chunkSize, remaining);
+                int written = line.write(data, pos, writeSize);
+                bytesWritten += written;
+                pos += written;
+                remaining -= written;
+            }
         }
     }
 
@@ -90,7 +101,8 @@ public class PCMStreamPlayer implements AudioPlayer {
             pauseLock.notifyAll();
         }
         if (line.isOpen()) {
-            line.drain();
+            // 不使用 drain()，直接停止并清空缓冲
+            line.flush();  // 清空缓冲区中的数据
             line.stop();
             line.close();
         }

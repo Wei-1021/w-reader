@@ -131,6 +131,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     private JPanel mimoStyleControlPanel;
     private ButtonGroup mimoStyleControlRadioGroup;
 
+    // MiMo 播放模式
+    private JLabel mimoPlayModeLabel;
+    private JPanel mimoPlayModePanel;
+    private ButtonGroup mimoPlayModeRadioGroup;
+
     // 状态栏字体设置
     private JSpinner fontSizeSpinner;
     private JButton fontColorButton;
@@ -286,6 +291,22 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         createUIVolume();
         // 音频风格
         createUIAudioStyle();
+        // MiMo 播放模式（在 MiMo 模型选择之后，即第 2 行）
+        initMimoPlayModeUI();
+        if (mimoPlayModePanel != null) {
+            // audioManagePanel 使用 GridLayoutManager，需要指定行和列
+            // 播放模式面板添加到第 2 行（MiMo 模型选择之后）
+            GridConstraints playModeConstraints = new GridConstraints();
+            playModeConstraints.setRow(2);
+            playModeConstraints.setColumn(0);
+            playModeConstraints.setRowSpan(1);
+            playModeConstraints.setColSpan(5);
+            playModeConstraints.setAnchor(GridConstraints.ANCHOR_WEST);
+            playModeConstraints.setFill(GridConstraints.FILL_HORIZONTAL);
+            playModeConstraints.setVSizePolicy(GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW);
+            playModeConstraints.setHSizePolicy(GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW);
+            audioManagePanel.add(mimoPlayModePanel, playModeConstraints);
+        }
 
         // 底部提示
         createUIFooterTipPanel();
@@ -444,6 +465,16 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                 }
             }
         }
+        // MiMo 播放模式
+        if (mimoPlayModeRadioGroup != null) {
+            ButtonModel playModeSelection = mimoPlayModeRadioGroup.getSelection();
+            if (playModeSelection != null) {
+                boolean selectedStreamMode = "stream".equals(playModeSelection.getActionCommand());
+                if (settings.isMimoStreamMode() != selectedStreamMode) {
+                    return true;
+                }
+            }
+        }
         // 音频超时
         if (settings.getAudioTimeout() != NumberUtil.parseInt(timeoutTextField.getText())) {
             return true;
@@ -548,6 +579,17 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
                     settings.setMimoStyleControlType(selectedStyleControlType);
                 } else {
                     settings.setMimoStyleControlType(Settings.MIMO_STYLE_CONTROL_AUDIO_TAG);
+                }
+            }
+
+            // 保存播放模式
+            if (mimoPlayModeRadioGroup != null) {
+                ButtonModel playModeSelection = mimoPlayModeRadioGroup.getSelection();
+                if (playModeSelection != null) {
+                    boolean streamMode = "stream".equals(playModeSelection.getActionCommand());
+                    settings.setMimoStreamMode(streamMode);
+                } else {
+                    settings.setMimoStreamMode(true);  // 默认流式模式
                 }
             }
         }
@@ -998,6 +1040,64 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
     }
 
     /**
+     * 初始化 MiMo 播放模式 UI
+     * 注意：此方法只创建面板，不添加到父容器
+     * 面板需要在 createComponent() 中添加到合适的位置
+     */
+    private void initMimoPlayModeUI() {
+        // 创建播放模式面板
+        mimoPlayModePanel = new JPanel();
+        mimoPlayModePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 2));
+
+        // 创建标签
+        mimoPlayModeLabel = new JLabel("播放模式");
+        mimoPlayModeLabel.setPreferredSize(new Dimension(80, 40));
+
+        // 创建单选按钮
+        mimoPlayModeRadioGroup = new ButtonGroup();
+        JBRadioButton streamModeRadio = new JBRadioButton("流式模式");
+        JBRadioButton nonStreamModeRadio = new JBRadioButton("非流式模式");
+
+        streamModeRadio.setActionCommand("stream");
+        nonStreamModeRadio.setActionCommand("nonStream");
+
+        mimoPlayModeRadioGroup.add(streamModeRadio);
+        mimoPlayModeRadioGroup.add(nonStreamModeRadio);
+
+        // 设置当前选中状态
+        boolean isStreamMode = settings.isMimoStreamMode();
+        if (isStreamMode) {
+            streamModeRadio.setSelected(true);
+        } else {
+            nonStreamModeRadio.setSelected(true);
+        }
+
+        // 创建提示标签
+        JLabel streamModeHint = new JLabel("实时播放");
+        streamModeHint.setForeground(UIManager.getColor("Component.infoForeground"));
+        streamModeHint.setFont(streamModeHint.getFont().deriveFont(Font.PLAIN, 12));
+
+        JLabel nonStreamModeHint = new JLabel("边合成边播放（首次播放需等待合成）");
+        nonStreamModeHint.setForeground(UIManager.getColor("Component.infoForeground"));
+        nonStreamModeHint.setFont(nonStreamModeHint.getFont().deriveFont(Font.PLAIN, 12));
+
+        // 布局
+        mimoPlayModePanel.add(mimoPlayModeLabel);
+
+        // 流式模式单选按钮和提示
+        JPanel streamModePanel = new JPanel(new BorderLayout(2, 0));
+        streamModePanel.add(streamModeRadio, BorderLayout.NORTH);
+        streamModePanel.add(streamModeHint, BorderLayout.SOUTH);
+        mimoPlayModePanel.add(streamModePanel);
+
+        // 非流式模式单选按钮和提示
+        JPanel nonStreamModePanel = new JPanel(new BorderLayout(2, 0));
+        nonStreamModePanel.add(nonStreamModeRadio, BorderLayout.NORTH);
+        nonStreamModePanel.add(nonStreamModeHint, BorderLayout.SOUTH);
+        mimoPlayModePanel.add(nonStreamModePanel);
+    }
+
+    /**
      * 根据风格控制类型更新UI组件可见性
      *
      * @param isAudioTagControl true=音频标签控制，false=自然语言控制
@@ -1050,6 +1150,11 @@ public class WReaderSettingForm implements Configurable, Configurable.Composite 
         boolean showStyleControl = isPresetModel;
         if (mimoStyleControlPanel != null) {
             mimoStyleControlPanel.setVisible(showStyleControl);
+        }
+
+        // MiMo 播放模式 - MiMo TTS 时显示
+        if (mimoPlayModePanel != null) {
+            mimoPlayModePanel.setVisible(isMiMo);
         }
 
         // 根据风格控制类型决定显示风格选择还是风格指令

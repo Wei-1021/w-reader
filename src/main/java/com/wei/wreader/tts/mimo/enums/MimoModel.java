@@ -8,7 +8,7 @@ import com.wei.wreader.util.SettingConstants;
 public enum MimoModel {
 
     PRESET("mimo-v2.5-tts", "预置音色", "风格指令",
-            "提示：直接用一句话描述想要的语音风格。",
+            "提示：直接用一句话描述想要的语音风格，仅“非流式模式”生效。",
             SettingConstants.VOICE_STYLE_PRESETS),
     VOICE_DESIGN("mimo-v2.5-tts-voicedesign", "文本描述音色", "音色描述",
             "提示：请简述音色特征，如角色身份、适配场景、年龄性别、口音语言、语气情绪、语速音量等。",
