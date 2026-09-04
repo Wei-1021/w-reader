@@ -268,7 +268,12 @@ public class MimoTTS {
         nonStreamPlayer.setListener(playerListener);
 
         // 判断是否为 VoiceDesign 模型
-        if (voiceDescription != null && !voiceDescription.isEmpty()) {
+        boolean isVoiceDesign = voiceDescription != null && !voiceDescription.isEmpty();
+
+        // VoiceDesign 模型需要添加段间停顿
+        nonStreamPlayer.setAddChunkPause(isVoiceDesign);
+
+        if (isVoiceDesign) {
             nonStreamPlayer.startVoiceDesign(voiceDescription, text);
         } else {
             nonStreamPlayer.startPreset(text, voice, styleInstruction);

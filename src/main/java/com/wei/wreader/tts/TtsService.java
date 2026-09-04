@@ -268,7 +268,7 @@ public class TtsService {
                     notificationsManager.showNotification(
                             new Notification(
                                     ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
-                                    "MiMo TTS 开始合成, 共 " + totalChunks + " 段",
+                                    "MiMo TTS 开始合成（共 " + totalChunks + " 段），首段合成稍慢，请稍候...",
                                     NotificationType.INFORMATION
                             ),
                             project
@@ -402,7 +402,7 @@ public class TtsService {
                     notificationsManager.showNotification(
                             new Notification(
                                     ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
-                                    "MiMo TTS 开始合成, 共 " + totalChunks + " 段",
+                                    "MiMo TTS 开始合成（共 " + totalChunks + " 段），首段合成稍慢，请稍候...",
                                     NotificationType.INFORMATION
                             ),
                             project

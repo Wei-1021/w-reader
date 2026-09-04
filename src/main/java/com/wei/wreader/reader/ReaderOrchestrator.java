@@ -240,7 +240,15 @@ public final class ReaderOrchestrator {
     public void ttsChapterContent() {
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
         if (chapterInfo != null) {
-            ttsService.speakChapterContent(chapterInfo.getChapterContentStr());
+            String chapterContentStr = chapterInfo.getChapterContentStr();
+            String chapterTitle = chapterInfo.getChapterTitle();
+            if (StringUtils.isNotBlank(chapterTitle)) {
+                // 清除章节标题前后空格
+                chapterTitle = chapterTitle.strip();
+            }
+            // 查找章节标题内容，并在标题最后添加上标点符号，让TTS语音播放标题和内容时更自然
+            chapterContentStr = chapterContentStr.replace(chapterTitle, chapterTitle + "。");
+            ttsService.speakChapterContent(chapterContentStr);
         }
     }
 

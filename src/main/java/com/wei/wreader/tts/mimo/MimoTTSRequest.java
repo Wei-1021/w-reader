@@ -164,6 +164,7 @@ public class MimoTTSRequest {
     public static Builder ofVoiceDesign(String text, String voiceDescription) {
         return new Builder()
                 .model(MODEL_VOICE_DESIGN)
+//                .optimizeTextPreview(Boolean.TRUE)
                 .addUserMessage(voiceDescription)
                 .addAssistantMessage(text);
     }
@@ -199,6 +200,12 @@ public class MimoTTSRequest {
         private boolean stream = false;
         private float temperature = MimoTTSConfig.DEFAULT_TEMPERATURE;
         private float topP = MimoTTSConfig.DEFAULT_TOP_P;
+        /**
+         * 是否开启目标音频播报文本智能优化能力。<br>
+         * 设置为 true 时，会对传入的目标文本做智能润色；<br>
+         * 若未传入目标文本，则自动生成适配播报场景的目标文本，再将处理完成的最终文本送入模型进行合成。<br>
+         * 仅支持 mimo-v2.5-tts-voicedesign 模型。
+         */
         private Boolean optimizeTextPreview;
 
         public Builder model(String model) {

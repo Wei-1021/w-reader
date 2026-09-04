@@ -54,6 +54,15 @@ public class NonStreamTTSPlayer {
     /** 预合成队列大小：当队列中音频块数量超过此值时，暂停合成 */
     private static final int PREFETCH_QUEUE_SIZE = 3;
 
+    /** 段间停顿时间（毫秒）：两段音频之间的静音间隔 */
+    private static final int CHUNK_PAUSE_MS = 300;
+
+    /** PCM 采样率 */
+    private static final int SAMPLE_RATE = 24000;
+
+    /** 每个采样的字节数（16bit = 2字节，单声道） */
+    private static final int BYTES_PER_SAMPLE = 2;
+
     public enum State {
         IDLE, SYNTHESIZING, PLAYING, PAUSED, STOPPED, COMPLETED, ERROR
     }
@@ -84,6 +93,9 @@ public class NonStreamTTSPlayer {
     private String style;
     private String styleInstruction;
     private String voiceDescription;
+
+    /** 是否添加段间停顿（默认不添加，VoiceDesign 模型需要） */
+    private boolean addChunkPause = false;
 
     public interface PlayerListener {
         default void onStarted() {}
@@ -116,6 +128,16 @@ public class NonStreamTTSPlayer {
 
     public void setVoiceDescription(String voiceDescription) {
         this.voiceDescription = voiceDescription;
+    }
+
+    /**
+     * 设置是否添加段间停顿
+     * VoiceDesign 模型需要添加停顿，使朗读更自然
+     *
+     * @param addChunkPause true=添加停顿，false=不添加
+     */
+    public void setAddChunkPause(boolean addChunkPause) {
+        this.addChunkPause = addChunkPause;
     }
 
     // ==================== 启动播放 ====================
@@ -284,6 +306,19 @@ public class NonStreamTTSPlayer {
     }
 
     /**
+     * 生成静音数据
+     *
+     * @param durationMs 静音时长（毫秒）
+     * @return 静音数据字节数组（PCM16 格式的 0 值）
+     */
+    private byte[] generateSilence(int durationMs) {
+        // 计算需要的字节数：采样率 * 每采样字节数 * 时长(秒)
+        int numSamples = (SAMPLE_RATE * durationMs) / 1000;
+        int numBytes = numSamples * BYTES_PER_SAMPLE;
+        return new byte[numBytes];  // 默认全0，即静音
+    }
+
+    /**
      * 启动合成线程（生产者）
      * 从 textQueue 取出文本，调用 API 合成音频，放入 audioQueue
      */
@@ -364,6 +399,9 @@ public class NonStreamTTSPlayer {
 
                 setState(State.PLAYING);
 
+                // 生成段间静音数据（仅 VoiceDesign 模型使用）
+                byte[] silenceData = addChunkPause ? generateSilence(CHUNK_PAUSE_MS) : null;
+
                 while (running.get()) {
                     // 从音频队列取出数据
                     byte[] audioChunk = audioQueue.poll(50, TimeUnit.MILLISECONDS);
@@ -385,6 +423,14 @@ public class NonStreamTTSPlayer {
                     }
 
                     // 播放后检查是否停止
+                    if (!running.get()) break;
+
+                    // 在两段音频之间插入静音（仅 VoiceDesign 模型）
+                    if (addChunkPause && silenceData != null && pcmPlayer != null && running.get()) {
+                        pcmPlayer.write(silenceData, 0, silenceData.length);
+                    }
+
+                    // 再次检查是否停止
                     if (!running.get()) break;
 
                     long currentTotal = totalBytes.addAndGet(audioChunk.length);
@@ -429,7 +475,7 @@ public class NonStreamTTSPlayer {
         MimoTTSRequest request;
         if (isVoiceDesign) {
             request = MimoTTSRequest.ofVoiceDesign(text, voiceDescription)
-                    .format(AudioFormat.WAV)
+                    .format(AudioFormat.PCM16)
                     .temperature(config.getTemperature())
                     .topP(config.getTopP())
                     .voice(voice == null ? null : voice)
@@ -445,7 +491,7 @@ public class NonStreamTTSPlayer {
 
             request = MimoTTSRequest.ofPresetWithInstruction(finalText, this.voice, this.styleInstruction)
                     .voice(voice != null ? voice : config.getDefaultVoice())
-                    .format(AudioFormat.WAV)
+                    .format(AudioFormat.PCM16)
                     .temperature(config.getTemperature())
                     .topP(config.getTopP())
                     .build();
