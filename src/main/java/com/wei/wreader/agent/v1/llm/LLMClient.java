@@ -1,4 +1,4 @@
-package com.wei.wreader.llm;
+package com.wei.wreader.agent.v1.llm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

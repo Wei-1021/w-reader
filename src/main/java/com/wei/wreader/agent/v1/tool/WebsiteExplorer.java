@@ -1,4 +1,4 @@
-package com.wei.wreader.service;
+package com.wei.wreader.agent.v1.tool;
 
 import com.intellij.openapi.diagnostic.Logger;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -14,12 +14,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.InetAddress;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
  */
 public class WebsiteExplorer {
     private static final Logger LOG = Logger.getInstance(WebsiteExplorer.class);
+    private String allowedHost;
 
     // ==================== 数据结构 ====================
 
@@ -67,13 +68,16 @@ public class WebsiteExplorer {
         page.method = method;
 
         try {
+            validateUrl(url);
             HttpRequestBase request;
             if ("POST".equals(method) && bodyParams != null) {
                 HttpPost post = new HttpPost(url);
                 StringBuilder formBody = new StringBuilder();
                 for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
                     if (formBody.length() > 0) formBody.append("&");
-                    formBody.append(entry.getKey()).append("=").append(entry.getValue());
+                    formBody.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8))
+                            .append("=")
+                            .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
                 }
                 post.setEntity(new StringEntity(formBody.toString(), StandardCharsets.UTF_8));
                 post.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -279,7 +283,8 @@ public class WebsiteExplorer {
 
         // 回退到 HTML 表单方式
         if (searchInfo.urlTemplate == null) return null;
-        String testUrl = searchInfo.urlTemplate.replace("${key}", keyword);
+        String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+        String testUrl = searchInfo.urlTemplate.replace("${key}", encodedKeyword);
         System.out.println("[Search] 尝试HTML: " + testUrl + " method=" + searchInfo.method);
 
         if ("POST".equals(searchInfo.method)) {
@@ -504,6 +509,32 @@ public class WebsiteExplorer {
     public String normalizeBaseUrl(String url) {
         if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url;
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
+    public void setAllowedBaseUrl(String baseUrl) {
+        try {
+            this.allowedHost = URI.create(baseUrl).getHost();
+        } catch (Exception e) {
+            this.allowedHost = null;
+        }
+    }
+
+    private void validateUrl(String rawUrl) throws Exception {
+        URI uri = URI.create(rawUrl);
+        String scheme = uri.getScheme();
+        String host = uri.getHost();
+        if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) || host == null) {
+            throw new SecurityException("仅允许访问 HTTP/HTTPS 网页");
+        }
+        if (allowedHost != null && !host.equalsIgnoreCase(allowedHost)
+                && !host.toLowerCase(Locale.ROOT).endsWith("." + allowedHost.toLowerCase(Locale.ROOT))) {
+            throw new SecurityException("请求地址不属于目标网站: " + host);
+        }
+        InetAddress address = InetAddress.getByName(host);
+        if (address.isAnyLocalAddress() || address.isLoopbackAddress()
+                || address.isLinkLocalAddress() || address.isSiteLocalAddress()) {
+            throw new SecurityException("禁止访问本机或内网地址");
+        }
     }
 
     public String resolveUrl(String baseUrl, String relativeUrl) {

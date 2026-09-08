@@ -1,13 +1,13 @@
-package com.wei.wreader.agent;
+package com.wei.wreader.agent.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.wei.wreader.llm.LLMClient.ToolDefinition;
-import com.wei.wreader.service.WebsiteExplorer;
-import com.wei.wreader.service.WebsiteExplorer.FetchedPage;
-import com.wei.wreader.service.WebsiteExplorer.SearchInfo;
+import com.wei.wreader.agent.v1.llm.LLMClient.ToolDefinition;
+import com.wei.wreader.agent.v1.tool.WebsiteExplorer;
+import com.wei.wreader.agent.v1.tool.WebsiteExplorer.FetchedPage;
+import com.wei.wreader.agent.v1.tool.WebsiteExplorer.SearchInfo;
 import com.wei.wreader.util.CustomSiteUtil;
 import com.jayway.jsonpath.JsonPath;
 import org.jsoup.Jsoup;
@@ -16,9 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 书源规则生成 Agent 工具集
@@ -160,6 +158,21 @@ public class SiteRuleTools {
                       "type": "string",
                       "description": "最终的SiteBean JSON规则（JSON数组格式，必须已通过validate_site_rule校验）"
                     }
+                  },
+                  "required": ["json_rule"]
+                }
+                """
+        ));
+
+        tools.add(new ToolDefinition(
+                "test_site_rule",
+                "对 HTML 书源执行真实的搜索、目录和正文冒烟测试。规则生成后、提交前必须调用此工具。",
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "json_rule": {"type": "string", "description": "待测试的 SiteBean JSON 数组"},
+                    "keyword": {"type": "string", "description": "测试书名", "default": "斗破苍穹"}
                   },
                   "required": ["json_rule"]
                 }
@@ -368,6 +381,12 @@ public class SiteRuleTools {
         if (jsonRule.isEmpty()) return "错误: json_rule 参数不能为空";
 
         // 存储最终结果供外部获取
+        try {
+            // complete_rule 是最终闸门，提交的 JSON 必须再次通过同一套解析校验。
+            CustomSiteUtil.getInstance(project).parseCustomSiteRule(jsonRule, result -> {}, null);
+        } catch (Exception e) {
+            return "提交失败：规则未通过校验，请先修正。\n" + e.getMessage();
+        }
         this.finalRule = jsonRule;
         return "规则已提交。生成流程完成。";
     }
@@ -406,6 +425,7 @@ public class SiteRuleTools {
 
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
+        this.explorer.setAllowedBaseUrl(baseUrl);
     }
 
     public WebsiteExplorer getExplorer() {

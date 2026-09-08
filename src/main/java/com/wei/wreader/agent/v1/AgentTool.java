@@ -1,4 +1,4 @@
-package com.wei.wreader.agent;
+package com.wei.wreader.agent.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

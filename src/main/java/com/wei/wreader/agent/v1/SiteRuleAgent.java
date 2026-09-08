@@ -1,15 +1,15 @@
-package com.wei.wreader.agent;
+package com.wei.wreader.agent.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.wei.wreader.llm.LLMClient;
-import com.wei.wreader.llm.LLMClient.AgentConversation;
-import com.wei.wreader.llm.LLMClient.AgentResponse;
-import com.wei.wreader.llm.LLMClient.LLMException;
-import com.wei.wreader.llm.LLMClient.ToolCall;
-import com.wei.wreader.llm.LLMClient.ToolDefinition;
+import com.wei.wreader.agent.v1.llm.LLMClient;
+import com.wei.wreader.agent.v1.llm.LLMClient.AgentConversation;
+import com.wei.wreader.agent.v1.llm.LLMClient.AgentResponse;
+import com.wei.wreader.agent.v1.llm.LLMClient.LLMException;
+import com.wei.wreader.agent.v1.llm.LLMClient.ToolCall;
+import com.wei.wreader.agent.v1.llm.LLMClient.ToolDefinition;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -219,6 +219,7 @@ public class SiteRuleAgent {
                 - extract_html_elements: 用 CSS 选择器提取 HTML 元素
                 - parse_json_path: 用 JsonPath 提取 JSON 数据
                 - validate_site_rule: 校验生成的规则
+                - test_site_rule: 对 HTML 规则执行真实搜索、目录和正文测试
                 - complete_rule: 提交最终规则（生成流程的最后一步）
 
                 ## 工作流程
@@ -229,7 +230,8 @@ public class SiteRuleAgent {
                 5. 获取一个章节内容页，分析正文提取方式
                 6. 根据分析结果组装 SiteBean 规则
                 7. 使用 validate_site_rule 校验规则
-                8. 校验通过后使用 complete_rule 提交规则
+                8. 调用 test_site_rule 验证搜索、目录和正文规则
+                9. 测试通过后使用 complete_rule 提交规则
 
                 ## 重要提示
                 - CSS 选择器必须是有效的 Jsoup 语法

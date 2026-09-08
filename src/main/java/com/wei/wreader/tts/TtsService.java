@@ -2,6 +2,7 @@ package com.wei.wreader.tts;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.notification.NotificationsManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -244,7 +245,7 @@ public class TtsService {
      * 特点：文本分段合成，边合成边播放，减少等待时间
      */
     private void mimoTTSWithPresetVoiceNonStream(String apiKey, String text, String audioStyle,
-                                                  int styleControlType, Settings settings) {
+                                                 int styleControlType, Settings settings) {
         try {
             Voice voice = Voice.fromValue(settings.getVoiceRole());
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
@@ -264,8 +265,7 @@ public class TtsService {
 
                 @Override
                 public void onSynthesizeStart(int totalChunks) {
-                    NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
-                    notificationsManager.showNotification(
+                    Notifications.Bus.notify(
                             new Notification(
                                     ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
                                     "MiMo TTS 开始合成（共 " + totalChunks + " 段），首段合成稍慢，请稍候...",
@@ -279,8 +279,7 @@ public class TtsService {
                 public void onSynthesizeProgress(int currentChunk, int totalChunks) {
                     System.out.println("MiMo TTS 合成进度, 当前段: " + currentChunk + ", 总段数: " + totalChunks);
                     if (currentChunk == totalChunks) {
-                        NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
-                        notificationsManager.showNotification(
+                        Notifications.Bus.notify(
                                 new Notification(
                                         ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
                                         "MiMo TTS 合成完成",
@@ -398,8 +397,7 @@ public class TtsService {
 
                 @Override
                 public void onSynthesizeStart(int totalChunks) {
-                    NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
-                    notificationsManager.showNotification(
+                    Notifications.Bus.notify(
                             new Notification(
                                     ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
                                     "MiMo TTS 开始合成（共 " + totalChunks + " 段），首段合成稍慢，请稍候...",
@@ -413,8 +411,7 @@ public class TtsService {
                 public void onSynthesizeProgress(int currentChunk, int totalChunks) {
                     System.out.println("MiMo TTS 合成进度, 当前段: " + currentChunk + ", 总段数: " + totalChunks);
                     if (currentChunk == totalChunks) {
-                        NotificationsManager notificationsManager = NotificationsManager.getNotificationsManager();
-                        notificationsManager.showNotification(
+                        Notifications.Bus.notify(
                                 new Notification(
                                         ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
                                         "MiMo TTS 合成完成",

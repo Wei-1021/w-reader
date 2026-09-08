@@ -1,12 +1,12 @@
-package com.wei.wreader.service;
+package com.wei.wreader.agent.v1.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.wei.wreader.llm.LLMClient;
-import com.wei.wreader.llm.LLMClient.Conversation;
-import com.wei.wreader.service.WebsiteExplorer.*;
+import com.wei.wreader.agent.v1.llm.LLMClient;
+import com.wei.wreader.agent.v1.llm.LLMClient.Conversation;
+import com.wei.wreader.agent.v1.tool.WebsiteExplorer.*;
 import com.wei.wreader.util.CustomSiteUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -61,6 +61,7 @@ public class SiteRuleGenerator {
             ctx.llmClient = new LLMClient(llmBaseUrl, llmApiKey, llmModel);
             ctx.conversation = ctx.llmClient.createConversation(buildSystemPrompt());
             ctx.baseUrl = ctx.explorer.normalizeBaseUrl(websiteUrl);
+            ctx.explorer.setAllowedBaseUrl(ctx.baseUrl);
 
             // Step 1: 首页
             if (!step1_home(ctx, progressCallback, errorCallback)) return;

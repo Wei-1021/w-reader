@@ -1,11 +1,12 @@
 package com.wei.wreader.ui;
 
-import com.intellij.formatting.Alignment;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
+import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
@@ -26,9 +27,12 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
-import com.wei.wreader.agent.AgentCallback;
-import com.wei.wreader.agent.CLIAgentRunner;
-import com.wei.wreader.agent.SiteRuleAgent;
+import com.wei.wreader.agent.v1.AgentCallback;
+import com.wei.wreader.agent.v1.CLIAgentRunner;
+import com.wei.wreader.agent.v1.SiteRuleAgent;
+import com.wei.wreader.agent.v2.core.AgentResult;
+import com.wei.wreader.agent.v2.event.AgentEvent;
+import com.wei.wreader.agent.v2.runtime.AgentService;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.service.CredentialService;
 import com.wei.wreader.service.SiteRuleService;
@@ -38,7 +42,6 @@ import com.wei.wreader.util.file.FileUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
@@ -49,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.UUID;
 
 /**
  * AI Agent 生成书源规则 - 对话式界面
@@ -59,6 +63,7 @@ public class AgentSiteRuleDialog {
 
     private static final String TEMP_DIR = ".idea/w-reader/agent";
     private static final String TEMP_FILE_NAME = "agent-site-rule-temp.json";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final Project project;
 
@@ -86,6 +91,8 @@ public class AgentSiteRuleDialog {
 
     private volatile boolean generating = false;
     private AtomicReference<SiteRuleAgent> currentAgent = new AtomicReference<>();
+    private final AtomicReference<String> currentSessionId = new AtomicReference<>();
+    private final AtomicReference<String> activeRunToken = new AtomicReference<>();
     private volatile String finalRuleJson;
 
     public AgentSiteRuleDialog(Project project) {
@@ -106,6 +113,7 @@ public class AgentSiteRuleDialog {
             @Override
             public void windowClosed(java.awt.event.WindowEvent e) {
                 disposeEditor();
+                onCancel();
             }
         });
 
@@ -126,7 +134,7 @@ public class AgentSiteRuleDialog {
         frame.setVisible(true);
 
         loadSavedConfig();
-        addSystemMessage("欢迎使用 AI Agent 书源规则生成器。请输入小说网站地址，Agent 将自主分析网站结构并生成书源规则。");
+        addSystemMessage("欢迎使用 AI Agent 书源规则生成器。API 接口模式使用 Agent v2；本地 CLI 模式保持原有能力。请输入小说网站地址，Agent 将自主分析网站结构并生成书源规则。");
     }
 
     // ==================== UI 构建 ====================
@@ -138,7 +146,7 @@ public class AgentSiteRuleDialog {
         JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         modePanel.add(new JLabel("AI 模式:"));
         aiModeComboBox = new ComboBox<>(new String[]{
-                "API 接口（自定义 OpenAI 兼容）",
+                "API 接口（Agent v2 / OpenAI 兼容）",
                 CLIAgentRunner.CLIType.CLAUDE.displayName + "（本地 CLI）",
                 CLIAgentRunner.CLIType.OPENCODE.displayName + "（本地 CLI）",
                 CLIAgentRunner.CLIType.MIMOCODE.displayName + "（本地 CLI）"
@@ -155,26 +163,34 @@ public class AgentSiteRuleDialog {
         gbc.insets = JBUI.insets(3);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
         apiConfigPanel.add(new JLabel("Base URL:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
         baseUrlField = new JTextField();
         baseUrlField.setToolTipText("OpenAI 格式，如 https://api.deepseek.com/v1");
         apiConfigPanel.add(baseUrlField, gbc);
 
-        gbc.gridx = 2; gbc.weightx = 0;
+        gbc.gridx = 2;
+        gbc.weightx = 0;
         apiConfigPanel.add(new JLabel("  API Key:"), gbc);
-        gbc.gridx = 3; gbc.weightx = 0.8;
+        gbc.gridx = 3;
+        gbc.weightx = 0.8;
         apiKeyField = new JPasswordField(20);
         apiConfigPanel.add(apiKeyField, gbc);
 
-        gbc.gridx = 4; gbc.weightx = 0;
+        gbc.gridx = 4;
+        gbc.weightx = 0;
         apiConfigPanel.add(new JLabel("  Model:"), gbc);
-        gbc.gridx = 5; gbc.weightx = 0.6;
+        gbc.gridx = 5;
+        gbc.weightx = 0.6;
         modelField = new JTextField(15);
         apiConfigPanel.add(modelField, gbc);
 
-        gbc.gridx = 6; gbc.weightx = 0;
+        gbc.gridx = 6;
+        gbc.weightx = 0;
         JButton saveBtn = new JButton("保存");
         saveBtn.setToolTipText("保存 API 配置到 IDE 凭证管理器");
         saveBtn.addActionListener(e -> onSaveConfig());
@@ -428,6 +444,7 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加用户消息
+     *
      * @param text
      */
     private void addUserMessage(String text) {
@@ -454,6 +471,7 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加代理消息
+     *
      * @param text
      */
     private void addAgentMessage(String text) {
@@ -462,8 +480,9 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加代理消息
+     *
      * @param agentName 智能体名称
-     * @param text 代理消息内容
+     * @param text      代理消息内容
      */
     public void addAgentMessage(String agentName, String text) {
         JPanel messageBlock = new JPanel(new BorderLayout());
@@ -489,6 +508,7 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加工具调用消息
+     *
      * @param toolName
      * @param arguments
      */
@@ -520,6 +540,7 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加工具结果消息
+     *
      * @param toolName
      * @param result
      */
@@ -550,6 +571,7 @@ public class AgentSiteRuleDialog {
 
     /**
      * 添加系统消息
+     *
      * @param text
      */
     private void addSystemMessage(String text) {
@@ -656,19 +678,40 @@ public class AgentSiteRuleDialog {
     }
 
     private void showRuleInDisplayArea(String jsonRule) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        Runnable updateRule = () -> {
             if (ruleEditor == null || ruleEditor.isDisposed()) {
                 return;
             }
-            String normalized = jsonRule.replace("\r\n", "\n").replace("\r", "\n");
+            String normalized = formatJsonForDisplay(jsonRule);
             WriteCommandAction.runWriteCommandAction(project, () -> {
                 if (ruleDocument != null) {
                     ruleDocument.setText(normalized);
                 }
             });
             ruleEditor.getCaretModel().moveToOffset(0);
-            ruleEditor.getScrollingModel().scrollToCaret(com.intellij.openapi.editor.ScrollType.MAKE_VISIBLE);
-        });
+            ruleEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
+        };
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            updateRule.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(updateRule);
+        }
+    }
+
+    /**
+     * 仅格式化刚生成的有效 JSON，格式化失败时保留原始结果。
+     */
+    private String formatJsonForDisplay(String jsonRule) {
+        String normalized = jsonRule == null ? "" : jsonRule.replace("\r\n", "\n").replace("\r", "\n");
+        if (normalized.isBlank()) {
+            return normalized;
+        }
+        try {
+            return OBJECT_MAPPER.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(OBJECT_MAPPER.readTree(normalized));
+        } catch (Exception ignored) {
+            return normalized;
+        }
     }
 
     // ==================== UI 辅助 ====================
@@ -815,17 +858,38 @@ public class AgentSiteRuleDialog {
         showRuleInDisplayArea("");
 
         addUserMessage("请为 " + finalWebsiteUrl + " 生成书源规则");
-        statusLabel.setText(isCLIMode ? "CLI Agent 正在工作..." : "Agent 正在工作...");
+        statusLabel.setText(isCLIMode ? "CLI Agent 正在工作..." : "Agent v2 正在工作...");
+
+        // API 模式统一使用 Agent v2；CLI 模式仍保留原有本地工具能力。
+        if (!isCLIMode) {
+            CredentialService credentials = CredentialService.getInstance();
+            credentials.saveLlmBaseUrl(baseUrlField.getText().trim());
+            credentials.saveLlmApiKey(new String(apiKeyField.getPassword()).trim());
+            credentials.saveLlmModel(modelField.getText().trim());
+
+            String runToken = UUID.randomUUID().toString();
+            activeRunToken.set(runToken);
+            try {
+                String sessionId = AgentService.getInstance(project).startAgent(
+                        com.wei.wreader.agent.v2.siterule.SiteRuleAgent.ID,
+                        "请为这个小说网站生成书源规则: " + finalWebsiteUrl,
+                        event -> handleV2AgentEvent(runToken, event),
+                        result -> handleV2AgentResult(runToken, result)
+                );
+                currentSessionId.set(sessionId);
+            } catch (Exception e) {
+                activeRunToken.compareAndSet(runToken, null);
+                addSystemMessage("❌ 无法启动 Agent v2: " + e.getMessage());
+                statusLabel.setText("启动失败");
+                generateButton.setEnabled(true);
+                cancelButton.setEnabled(false);
+                generating = false;
+            }
+            return;
+        }
 
         SiteRuleAgent agent;
-        if (aiMode == 0) {
-            String baseUrl = baseUrlField.getText().trim();
-            String apiKey = new String(apiKeyField.getPassword()).trim();
-            String model = modelField.getText().trim();
-            agent = new SiteRuleAgent(project, baseUrl, apiKey, model);
-        } else {
-            agent = new SiteRuleAgent(project, "", "", "");
-        }
+        agent = new SiteRuleAgent(project, "", "", "");
         currentAgent.set(agent);
 
         // 构建回调（根据模式传递参数）
@@ -836,12 +900,8 @@ public class AgentSiteRuleDialog {
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
 
-                if (aiMode == 0) {
-                    agent.generate(finalWebsiteUrl, agentCallback);
-                } else {
-                    CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
-                    agent.generateWithCLI(cliType, finalWebsiteUrl, agentCallback);
-                }
+                CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
+                agent.generateWithCLI(cliType, finalWebsiteUrl, agentCallback);
             }
 
             @Override
@@ -943,7 +1003,13 @@ public class AgentSiteRuleDialog {
     }
 
     private void onCancel() {
-        SiteRuleAgent agent = currentAgent.get();
+        String sessionId = currentSessionId.getAndSet(null);
+        if (sessionId != null) {
+            AgentService.getInstance(project).cancelAgent(sessionId);
+        }
+        activeRunToken.set(null);
+
+        SiteRuleAgent agent = currentAgent.getAndSet(null);
         if (agent != null) {
             agent.cancel();
         }
@@ -955,24 +1021,26 @@ public class AgentSiteRuleDialog {
     }
 
     private void onCopy() {
-        if (finalRuleJson == null || finalRuleJson.isEmpty()) {
+        String ruleJson = getCurrentRuleJson();
+        if (ruleJson == null || ruleJson.isEmpty()) {
             Messages.showInfoMessage("没有可复制的规则", "提示");
             return;
         }
         Toolkit.getDefaultToolkit().getSystemClipboard()
-                .setContents(new StringSelection(finalRuleJson), null);
+                .setContents(new StringSelection(ruleJson), null);
         Messages.showInfoMessage("已复制到剪贴板", "提示");
     }
 
     private void onImport() {
-        if (finalRuleJson == null || finalRuleJson.trim().isEmpty()) {
+        String ruleJson = getCurrentRuleJson();
+        if (ruleJson == null || ruleJson.trim().isEmpty()) {
             Messages.showInfoMessage("请先生成书源规则", "提示");
             return;
         }
 
         CustomSiteUtil customSiteUtil = CustomSiteUtil.getInstance(project);
         try {
-            customSiteUtil.parseCustomSiteRule(finalRuleJson.trim(),
+            customSiteUtil.parseCustomSiteRule(ruleJson.trim(),
                     validationResult -> {
                         String groupName = Messages.showInputDialog(
                                 frame,
@@ -1000,7 +1068,7 @@ public class AgentSiteRuleDialog {
                             String defaultSiteRuleJson = FileUtil.readResourcesJsonStr(CustomSiteUtil.DEFAULT_SITE_RULE_PATH);
                             originalStrMap.put(ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY, defaultSiteRuleJson);
                         }
-                        originalStrMap.put(groupName, finalRuleJson.trim());
+                        originalStrMap.put(groupName, ruleJson.trim());
                         siteRuleService.setCustomSiteRuleOriginalStrMap(originalStrMap);
 
                         Messages.showInfoMessage("导入成功！书源分组 \"" + groupName + "\" 已添加。", "提示");
@@ -1012,5 +1080,55 @@ public class AgentSiteRuleDialog {
         } catch (Exception e) {
             Messages.showErrorDialog("导入失败: " + e.getMessage(), "错误");
         }
+    }
+
+    private void handleV2AgentEvent(String runToken, AgentEvent event) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if (!runToken.equals(activeRunToken.get()) || frame == null || !frame.isDisplayable()) {
+                return;
+            }
+            if (event instanceof AgentEvent.AssistantMessage message) {
+                addAgentMessage(message.content());
+                statusLabel.setText("Agent v2 思考中...");
+            } else if (event instanceof AgentEvent.ToolCallStarted toolCall) {
+                addToolCallMessage(toolCall.name(), toolCall.arguments().toString());
+                statusLabel.setText("执行: " + getToolDisplayName(toolCall.name()));
+            } else if (event instanceof AgentEvent.ToolCallFinished toolCall) {
+                if (toolCall.result().isSuccess()) {
+                    addToolResultMessage(toolCall.name(), toolCall.result().content());
+                } else {
+                    addSystemMessage("❌ 工具执行失败: " + toolCall.result().content());
+                }
+                statusLabel.setText("Agent v2 分析中...");
+            }
+        });
+    }
+
+    private void handleV2AgentResult(String runToken, AgentResult result) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if (!runToken.equals(activeRunToken.get()) || frame == null || !frame.isDisplayable()) {
+                return;
+            }
+            if (result.isSuccess()) {
+                finalRuleJson = result.content();
+                addAgentMessage("✓ 规则生成完成！请查看下方「生成的书源规则」区域。");
+                showRuleInDisplayArea(result.content());
+                statusLabel.setText("生成完成");
+                copyButton.setEnabled(true);
+                importButton.setEnabled(true);
+            } else {
+                addSystemMessage("❌ " + result.errorMessage());
+                statusLabel.setText("生成失败");
+            }
+            generateButton.setEnabled(true);
+            cancelButton.setEnabled(false);
+            generating = false;
+            currentSessionId.set(null);
+            activeRunToken.compareAndSet(runToken, null);
+        });
+    }
+
+    private String getCurrentRuleJson() {
+        return ruleDocument != null ? ruleDocument.getText() : finalRuleJson;
     }
 }
