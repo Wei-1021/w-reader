@@ -21,7 +21,7 @@ wreader:
     editorHintHeight: 200 #编辑器提示消息框高度
     customSiteRuleTextAreaType: 1 #自定义书源规则文本区域类型；2-普通文本框(只有读写，无其它额外功能); 1-IDEA代码编辑器（额外增加代码行数、代码高亮、代码折叠、格式化等）
     voiceRole: '晓晓' #音色
-    audioTimeout: 3 #听书超时
+    audioTimeout: 30 #听书超时
     rate: 1.0 #语速
     volume: 100 #默认音量
     audioStyle: '默认' #默认风格

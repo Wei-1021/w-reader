@@ -1,6 +1,8 @@
 package com.wei.wreader.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
+import com.wei.wreader.reader.ReaderOrchestrator;
 import com.wei.wreader.util.WReaderIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,17 +31,20 @@ public class PauseTTSAction extends BaseAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-        if (orchestrator != null) {
-            boolean isPlaying = orchestrator.isTtsPlaying();
-            boolean isPaused = orchestrator.isTtsPaused();
-            boolean visible = isPlaying || isPaused;
-            e.getPresentation().setEnabledAndVisible(visible);
+        Project currentProject = e.getProject();
+        if (currentProject == null) {
+            e.getPresentation().setEnabledAndVisible(false);
+            return;
+        }
+        ReaderOrchestrator currentOrchestrator = ReaderOrchestrator.getInstance(currentProject);
+        boolean isPlaying = currentOrchestrator.isTtsPlaying();
+        boolean isPaused = currentOrchestrator.isTtsPaused();
+        boolean visible = isPlaying || isPaused;
+        e.getPresentation().setEnabledAndVisible(visible);
 
-            if (visible) {
-                e.getPresentation().setIcon(isPaused ? WReaderIcons.AUDIO_RESUME : WReaderIcons.AUDIO_PAUSE);
-                e.getPresentation().setText(isPaused ? "恢复听书" : "暂停听书");
-            }
+        if (visible) {
+            e.getPresentation().setIcon(isPaused ? WReaderIcons.AUDIO_RESUME : WReaderIcons.AUDIO_PAUSE);
+            e.getPresentation().setText(isPaused ? "恢复听书" : "暂停听书");
         }
     }
 }

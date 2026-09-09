@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 public class EdgeTTS {
     private static final Logger LOG = Logger.getInstance(EdgeTTS.class);
@@ -39,6 +40,9 @@ public class EdgeTTS {
      * TTS Listener
      */
     private volatile ITTSListener listener;
+    private volatile Runnable completionCallback;
+    private volatile Consumer<Exception> errorCallback;
+    private int connectionTimeoutMillis = 30000;
 
     /**
      * 音色
@@ -101,6 +105,8 @@ public class EdgeTTS {
      * 是否销毁
      */
     private volatile boolean isDispose = false;
+    private volatile boolean completionNotified = false;
+    private volatile boolean errorNotified = false;
 
 
     public EdgeTTS() throws IOException {
@@ -161,7 +167,8 @@ public class EdgeTTS {
      * @return
      */
     public EdgeTTS setStyleName(String name) {
-        this.style = VoiceStyle.getByName(name).value;
+        VoiceStyle voiceStyle = VoiceStyle.getByName(name);
+        this.style = (voiceStyle == null ? VoiceStyle.style_default : voiceStyle).value;
         return this;
     }
 
@@ -171,7 +178,8 @@ public class EdgeTTS {
      * @return
      */
     public EdgeTTS setStyleValue(String value) {
-        this.style = VoiceStyle.getByValue(value).value;
+        VoiceStyle voiceStyle = VoiceStyle.getByValue(value);
+        this.style = (voiceStyle == null ? VoiceStyle.style_default : voiceStyle).value;
         return this;
     }
 
@@ -198,6 +206,19 @@ public class EdgeTTS {
         this.listener = listener;
     }
 
+    public EdgeTTS setConnectionTimeoutMillis(int timeoutMillis) {
+        this.connectionTimeoutMillis = Math.max(1000, timeoutMillis);
+        return this;
+    }
+
+    public void setOnComplete(Runnable callback) {
+        this.completionCallback = callback;
+    }
+
+    public void setOnError(Consumer<Exception> callback) {
+        this.errorCallback = callback;
+    }
+
     /**
      * 合成给定的文本并返回音频数据
      *
@@ -212,6 +233,8 @@ public class EdgeTTS {
         // 发送SSML消息
         synthesising = true;
         isTempLastMsg = true;
+        completionNotified = false;
+        errorNotified = false;
     }
 
     /**
@@ -295,8 +318,8 @@ public class EdgeTTS {
      * 发送SSML消息
      */
     private void sendSSMLMsg() {
-        // 当文本队列不为空且不为销毁状态，循环发送消息
-        while (!textQueue.isEmpty() && !isDispose) {
+        // 最后一段文本发出后，也必须等到其 turn.end，避免播放线程提前退出而丢失末段音频。
+        while ((!textQueue.isEmpty() || !isTempLastMsg) && !isDispose) {
             // 如果上一个消息接收完毕，则从队列中取出下一个消息发送，否则等待
             if (isTempLastMsg) {
                 // 上一个消息成功发送或者还未发送过消息，则从队列中取出下一个消息，否则继续发送上条消息
@@ -310,7 +333,9 @@ public class EdgeTTS {
                     SSMLPayload ssmlPayload = new SSMLPayload(voiceRole, rate, volume, style);
                     ssmlPayload.content = currentContent;
                     String messageSSML = ssmlPayload.toString();
-                    processQueue();
+                    if (!processQueue()) {
+                        break;
+                    }
                     isCurrentContentSend = true;
                     client.send(messageSSML);
                     isTempLastMsg = false;
@@ -323,16 +348,18 @@ public class EdgeTTS {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.warn("EdgeTTS sendSSMLMsg interrupted", e);
+                break;
             }
         }
+        synthesising = false;
     }
 
     /**
      * 处理文本队列，通过 WebSocket 连接发送文本到 Microsoft Edge 的 TTS 服务进行语音合成，并将合成的音频数据以字节数组的形式返回
      */
-    private void processQueue() {
+    private boolean processQueue() {
         if (isDispose) {
-            return;
+            return false;
         }
 
         // 当连接数达到最大值时，重置连接计数并重新创建WebSocket连接
@@ -374,6 +401,9 @@ public class EdgeTTS {
                             // 一段文本合成完成
                             // 一段解码结束
                             isTempLastMsg = true;
+                            if (listener != null) {
+                                listener.finished(currentContent);
+                            }
                         }
                     }
 
@@ -413,17 +443,23 @@ public class EdgeTTS {
                     @Override
                     public void onError(Exception ex) {
                         LOG.error("EdgeTTS WebSocket error", ex);
+                        notifyError(ex);
                     }
                 };
-                client.connectBlocking();
+                if (!client.connectBlocking(connectionTimeoutMillis, TimeUnit.MILLISECONDS)) {
+                    throw new IOException("连接 Edge TTS 服务超时");
+                }
                 connectionCount++;
                 // 发送配置消息
                 sendVoiceFormat();
             } catch (Exception e) {
                 LOG.error("EdgeTTS processQueue error", e);
+                notifyError(e);
+                dispose();
+                return false;
             }
         }
-
+        return client != null && client.isOpen();
     }
 
     /**
@@ -457,15 +493,21 @@ public class EdgeTTS {
      */
     private void copyByteToOut() {
         try {
-            while (!allAudioData.isEmpty() || !textQueue.isEmpty()) {
+            while (!isDispose) {
                 // 暂停时等待恢复
                 while (isPaused && !isDispose) {
                     Thread.sleep(100);
                 }
                 if (isDispose) break;
 
-                byte[] audioData = allAudioData.take();
-                if (isPlaying && (allAudioData == null || allAudioData.isEmpty() || audioData.length == 0)) {
+                byte[] audioData = allAudioData.poll(100, TimeUnit.MILLISECONDS);
+                if (audioData == null) {
+                    if (!synthesising && allAudioData.isEmpty()) {
+                        break;
+                    }
+                    continue;
+                }
+                if (audioData.length == 0) {
                     continue;
                 }
 
@@ -474,7 +516,17 @@ public class EdgeTTS {
             }
         } catch (IOException | InterruptedException e) {
             if (!isDispose) {
-                throw new RuntimeException(e);
+                LOG.error("EdgeTTS write audio stream error", e);
+                notifyError(e);
+            }
+        } finally {
+            // 向播放器明确发送 EOF；否则 PipedInputStream 会一直等待下一段数据，播放状态无法结束。
+            try {
+                pos.close();
+            } catch (IOException e) {
+                if (!isDispose) {
+                    LOG.warn("EdgeTTS close audio stream error", e);
+                }
             }
         }
     }
@@ -503,8 +555,12 @@ public class EdgeTTS {
             player.play();
         } catch (JavaLayerException e) {
             LOG.error("EdgeTTS play error", e);
+            notifyError(e);
         } finally {
             stopPlaying();
+            if (!isDispose) {
+                notifyCompleted();
+            }
         }
     }
 
@@ -567,6 +623,34 @@ public class EdgeTTS {
             executor.shutdownNow();
         } catch (Exception e) {
             LOG.error("EdgeTTS dispose error", e);
+        }
+    }
+
+    private void notifyCompleted() {
+        Runnable callback;
+        synchronized (this) {
+            if (completionNotified) {
+                return;
+            }
+            completionNotified = true;
+            callback = completionCallback;
+        }
+        if (callback != null) {
+            callback.run();
+        }
+    }
+
+    private void notifyError(Exception error) {
+        Consumer<Exception> callback;
+        synchronized (this) {
+            if (errorNotified) {
+                return;
+            }
+            errorNotified = true;
+            callback = errorCallback;
+        }
+        if (callback != null) {
+            callback.accept(error);
         }
     }
 }

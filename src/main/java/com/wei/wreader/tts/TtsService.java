@@ -45,6 +45,7 @@ public class TtsService {
     private static final int MAX_CHUNK_LENGTH = 1000;
 
     private final Project project;
+    private final Object lifecycleLock = new Object();
     private volatile TtsEngine currentEngine;
     private volatile String currentEngineType;
     private volatile boolean userStopped = false;
@@ -60,6 +61,10 @@ public class TtsService {
     public void speakChapterContent(String chapterContent) {
         CacheService cacheService = CacheService.getInstance();
         Settings settings = cacheService.getSettings();
+        if (settings == null) {
+            notifyFailure("未加载听书设置");
+            return;
+        }
         String engineType = settings.getTtsEngine();
 
         if ("mimo".equals(engineType)) {
@@ -77,14 +82,7 @@ public class TtsService {
             return;
         }
 
-        // 如果已经在播放则停止
-        if (currentEngine != null && currentEngine.isPlaying()) {
-            userStopped = true;
-            stopBatchThread();
-            currentEngine.stop();
-            currentEngine.dispose();
-            currentEngine = null;
-            currentEngineType = null;
+        if (toggleOrClearPreviousPlayback()) {
             return;
         }
 
@@ -93,12 +91,19 @@ public class TtsService {
         try {
             EdgeTTS edgeTTS = new EdgeTTS();
             configureEdgeTTS(edgeTTS);
-            currentEngine = new EdgeTtsEngineWrapper(edgeTTS);
+            EdgeTtsEngineWrapper engine = new EdgeTtsEngineWrapper(edgeTTS);
+            engine.setOnComplete(() -> clearCompletedEngine(engine));
+            engine.setOnError(error -> {
+                clearCompletedEngine(engine);
+                notifyFailure("Edge TTS 播放失败：" + messageOf(error));
+            });
+            currentEngine = engine;
             currentEngineType = "edge";
             currentEngine.synthesize(chapterContent);
             currentEngine.start();
         } catch (Exception e) {
             LOG.error("Failed to initialize Edge TTS", e);
+            notifyFailure("Edge TTS 初始化失败：" + messageOf(e));
         }
     }
 
@@ -110,27 +115,7 @@ public class TtsService {
             return;
         }
 
-        // 如果已经在播放则停止
-        if (currentEngine != null && currentEngine.isPlaying()) {
-            userStopped = true;
-            stopBatchThread();
-            currentEngine.stop();
-            currentEngine.dispose();
-            currentEngine = null;
-            currentEngineType = null;
-            return;
-        }
-
-        // 如果有引擎但已停止播放（可能是批处理线程还在运行），也停止
-        if (batchThread != null && batchThread.isAlive()) {
-            userStopped = true;
-            stopBatchThread();
-            if (currentEngine != null) {
-                currentEngine.stop();
-                currentEngine.dispose();
-                currentEngine = null;
-                currentEngineType = null;
-            }
+        if (toggleOrClearPreviousPlayback()) {
             return;
         }
 
@@ -141,12 +126,18 @@ public class TtsService {
 
             if (StringUtils.isBlank(apiKey)) {
                 LOG.warn("MiMo TTS API Key is not configured");
+                notifyFailure("请先在设置中配置 MiMo TTS API Key");
                 return;
             }
 
             CacheService cacheService = CacheService.getInstance();
             Settings settings = cacheService.getSettings();
             MimoModel modelType = MimoModel.fromModelId(settings.getMimoModelType());
+
+            if (modelType == MimoModel.VOICE_CLONE) {
+                notifyFailure("MiMo 音频样本复刻模型暂未支持");
+                return;
+            }
 
             // 根据模型类型处理
             if (modelType == MimoModel.VOICE_DESIGN) {
@@ -158,6 +149,7 @@ public class TtsService {
             }
         } catch (Exception e) {
             LOG.error("Failed to initialize MiMo TTS", e);
+            notifyFailure("MiMo TTS 初始化失败：" + messageOf(e));
         }
     }
 
@@ -251,6 +243,7 @@ public class TtsService {
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
                     .model(MimoTTSRequest.MODEL_PRESET)
                     .defaultVoice(voice)
+                    .connectTimeout(resolveConnectionTimeoutMillis(settings))
                     .build();
 
             MimoTTS mimoTTS = new MimoTTS(config);
@@ -295,6 +288,11 @@ public class TtsService {
                     System.out.println("MiMo TTS chunk played, chunk count: " + chunkCount);
                 }
 
+                @Override
+                public void onError(Exception e) {
+                    notifyFailure("MiMo TTS 合成失败：" + messageOf(e));
+                }
+
             });
 
             // 根据风格控制类型处理
@@ -314,6 +312,7 @@ public class TtsService {
             currentEngine.start();
         } catch (Exception e) {
             LOG.error("MiMo TTS non-stream synthesis failed", e);
+            notifyFailure("MiMo TTS 合成失败：" + messageOf(e));
         }
     }
 
@@ -324,6 +323,7 @@ public class TtsService {
         String voiceDescription = settings.getMimoVoiceDescription();
         if (StringUtils.isBlank(voiceDescription)) {
             LOG.warn("MiMo TTS VoiceDesign description is not configured");
+            notifyFailure("请先填写 MiMo 音色描述");
             return;
         }
 
@@ -386,6 +386,7 @@ public class TtsService {
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
                     .model(MimoTTSRequest.MODEL_VOICE_DESIGN)
                     .defaultVoice(null)
+                    .connectTimeout(resolveConnectionTimeoutMillis(CacheService.getInstance().getSettings()))
                     .build();
 
             MimoTTS mimoTTS = new MimoTTS(config);
@@ -422,6 +423,11 @@ public class TtsService {
                     }
                 }
 
+                @Override
+                public void onError(Exception e) {
+                    notifyFailure("MiMo TTS 音色合成失败：" + messageOf(e));
+                }
+
             });
 
             currentEngine = new MimoTtsEngineWrapper(mimoTTS);
@@ -430,6 +436,7 @@ public class TtsService {
             currentEngine.start();
         } catch (Exception e) {
             LOG.error("MiMo TTS VoiceDesign non-stream synthesis failed", e);
+            notifyFailure("MiMo TTS 音色合成失败：" + messageOf(e));
         }
     }
 
@@ -463,6 +470,7 @@ public class TtsService {
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
                     .model(MimoTTSRequest.MODEL_PRESET)
                     .defaultVoice(voice)
+                    .connectTimeout(resolveConnectionTimeoutMillis(settings))
                     .build();
 
             MimoTTS mimoTTS = new MimoTTS(config);
@@ -496,6 +504,7 @@ public class TtsService {
             }
         } catch (Exception e) {
             LOG.error("MiMo TTS batch synthesis failed", e);
+            notifyFailure("MiMo TTS 分段合成失败：" + messageOf(e));
         }
     }
 
@@ -507,6 +516,7 @@ public class TtsService {
         try {
             MimoTTSConfig config = new MimoTTSConfig.Builder(apiKey)
                     .model(MimoTTSRequest.MODEL_VOICE_DESIGN)
+                    .connectTimeout(resolveConnectionTimeoutMillis(CacheService.getInstance().getSettings()))
                     .build();
 
             MimoTTS mimoTTS = new MimoTTS(config);
@@ -525,6 +535,7 @@ public class TtsService {
             }
         } catch (Exception e) {
             LOG.error("MiMo TTS VoiceDesign batch synthesis failed", e);
+            notifyFailure("MiMo TTS 音色合成失败：" + messageOf(e));
         }
     }
 
@@ -647,10 +658,8 @@ public class TtsService {
             voiceRole = defaultSettings.getVoiceRole();
         }
         VoiceRole voiceRoleEnum = VoiceRole.getByNickName(voiceRole);
-
-        int audioTimeout = settings.getAudioTimeout();
-        if (audioTimeout <= 0) {
-            audioTimeout = defaultSettings.getAudioTimeout();
+        if (voiceRoleEnum == null) {
+            voiceRoleEnum = VoiceRole.getByNickName(defaultSettings.getVoiceRole());
         }
 
         Float rate = settings.getRate();
@@ -671,7 +680,20 @@ public class TtsService {
         edgeTTS.setVoiceRole(voiceRoleEnum)
                 .setStyleName(audioStyle)
                 .setRate(rate.toString())
-                .setVolume(volume.toString());
+                .setVolume(volume.toString())
+                .setConnectionTimeoutMillis(resolveConnectionTimeoutMillis(settings));
+    }
+
+    /**
+     * 设置项以秒为单位；仅用于建立连接，流式朗读不应被读超时中途截断。
+     */
+    private int resolveConnectionTimeoutMillis(Settings settings) {
+        int timeoutSeconds = settings == null ? 0 : settings.getAudioTimeout();
+        if (timeoutSeconds <= 0) {
+            Settings defaults = AppConfigService.getInstance().getSettings();
+            timeoutSeconds = defaults == null ? 30 : defaults.getAudioTimeout();
+        }
+        return Math.max(1, timeoutSeconds) * 1000;
     }
 
     /**
@@ -701,13 +723,10 @@ public class TtsService {
      * 停止当前TTS播放
      */
     public void stopTTS() {
-        userStopped = true;
-        stopBatchThread();
-        if (currentEngine != null) {
-            currentEngine.stop();
-            currentEngine.dispose();
-            currentEngine = null;
-            currentEngineType = null;
+        synchronized (lifecycleLock) {
+            userStopped = true;
+            stopBatchThread();
+            disposeCurrentEngine();
         }
     }
 
@@ -749,6 +768,70 @@ public class TtsService {
      */
     public boolean isPlaying() {
         return currentEngine != null && currentEngine.isPlaying();
+    }
+
+    /**
+     * 若已有活动播放则执行“再次点击停止”；若只是残留对象则先释放再开始新播放。
+     */
+    private boolean toggleOrClearPreviousPlayback() {
+        synchronized (lifecycleLock) {
+            boolean active = (currentEngine != null && (currentEngine.isPlaying() || currentEngine.isPaused()
+                    || "edge".equals(currentEngineType)))
+                    || (batchThread != null && batchThread.isAlive());
+            if (active) {
+                userStopped = true;
+                stopBatchThread();
+                disposeCurrentEngine();
+                return true;
+            }
+            disposeCurrentEngine();
+            return false;
+        }
+    }
+
+    private void disposeCurrentEngine() {
+        TtsEngine engine = currentEngine;
+        currentEngine = null;
+        currentEngineType = null;
+        if (engine != null) {
+            try {
+                engine.stop();
+                engine.dispose();
+            } catch (Exception e) {
+                LOG.warn("Failed to dispose TTS engine", e);
+            }
+        }
+    }
+
+    private void clearCompletedEngine(TtsEngine engine) {
+        boolean shouldDispose = false;
+        synchronized (lifecycleLock) {
+            if (currentEngine == engine) {
+                currentEngine = null;
+                currentEngineType = null;
+                shouldDispose = true;
+            }
+        }
+        if (shouldDispose) {
+            try {
+                engine.dispose();
+            } catch (Exception e) {
+                LOG.warn("Failed to release completed TTS engine", e);
+            }
+        }
+    }
+
+    private void notifyFailure(String message) {
+        Notifications.Bus.notify(new Notification(
+                ConstUtil.WREADER_GROUP_NOTIFICATION_ID,
+                "听书失败",
+                message,
+                NotificationType.ERROR
+        ), project);
+    }
+
+    private String messageOf(Exception e) {
+        return StringUtils.defaultIfBlank(e.getMessage(), e.getClass().getSimpleName());
     }
 
     /**
@@ -807,12 +890,12 @@ public class TtsService {
 
         @Override
         public void setOnComplete(Runnable callback) {
-            // EdgeTTS handles completion internally
+            edgeTTS.setOnComplete(callback);
         }
 
         @Override
         public void setOnError(Consumer<Exception> callback) {
-            // EdgeTTS handles errors internally
+            edgeTTS.setOnError(callback);
         }
     }
 
