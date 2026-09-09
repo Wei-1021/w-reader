@@ -6,10 +6,14 @@ import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.wei.wreader.model.BookInfo;
 import com.wei.wreader.model.BookshelfItem;
+import com.wei.wreader.model.ChapterInfo;
+import com.wei.wreader.model.SiteBean;
+import com.wei.wreader.util.data.ConstUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,7 +51,7 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
     public List<BookshelfItem> getBookshelfItems() {
         lock.readLock().lock();
         try {
-            return bookshelfItems;
+            return List.copyOf(bookshelfItems);
         } finally {
             lock.readLock().unlock();
         }
@@ -56,7 +60,7 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
     public void setBookshelfItems(List<BookshelfItem> bookshelfItems) {
         lock.writeLock().lock();
         try {
-            this.bookshelfItems = bookshelfItems != null ? bookshelfItems : new ArrayList<>();
+            this.bookshelfItems = bookshelfItems != null ? new ArrayList<>(bookshelfItems) : new ArrayList<>();
         } finally {
             lock.writeLock().unlock();
         }
@@ -67,6 +71,7 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
         try {
             BookshelfItem existing = findByUniqueKey(item.getUniqueKey());
             if (existing != null) {
+                refreshBookMetadata(existing, item);
                 existing.setInShelf(true);
                 existing.setAddedAt(System.currentTimeMillis());
             } else {
@@ -137,6 +142,36 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
         }
     }
 
+    /**
+     * 根据当前阅读状态创建或更新历史记录。此方法不依赖任何显示模式。
+     */
+    public void saveReadingProgress(BookInfo bookInfo, SiteBean siteBean, String siteGroupKey,
+                                    ChapterInfo chapterInfo, int scrollBarValue,
+                                    int totalChapters, int dataLoadType) {
+        if (bookInfo == null || StringUtils.isBlank(bookInfo.getBookName())) {
+            return;
+        }
+
+        String normalizedGroupKey = StringUtils.isNotBlank(siteGroupKey)
+                ? siteGroupKey : ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY;
+        String siteId = siteBean != null ? siteBean.getId() : "local";
+        String bookId = resolveBookId(bookInfo);
+
+        BookshelfItem item = new BookshelfItem();
+        item.setUniqueKey(BookshelfItem.buildUniqueKey(normalizedGroupKey, siteId, bookId));
+        item.setSiteGroupKey(normalizedGroupKey);
+        item.setSiteId(siteId);
+        item.setBookId(bookId);
+        item.copyFromBookInfo(bookInfo);
+        item.setChapterIndex(chapterInfo != null ? chapterInfo.getSelectedChapterIndex() : 0);
+        item.setChapterTitle(chapterInfo != null ? chapterInfo.getChapterTitle() : "");
+        item.setLastReadLineNum(chapterInfo != null ? chapterInfo.getLastReadLineNum() : 0);
+        item.setScrollBarValue(scrollBarValue);
+        item.setTotalChapters(totalChapters);
+        item.setDataLoadType(dataLoadType);
+        recordReadingHistory(item);
+    }
+
     public void recordReadingHistory(BookshelfItem item) {
         lock.writeLock().lock();
         try {
@@ -195,6 +230,29 @@ public final class BookshelfService implements PersistentStateComponent<Bookshel
             }
         }
         return null;
+    }
+
+    /** 保留已记录的阅读进度，同时更新本次打开时拿到的书籍元数据。 */
+    private void refreshBookMetadata(BookshelfItem target, BookshelfItem source) {
+        target.setSiteGroupKey(source.getSiteGroupKey());
+        target.setSiteId(source.getSiteId());
+        target.setBookId(source.getBookId());
+        target.setBookName(source.getBookName());
+        target.setBookAuthor(source.getBookAuthor());
+        target.setBookDesc(source.getBookDesc());
+        target.setBookImgUrl(source.getBookImgUrl());
+        target.setBookUrl(source.getBookUrl());
+        target.setDataLoadType(source.getDataLoadType());
+    }
+
+    private String resolveBookId(BookInfo bookInfo) {
+        if (StringUtils.isNotBlank(bookInfo.getBookId())) {
+            return bookInfo.getBookId();
+        }
+        if (StringUtils.isNotBlank(bookInfo.getBookUrl())) {
+            return bookInfo.getBookUrl();
+        }
+        return bookInfo.getBookName();
     }
 
     private void trimHistory() {

@@ -21,6 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.ui.ErrorStripeEditorCustomization;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
@@ -679,14 +680,18 @@ public class AgentSiteRuleDialog {
 
     private void showRuleInDisplayArea(String jsonRule) {
         Runnable updateRule = () -> {
-            if (ruleEditor == null || ruleEditor.isDisposed()) {
+            if (ruleEditor == null || ruleEditor.isDisposed() || ruleDocument == null) {
                 return;
             }
-            String normalized = formatJsonForDisplay(jsonRule);
+//            String normalized = formatJsonForDisplay(jsonRule);
             WriteCommandAction.runWriteCommandAction(project, () -> {
                 if (ruleDocument != null) {
-                    ruleDocument.setText(normalized);
+                    ruleDocument.setText(jsonRule);
                 }
+
+                CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
+                codeStyleManager.reformat(rulePsiFile);
+                PsiDocumentManager.getInstance(project).commitDocument(ruleDocument);
             });
             ruleEditor.getCaretModel().moveToOffset(0);
             ruleEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
@@ -885,39 +890,38 @@ public class AgentSiteRuleDialog {
                 cancelButton.setEnabled(false);
                 generating = false;
             }
-            return;
+        } else {
+            SiteRuleAgent agent;
+            agent = new SiteRuleAgent(project, "", "", "");
+            currentAgent.set(agent);
+
+            // 构建回调（根据模式传递参数）
+            AgentCallback agentCallback = createAgentCallback(true);
+
+            new Task.Backgroundable(project, "AI Agent 生成书源规则", true) {
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    indicator.setIndeterminate(true);
+
+                    CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
+                    agent.generateWithCLI(cliType, finalWebsiteUrl, agentCallback);
+                }
+
+                @Override
+                public void onThrowable(@NotNull Throwable error) {
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        if (frame != null && frame.isDisplayable()) {
+                            addSystemMessage("❌ 发生异常: " + error.getMessage());
+                            statusLabel.setText("发生异常");
+                            generateButton.setEnabled(true);
+                            cancelButton.setEnabled(false);
+                            generating = false;
+                            currentAgent.set(null);
+                        }
+                    });
+                }
+            }.queue();
         }
-
-        SiteRuleAgent agent;
-        agent = new SiteRuleAgent(project, "", "", "");
-        currentAgent.set(agent);
-
-        // 构建回调（根据模式传递参数）
-        AgentCallback agentCallback = createAgentCallback(isCLIMode);
-
-        new Task.Backgroundable(project, "AI Agent 生成书源规则", true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-
-                CLIAgentRunner.CLIType cliType = getCLIType(aiMode);
-                agent.generateWithCLI(cliType, finalWebsiteUrl, agentCallback);
-            }
-
-            @Override
-            public void onThrowable(@NotNull Throwable error) {
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    if (frame != null && frame.isDisplayable()) {
-                        addSystemMessage("❌ 发生异常: " + error.getMessage());
-                        statusLabel.setText("发生异常");
-                        generateButton.setEnabled(true);
-                        cancelButton.setEnabled(false);
-                        generating = false;
-                        currentAgent.set(null);
-                    }
-                });
-            }
-        }.queue();
     }
 
     /**

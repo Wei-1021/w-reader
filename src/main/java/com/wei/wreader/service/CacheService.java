@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.wei.wreader.model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -108,6 +109,7 @@ public final class CacheService implements PersistentStateComponent<CacheService
     public void setSelectedChapterInfo(ChapterInfo selectedChapterInfo) {
         lock.writeLock().lock();
         try { this.selectedChapterInfo = selectedChapterInfo; } finally { lock.writeLock().unlock(); }
+        syncReadingProgressToBookshelf();
     }
 
     public List<String> getChapterUrlList() {
@@ -189,6 +191,7 @@ public final class CacheService implements PersistentStateComponent<CacheService
     public void setEditorMessageVerticalScrollValue(int editorMessageVerticalScrollValue) {
         lock.writeLock().lock();
         try { this.editorMessageVerticalScrollValue = editorMessageVerticalScrollValue; } finally { lock.writeLock().unlock(); }
+        syncReadingProgressToBookshelf();
     }
 
     public SiteBean getSelectedSiteBean() {
@@ -243,5 +246,25 @@ public final class CacheService implements PersistentStateComponent<CacheService
     public void setTempSelectedBookInfo(BookInfo tempSelectedBookInfo) {
         lock.writeLock().lock();
         try { this.tempSelectedBookInfo = tempSelectedBookInfo; } finally { lock.writeLock().unlock(); }
+    }
+
+    /** 阅读状态变更后同步书架，不依赖侧边栏、状态栏或编辑器显示模式。 */
+    private void syncReadingProgressToBookshelf() {
+        BookInfo bookInfo = getSelectedBookInfo();
+        if (bookInfo == null || StringUtils.isBlank(bookInfo.getBookName())) {
+            return;
+        }
+
+        Settings currentSettings = getSettings();
+        List<String> currentChapterList = getChapterList();
+        BookshelfService.getInstance().saveReadingProgress(
+                bookInfo,
+                getSelectedSiteBean(),
+                SiteRuleService.getInstance().getSelectedCustomSiteRuleKey(),
+                getSelectedChapterInfo(),
+                getEditorMessageVerticalScrollValue(),
+                currentChapterList != null ? currentChapterList.size() : 0,
+                currentSettings != null ? currentSettings.getDataLoadType() : Settings.DATA_LOAD_TYPE_NETWORK
+        );
     }
 }

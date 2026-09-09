@@ -11,8 +11,8 @@ public final class SiteRuleSystemPrompt {
     }
 
     public static String build() {
-        String ruleDoc = truncate(SiteRuleAgent.loadResource("md/custom-rule-info.md"), 12_000);
-        String exampleRule = truncate(SiteRuleAgent.loadResource("json/default-site-rule.json"), 8_000);
+        String ruleDoc = SiteRuleAgent.loadResource("md/custom-rule-info.md");
+        String exampleRule = truncate(SiteRuleAgent.loadResource("json/default-site-rule.json"), 12_000);
 
         return """
                 你是一个专业的书源规则生成专家。你的任务是分析小说网站的页面结构，生成 W-Reader 插件的 SiteBean JSON 规则。
@@ -43,7 +43,6 @@ public final class SiteRuleSystemPrompt {
                 - 空字段填 ""，不要 null
                 - bookListUrlElement 和 bookListTitleElement 相对于每个列表项
                 - 如果页面内容是通过 JS 动态加载的，注意分析 API 端点
-                - bookInfoRules下所有的字段都不能为空，在满足bookInfoRules规则的前提下，如果部分字段不存在或者不了解，可以填写任意与其他字段不重复的字符，注意字段值之间不能重复
                 - 每次调用工具后，根据结果决定下一步操作
                 - 如果某个步骤失败，尝试其他方法或跳过
                 - 若填写规则时需要编写脚本代码规则，尽量使用js规则编写代码

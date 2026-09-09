@@ -26,8 +26,15 @@ import com.wei.wreader.widget.ReaderStatusBarWidget;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -239,17 +246,13 @@ public final class ReaderOrchestrator {
 
     public void ttsChapterContent() {
         ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
-        if (chapterInfo != null) {
-            String chapterContentStr = chapterInfo.getChapterContentStr();
-            String chapterTitle = chapterInfo.getChapterTitle();
-            if (StringUtils.isNotBlank(chapterTitle)) {
-                // 清除章节标题前后空格
-                chapterTitle = chapterTitle.strip();
-            }
-            // 查找章节标题内容，并在标题最后添加上标点符号，让TTS语音播放标题和内容时更自然
-            chapterContentStr = chapterContentStr.replace(chapterTitle, chapterTitle + "。");
-            ttsService.speakChapterContent(chapterContentStr);
+        if (chapterInfo == null || StringUtils.isBlank(chapterInfo.getChapterContentStr())) {
+            return;
         }
+        String chapterTitle = StringUtils.trimToEmpty(chapterInfo.getChapterTitle());
+        String content = chapterInfo.getChapterContentStr();
+        String speechText = StringUtils.isBlank(chapterTitle) ? content : chapterTitle + "。\n" + content;
+        ttsService.speakChapterContent(speechText);
     }
 
     public void stopTTS() {
@@ -328,7 +331,6 @@ public final class ReaderOrchestrator {
                     break;
             }
 
-            saveReadingProgress();
         } catch (Exception e) {
             LOG.error("Failed to update content text", e);
         }
@@ -410,28 +412,28 @@ public final class ReaderOrchestrator {
      * 获取指定位置的HTML标签
      */
     public String getHTMLTagAtPosition(javax.swing.JTextPane textPane, int pos) {
-        javax.swing.text.Document doc = textPane.getDocument();
-        if (!(doc instanceof javax.swing.text.html.HTMLDocument htmlDoc)) {
+        Document doc = textPane.getDocument();
+        if (!(doc instanceof HTMLDocument htmlDoc)) {
             return null;
         }
         javax.swing.text.Element element = htmlDoc.getCharacterElement(pos);
-        List<javax.swing.text.Element> elements = new java.util.ArrayList<>();
+        List<javax.swing.text.Element> elements = new ArrayList<>();
         javax.swing.text.Element current = element;
         while (current != null && current.getName() != null) {
             elements.add(current);
             current = current.getParentElement();
         }
-        java.util.Collections.reverse(elements);
+        Collections.reverse(elements);
         StringBuilder sb = new StringBuilder();
         for (javax.swing.text.Element e : elements) {
-            javax.swing.text.AttributeSet attrs = e.getAttributes();
-            javax.swing.text.html.HTML.Tag tag = (javax.swing.text.html.HTML.Tag) attrs.getAttribute(javax.swing.text.StyleConstants.NameAttribute);
+            AttributeSet attrs = e.getAttributes();
+            HTML.Tag tag = (HTML.Tag) attrs.getAttribute(StyleConstants.NameAttribute);
             if (tag != null) {
                 sb.append("<").append(tag);
                 java.util.Enumeration<?> names = attrs.getAttributeNames();
                 while (names.hasMoreElements()) {
                     Object name = names.nextElement();
-                    if (name instanceof javax.swing.text.html.HTML.Attribute attr) {
+                    if (name instanceof HTML.Attribute attr) {
                         Object value = attrs.getAttribute(attr);
                         if (value != null) {
                             sb.append(" ").append(attr).append("=\"").append(value).append("\"");
@@ -449,57 +451,21 @@ public final class ReaderOrchestrator {
             BookInfo bookInfo = cacheService.getSelectedBookInfo();
             if (bookInfo == null || StringUtils.isBlank(bookInfo.getBookName())) return;
 
-            SiteBean siteBean = cacheService.getSelectedSiteBean();
-            String siteId = siteBean != null ? siteBean.getId() : "local";
-            String bookId = resolveBookId(bookInfo);
-            String siteGroupKey = SiteRuleService.getInstance().getSelectedCustomSiteRuleKey();
-            if (siteGroupKey == null) {
-                siteGroupKey = "default";
-            }
-            String uniqueKey = BookshelfItem.buildUniqueKey(siteGroupKey, siteId, bookId);
-
             ChapterInfo chapterInfo = cacheService.getSelectedChapterInfo();
-            int chapterIndex = chapterInfo != null ? chapterInfo.getSelectedChapterIndex() : 0;
-            String chapterTitle = chapterInfo != null ? chapterInfo.getChapterTitle() : "";
-            int lastReadLineNum = chapterInfo != null ? chapterInfo.getLastReadLineNum() : 0;
-
             List<String> chapterList = cacheService.getChapterList();
             int totalChapters = chapterList != null ? chapterList.size() : 0;
-
-            int scrollBarValue = cacheService.getEditorMessageVerticalScrollValue();
-
-            BookshelfItem existing = bookshelfService.getByUniqueKey(uniqueKey);
-            if (existing != null) {
-                bookshelfService.updateReadingProgress(uniqueKey, chapterIndex, chapterTitle,
-                        scrollBarValue, lastReadLineNum, totalChapters);
-            } else {
-                BookshelfItem item = new BookshelfItem();
-                item.setUniqueKey(uniqueKey);
-                item.setSiteGroupKey(siteGroupKey);
-                item.setSiteId(siteId);
-                item.setBookId(bookId);
-                item.copyFromBookInfo(bookInfo);
-                item.setChapterIndex(chapterIndex);
-                item.setChapterTitle(chapterTitle);
-                item.setScrollBarValue(scrollBarValue);
-                item.setLastReadLineNum(lastReadLineNum);
-                item.setTotalChapters(totalChapters);
-                item.setDataLoadType(cacheService.getSettings() != null ? cacheService.getSettings().getDataLoadType() : 1);
-                bookshelfService.recordReadingHistory(item);
-            }
+            Settings settings = cacheService.getSettings();
+            bookshelfService.saveReadingProgress(
+                    bookInfo,
+                    cacheService.getSelectedSiteBean(),
+                    siteRuleService.getSelectedCustomSiteRuleKey(),
+                    chapterInfo,
+                    cacheService.getEditorMessageVerticalScrollValue(),
+                    totalChapters,
+                    settings != null ? settings.getDataLoadType() : Settings.DATA_LOAD_TYPE_NETWORK
+            );
         } catch (Exception e) {
             LOG.error("Failed to save reading progress", e);
         }
-    }
-
-    private String resolveBookId(BookInfo bookInfo) {
-        if (bookInfo == null) return "";
-        if (StringUtils.isNotBlank(bookInfo.getBookId())) {
-            return bookInfo.getBookId();
-        }
-        if (StringUtils.isNotBlank(bookInfo.getBookUrl())) {
-            return bookInfo.getBookUrl();
-        }
-        return bookInfo.getBookName();
     }
 }

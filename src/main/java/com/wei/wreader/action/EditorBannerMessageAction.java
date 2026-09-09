@@ -114,6 +114,7 @@ public class EditorBannerMessageAction extends BaseAction implements EditorNotif
                     selectedChapterInfo.setPrevReadLineNum(lastReadLineNum[0]);
                     selectedChapterInfo.setNextReadLineNum(lastReadLineNum[0] + 1);
                     selectedChapterInfo.setLastReadLineNum(lastReadLineNum[0] + 2);
+                    cacheService.setSelectedChapterInfo(selectedChapterInfo);
                 }
 
                 content[0] = chapterContentList.get(lastReadLineNum[0]);

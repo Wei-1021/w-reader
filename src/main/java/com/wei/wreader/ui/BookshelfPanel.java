@@ -2,6 +2,7 @@ package com.wei.wreader.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
@@ -198,6 +199,12 @@ public class BookshelfPanel extends JPanel {
         if (idx < 0 || idx >= currentShelfItems.size()) return;
 
         BookshelfItem item = currentShelfItems.get(idx);
+        int choice = Messages.showYesNoDialog(project,
+                "确定将《" + item.getBookName() + "》移出书架吗？阅读进度会保留在历史记录中。",
+                "移出书架", Messages.getQuestionIcon());
+        if (choice != Messages.YES) {
+            return;
+        }
         bookshelfService.removeFromShelf(item.getUniqueKey());
         refreshList();
     }
@@ -205,7 +212,10 @@ public class BookshelfPanel extends JPanel {
     private void openBookFromShelf(BookshelfItem item) {
         SiteBean siteBean = findSiteBean(item);
         if (siteBean == null) {
-            siteBean = cacheService.getSelectedSiteBean();
+            Messages.showWarningDialog(project,
+                    "未找到《" + item.getBookName() + "》保存时使用的书源。请恢复对应书源规则后再打开。",
+                    "无法打开书架书籍");
+            return;
         }
 
         prepareBookContext(item, siteBean);
@@ -218,6 +228,14 @@ public class BookshelfPanel extends JPanel {
     private SiteBean findSiteBean(BookshelfItem item) {
         if (StringUtils.isBlank(item.getSiteId()) || item.getSiteId().equals("local")) {
             return null;
+        }
+
+        // 兼容旧版本写入的 "default"，并在自定义分组映射不完整时仍能恢复默认书源。
+        if (ConstUtil.WREADER_DEFAULT_SITE_MAP_KEY.equalsIgnoreCase(item.getSiteGroupKey())) {
+            SiteBean defaultSite = findSiteBeanFromDefault(item);
+            if (defaultSite != null) {
+                return defaultSite;
+            }
         }
 
         Map<String, List<SiteBean>> customSiteRuleGroupMap = siteRuleService.getCustomSiteRuleGroupMap();
