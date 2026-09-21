@@ -104,10 +104,13 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
             JsonNode choice = choices.get(0);
             JsonNode message = choice.path("message");
-            String finishReason = choice.path("finish_reason").asText("stop");
+            String finishReason = choice.path("finish_reason").asText();
+            if (finishReason == null || finishReason.isEmpty()) {
+                finishReason = "stop";
+            }
 
             // 提取内容
-            String content = message.path("content").asText("");
+            String content = message.path("content").asText();
             if (content.isEmpty()) {
                 content = null;
             }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wei.wreader.agent.v2.core.*;
 import com.wei.wreader.util.CustomSiteUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 
@@ -95,18 +96,18 @@ public final class ValidateSiteRuleTool implements Tool {
         String prefix = "规则[" + index + "]: ";
 
         // 检查必填字段
-        if (rule.path("id").isMissingNode() || rule.path("id").asText("").isEmpty()) {
+        if (rule.path("id").isMissingNode() || StringUtils.isBlank(rule.path("id").asText())) {
             return prefix + "id 字段不能为空";
         }
-        if (rule.path("name").isMissingNode() || rule.path("name").asText("").isEmpty()) {
+        if (rule.path("name").isMissingNode() || StringUtils.isBlank(rule.path("name").asText())) {
             return prefix + "name 字段不能为空";
         }
-        if (rule.path("baseUrl").isMissingNode() || rule.path("baseUrl").asText("").isEmpty()) {
+        if (rule.path("baseUrl").isMissingNode() || StringUtils.isBlank(rule.path("baseUrl").asText())) {
             return prefix + "baseUrl 字段不能为空";
         }
 
         // 检查 baseUrl 格式
-        String baseUrl = rule.path("baseUrl").asText("");
+        String baseUrl = rule.path("baseUrl").asText();
         if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
             return prefix + "baseUrl 必须以 http:// 或 https:// 开头";
         }

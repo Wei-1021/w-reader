@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.5.2</version>
+    <version>0.5.3</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -68,6 +68,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.5.3:
+        <ul>
+            <li>1.【优化】优化书架功能和阅读进度管理；</li>
+            <li>2.【优化】优化听书功能；</li>
+        </ul>
+    </div>
     <div>
         0.5.2:
         <ul>
