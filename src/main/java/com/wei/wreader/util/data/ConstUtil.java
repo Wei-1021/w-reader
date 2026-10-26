@@ -133,6 +133,7 @@ public class ConstUtil {
     public static final String WREADER_UNSUPPORTED_FILE_TYPE = "不支持此类型的文件！";
     public static final String WREADER_ONLY_SUPPORTED_FILE_TYPE = "只支持%s类型的文件！";
     public static final String WREADER_LOAD_FAIL = "文件加载出现异常，请重试！";
+    public static final String WREADER_LOAD_MATCH_FAIL = "章节匹配出现异常，请重试！";
     public static final String WREADER_CONFIG_LOAD_FAIL = "W-Reader配置加载出现异常！";
     public static final String WREADER_INIT_ERROR = "W-Reader加载失败！";
     public static final String WREADER_LOADING = "loading...";
@@ -157,7 +158,7 @@ public class ConstUtil {
     /**
      * 正则表达式--文本文件内容小说目录匹配
      */
-    public static final String TEXT_FILE_DIR_REGEX = "(^\\s*第)(.{1,9})[章节卷集部篇回](\\s*)(.*)($\\s*)";
+    public static final String TEXT_FILE_DIR_REGEX = "(?m)^[ \\t\\u3000]*(?:第[^\\r\\n]{1,9}[章节卷集部篇回][ \\t\\u3000]*[^\\r\\n]*|[0-9０-９]+[.．][ \\t\\u3000]*\\S[^\\r\\n]*)[ \\t\\u3000]*$";
     /**
      * 文本内容规则--多条规则分隔符
      */

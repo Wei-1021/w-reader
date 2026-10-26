@@ -658,6 +658,7 @@ public class ChapterNavigator {
             List<String> chapterList = new ArrayList<>();
             List<String> chapterContentList = new ArrayList<>();
 
+            int chapterIndex = 0;
             Pattern pattern = Pattern.compile(textRegex);
             while ((line = reader.readLine()) != null) {
                 // 应用内容替换规则
@@ -666,13 +667,19 @@ public class ChapterNavigator {
                 }
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
+                    chapterIndex++;
                     if (!chapterList.isEmpty()) {
                         chapterContentList.add(contentBuilder.toString());
                     }
                     chapterList.add(line);
                     contentBuilder.setLength(0);
                 }
+
                 contentBuilder.append(line).append("<br>");
+            }
+            if (chapterIndex == 0) {
+                contentBuilder.setLength(0);
+                contentBuilder.append(" ");
             }
             chapterContentList.add(contentBuilder.toString());
 
@@ -1123,9 +1130,12 @@ public class ChapterNavigator {
 
                 String styledContent = getStyledContent(chapterContentHtml);
                 ToolWindowUtil.updateContentText(project, styledContent);
-            }
 
-            Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
+                Messages.showMessageDialog(ConstUtil.WREADER_LOAD_SUCCESS, "提示", Messages.getInformationIcon());
+            } else {
+                ToolWindowUtil.updateContentText(project, "");
+                Messages.showMessageDialog(ConstUtil.WREADER_LOAD_MATCH_FAIL, "提示", Messages.getErrorIcon());
+            }
         }
 
         @Override
