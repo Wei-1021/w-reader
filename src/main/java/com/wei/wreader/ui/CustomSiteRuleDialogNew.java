@@ -839,31 +839,37 @@ public class CustomSiteRuleDialogNew {
             return;
         }
 
-        customSiteUtil.parseCustomSiteRule(rule, successValidationResult -> {
-            if (Messages.showYesNoDialog("确定保存？", "提示", Messages.getQuestionIcon()) != Messages.YES) {
-                return;
-            }
+        try {
+            customSiteUtil.parseCustomSiteRule(rule, successValidationResult -> {
+                if (Messages.showYesNoDialog("确定保存？", "提示", Messages.getQuestionIcon()) != Messages.YES) {
+                    return;
+                }
 
-            List<SiteBean> siteBeans = successValidationResult.getBeanList();
+                List<SiteBean> siteBeans = successValidationResult.getBeanList();
 
-            Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
-            siteMap.put(finalGroupName, siteBeans);
-            siteRuleService.setCustomSiteRuleGroupMap(siteMap);
+                Map<String, List<SiteBean>> siteMap = customSiteUtil.getSiteMap();
+                siteMap.put(finalGroupName, siteBeans);
+                siteRuleService.setCustomSiteRuleGroupMap(siteMap);
 
-            Map<String, String> customSiteRuleOriginalStrMap = siteRuleService.getCustomSiteRuleOriginalStrMap();
-            if (customSiteRuleOriginalStrMap == null) {
-                customSiteRuleOriginalStrMap = new HashMap<>();
-            }
-            customSiteRuleOriginalStrMap.put(finalGroupName, rule);
-            siteRuleService.setCustomSiteRuleOriginalStrMap(customSiteRuleOriginalStrMap);
+                Map<String, String> customSiteRuleOriginalStrMap = siteRuleService.getCustomSiteRuleOriginalStrMap();
+                if (customSiteRuleOriginalStrMap == null) {
+                    customSiteRuleOriginalStrMap = new HashMap<>();
+                }
+                customSiteRuleOriginalStrMap.put(finalGroupName, rule);
+                siteRuleService.setCustomSiteRuleOriginalStrMap(customSiteRuleOriginalStrMap);
 
-            // 更新列表
-            if (!groupListModel.contains(finalGroupName)) {
-                groupListModel.addElement(finalGroupName);
-            }
-            groupList.setSelectedValue(finalGroupName, true);
+                // 更新列表
+                if (!groupListModel.contains(finalGroupName)) {
+                    groupListModel.addElement(finalGroupName);
+                }
+                groupList.setSelectedValue(finalGroupName, true);
 
-            Messages.showInfoMessage("保存成功", "提示");
-        }, null);
+                Messages.showInfoMessage("保存成功", "提示");
+            }, null);
+        } catch (IllegalArgumentException e) {
+            Messages.showErrorDialog(e.getMessage(), "校验失败");
+        } catch (Exception e) {
+            Messages.showErrorDialog("保存出错: " + e.getMessage(), "错误");
+        }
     }
 }
