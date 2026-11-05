@@ -13,7 +13,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.ErrorStripeEditorCustomization;
@@ -208,12 +207,10 @@ public class AgentV2SiteRuleDialog {
                     ruleVirtualFile = getOrCreateTempVirtualFile("");
                 }
 
+                // PSI 非必需：临时文件位于被排除目录等场景下 findFile 可能返回 null，
+                // 优先通过 VFS 获取 Document，PSI 仅用于可选的代码格式化
                 rulePsiFile = PsiManager.getInstance(project).findFile(ruleVirtualFile);
-                if (rulePsiFile == null) {
-                    throw new RuntimeException("无法获取 PSI 文件");
-                }
-
-                ruleDocument = PsiDocumentManager.getInstance(project).getDocument(rulePsiFile);
+                ruleDocument = FileDocumentManager.getInstance().getDocument(ruleVirtualFile);
                 if (ruleDocument == null) {
                     ruleDocument = EditorFactory.getInstance().createDocument("");
                 }

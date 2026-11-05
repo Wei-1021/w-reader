@@ -495,12 +495,10 @@ public class CustomSiteRuleDialogNew {
                     virtualFile = getOrCreateTempVirtualFile("");
                 }
 
+                // PSI 非必需：临时文件位于被排除目录等场景下 findFile 可能返回 null，
+                // 优先通过 VFS 获取 Document，PSI 仅用于可选的代码格式化
                 psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if (psiFile == null) {
-                    throw new RuntimeException("无法获取 PSI 文件");
-                }
-
-                document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+                document = FileDocumentManager.getInstance().getDocument(virtualFile);
                 if (document == null) {
                     document = EditorFactory.getInstance().createDocument("");
                 }

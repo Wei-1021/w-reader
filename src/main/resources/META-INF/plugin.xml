@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.wei.wreader</id>
     <name>W-Reader</name>
-    <version>0.5.3</version>
+    <version>0.5.4-beta</version>
     <vendor email="2668910548@qq.com" url="https://github.com/Wei-1021">Wei1021</vendor>
 
     <description><![CDATA[
@@ -68,6 +68,14 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <div>
+        0.5.4:
+        <ul>
+            <li>1.【优化】优化本地文件章节匹配逻辑；</li>
+            <li>2.【优化】为自定义书源规则保存添加异常提示；</li>
+            <li>3.【优化】调整临时文件存储逻辑；</li>
+        </ul>
+    </div>
     <div>
         0.5.3:
         <ul>

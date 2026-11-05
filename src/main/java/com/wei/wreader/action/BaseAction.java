@@ -1,5 +1,6 @@
 package com.wei.wreader.action;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -28,6 +29,14 @@ public abstract class BaseAction extends AnAction {
     protected Project project;
     protected ReaderOrchestrator orchestrator;
     protected boolean isInitOrchestrator = true;
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        // 所有子类的 update/actionPerformed 均读取 IDE 状态（Project、Settings、Orchestrator），
+        // 保持旧行为在 EDT 上执行，避免 OLD_EDT 弃用警告
+        return ActionUpdateThread.EDT;
+    }
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         project = anActionEvent.getProject();
