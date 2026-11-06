@@ -212,7 +212,7 @@ public class RhinoJsEngine {
     private Context enterContext() {
         Context cx = Context.enter();
         cx.setLanguageVersion(Context.VERSION_ES6); // 启用 ES6 支持
-        cx.setOptimizationLevel(9); // 最高优化（-1=解释，0~9=编译）
+        cx.setInterpretedMode(false); // 最高优化（true=解释，false=编译）
         if (sandboxMode) {
             cx.setClassShutter(new DenyAllClassShutter()); // 沙箱：禁止访问 Java 类
         }

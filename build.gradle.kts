@@ -76,7 +76,7 @@ dependencies {
     // apache commons
     implementation("org.apache.commons:commons-text:1.14.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.22.4")
-    implementation("org.mozilla:rhino-all:1.9.1")
+    implementation("org.mozilla:rhino-all:1.8.1")
 }
 
 buildscript {

@@ -154,8 +154,8 @@ public class JsEngineExecutor {
 
         @Override
         protected Context makeContext() {
-            Context cx = super.makeContext();
-            cx.setOptimizationLevel(config.optimizationLevel);
+            Context cx = super.makeContext();// 是否解释模式（true=解释，false=编译）
+            cx.setInterpretedMode(config.optimizationLevel < 0);
             cx.setLanguageVersion(Context.VERSION_ES6);
             if (config.optimizationLevel == -1) {
                 cx.setMaximumInterpreterStackDepth(config.maxStackDepth);
