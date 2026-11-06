@@ -6,13 +6,15 @@ import proguard.gradle.ProGuardTask
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.4.21-RC"
-    id("org.jetbrains.intellij.platform") version "2.20.0"
+    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    id("org.jetbrains.intellij.platform") version "2.16.0"
+//    id("org.jetbrains.kotlin.jvm") version "2.4.21-RC"
+//    id("org.jetbrains.intellij.platform") version "2.20.0"
 }
 
 val pluginName = "w-reader"
 group = "com.wei"
-version = "0.5.4-beta"
+version = "0.5.4"
 
 repositories {
     maven {
@@ -120,8 +122,8 @@ intellijPlatform {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "25"
-        targetCompatibility = "25"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
         // 解决编译中文报错
         options.encoding = "UTF-8"
     }
@@ -133,7 +135,7 @@ tasks {
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_25)
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
     }
 
 //    patchPluginXml {
