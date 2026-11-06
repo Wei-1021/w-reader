@@ -1,12 +1,13 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import proguard.gradle.ProGuardTask
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.20"
-    id("org.jetbrains.intellij.platform") version "2.16.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.21-RC"
+    id("org.jetbrains.intellij.platform") version "2.20.0"
 }
 
 val pluginName = "w-reader"
@@ -72,6 +73,8 @@ dependencies {
     implementation("org.codehaus.janino:janino:3.1.9")
     // apache commons
     implementation("org.apache.commons:commons-text:1.14.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+    implementation("org.mozilla:rhino-all:1.9.1")
 }
 
 buildscript {
@@ -117,8 +120,8 @@ intellijPlatform {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
+        sourceCompatibility = "25"
+        targetCompatibility = "25"
         // 解决编译中文报错
         options.encoding = "UTF-8"
     }
@@ -130,7 +133,7 @@ tasks {
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_25)
     }
 
 //    patchPluginXml {

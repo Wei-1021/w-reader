@@ -18,7 +18,6 @@ import com.wei.wreader.util.data.ConstUtil;
 import com.wei.wreader.util.file.FileUtil;
 import com.wei.wreader.util.file.ImagePreviewer;
 import com.wei.wreader.util.yml.ConfigYaml;
-import groovy.util.logging.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -36,7 +35,6 @@ import java.util.regex.Pattern;
  *
  * @author weizhanjie
  */
-@Log4j2
 public class WReaderToolWindow {
 
     //region 参数属性

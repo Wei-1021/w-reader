@@ -3,10 +3,8 @@ package com.wei.wreader.action;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.jcef.*;
 import com.intellij.util.ui.JBUI;
 import com.wei.wreader.util.ui.MessageDialogUtil;
-import com.wei.wreader.util.file.ImagePreviewer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,24 +52,6 @@ public class HelpAction extends BaseAction {
             Messages.showErrorDialog(MessageDialogUtil.HELP_LOAD_FAIL, MessageDialogUtil.TITLE_ERROR);
             throw new RuntimeException(ex);
         }
-    }
-
-    // TODO: JCEF 测试
-    public void JCEF(String html) {
-        if (!JBCefApp.isSupported()) {
-            return;
-        }
-
-        JFrame frame = new JFrame("JCEF Swing Example");
-        frame.setSize(800, 600);
-        // 创建一个面板来容纳浏览器
-        JPanel panel = new JPanel(new BorderLayout());
-        JBCefBrowser jbCefBrowser = new JBCefBrowser();
-
-        panel.add(jbCefBrowser.getComponent(), BorderLayout.CENTER);
-        frame.add(panel);
-        frame.setVisible(true);
-        jbCefBrowser.openDevtools();
     }
 
 

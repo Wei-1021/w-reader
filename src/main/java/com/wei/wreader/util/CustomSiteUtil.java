@@ -1,6 +1,5 @@
 package com.wei.wreader.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.intellij.openapi.project.Project;
 import com.wei.wreader.model.SiteBean;
 import com.wei.wreader.service.CacheService;
